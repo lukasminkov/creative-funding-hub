@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,10 +32,10 @@ interface PayPerViewFormProps {
 }
 
 const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(campaign.platforms || []);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(campaign.platforms || []);
   const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
   
-  const handlePlatformToggle = (platform: string) => {
+  const handlePlatformToggle = (platform: Platform) => {
     const newPlatforms = selectedPlatforms.includes(platform)
       ? selectedPlatforms.filter(p => p !== platform)
       : [...selectedPlatforms, platform];
@@ -107,7 +108,7 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
             </Label>
             <Select
               value={campaign.contentType || ""}
-              onValueChange={(value) => onChange({ ...campaign, contentType: value })}
+              onValueChange={(value) => onChange({ ...campaign, contentType: value as ContentType })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose type" />
@@ -126,7 +127,7 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
             </Label>
             <Select
               value={campaign.category || ""}
-              onValueChange={(value) => onChange({ ...campaign, category: value })}
+              onValueChange={(value) => onChange({ ...campaign, category: value as Category })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose category" />
@@ -159,7 +160,7 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
               />
               <Select
                 value={campaign.currency || "USD"}
-                onValueChange={(value) => onChange({ ...campaign, currency: value })}
+                onValueChange={(value) => onChange({ ...campaign, currency: value as Currency })}
               >
                 <SelectTrigger className="w-24 rounded-l-none border-l-0">
                   <SelectValue placeholder="USD" />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Plus, Link2, ExternalLink } from "lucide-react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier, Platform, ContentType, Category, Currency } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
 
   const minEndDate = addDays(applicationDeadline, 30);
   
-  const handlePlatformSelect = (platform: string) => {
+  const handlePlatformSelect = (platform: Platform) => {
     onChange({ ...campaign, platforms: [platform] });
   };
 
@@ -304,7 +304,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
             </Label>
             <Select
               value={campaign.contentType || ""}
-              onValueChange={(value) => onChange({ ...campaign, contentType: value })}
+              onValueChange={(value) => onChange({ ...campaign, contentType: value as ContentType })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose type" />
@@ -323,7 +323,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
             </Label>
             <Select
               value={campaign.category || ""}
-              onValueChange={(value) => onChange({ ...campaign, category: value })}
+              onValueChange={(value) => onChange({ ...campaign, category: value as Category })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose category" />
@@ -356,7 +356,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
               />
               <Select
                 value={campaign.currency || "USD"}
-                onValueChange={(value) => onChange({ ...campaign, currency: value })}
+                onValueChange={(value) => onChange({ ...campaign, currency: value as Currency })}
               >
                 <SelectTrigger className="w-24 rounded-l-none border-l-0">
                   <SelectValue placeholder="USD" />

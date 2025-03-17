@@ -71,3 +71,18 @@ export interface ChallengeCampaign extends BaseCampaign {
 }
 
 export type Campaign = RetainerCampaign | PayPerViewCampaign | ChallengeCampaign;
+
+// Helper functions
+export const formatCurrency = (amount: number, currency: Currency = "USD"): string => {
+  return new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: currency 
+  }).format(amount);
+};
+
+export const getDaysLeft = (date: Date): number => {
+  const now = new Date();
+  const diffTime = date.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+};

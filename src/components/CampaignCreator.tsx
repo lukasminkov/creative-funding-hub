@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Campaign } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RetainerForm from "./campaign-forms/RetainerForm";
@@ -20,8 +20,8 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
   const [campaign, setCampaign] = useState<Partial<Campaign>>({
     title: "",
     description: "",
-    contentType: "",
-    category: "",
+    contentType: CONTENT_TYPES[0],
+    category: CATEGORIES[0],
     totalBudget: 0,
     currency: "USD",
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
