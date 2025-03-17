@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
@@ -576,6 +577,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
         
         <GuidelinesList
           dos={guidelines.dos}
+          donts={guidelines.donts}
           onChange={handleGuidelinesChange}
         />
         

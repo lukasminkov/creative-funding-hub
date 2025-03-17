@@ -8,6 +8,8 @@ import RetainerForm from "./campaign-forms/RetainerForm";
 import PayPerViewForm from "./campaign-forms/PayPerViewForm";
 import ChallengeForm from "./campaign-forms/ChallengeForm";
 import CampaignPreview from "./CampaignPreview";
+import CampaignPaymentModal from "./CampaignPaymentModal";
+import { Save, Rocket } from "lucide-react";
 import { toast } from "sonner";
 
 interface CampaignCreatorProps {
@@ -17,6 +19,7 @@ interface CampaignCreatorProps {
 
 const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
   const [campaignType, setCampaignType] = useState<"retainer" | "payPerView" | "challenge">("retainer");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [campaign, setCampaign] = useState<Partial<Campaign>>({
     title: "",
     description: "",
@@ -38,51 +41,70 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     setCampaign({ ...campaign, ...updatedCampaign });
   };
 
-  const handleSubmit = () => {
-    // Validate the campaign before submitting
+  const validateCampaign = (): boolean => {
+    // Basic validation
     if (!campaign.title) {
       toast.error("Please enter a campaign title");
-      return;
+      return false;
     }
 
     if (!campaign.contentType) {
       toast.error("Please select a content type");
-      return;
+      return false;
     }
 
     if (!campaign.category) {
       toast.error("Please select a category");
-      return;
+      return false;
     }
 
     if (!campaign.totalBudget || campaign.totalBudget <= 0) {
       toast.error("Please enter a valid budget");
-      return;
+      return false;
     }
 
     if (!campaign.platforms || campaign.platforms.length === 0) {
       toast.error("Please select at least one platform");
-      return;
+      return false;
     }
 
-    // Validate type-specific fields
+    // Type-specific validation
     if (campaign.type === "retainer") {
       if (!campaign.applicationDeadline) {
         toast.error("Please set an application deadline");
-        return;
-      }
-      if (!campaign.platforms || campaign.platforms.length !== 1) {
-        toast.error("Please select exactly one platform for retainer campaigns");
-        return;
+        return false;
       }
     } else if (campaign.type === "challenge") {
       if (!campaign.submissionDeadline) {
         toast.error("Please set a submission deadline");
-        return;
+        return false;
       }
     }
 
-    toast.success("Campaign created successfully!");
+    return true;
+  };
+
+  const handleSaveAsDraft = () => {
+    if (!campaign.title) {
+      toast.error("Please enter a campaign title before saving");
+      return;
+    }
+
+    toast.success("Campaign saved as draft");
+    onSubmit(campaign as Campaign);
+  };
+
+  const handleLaunchCampaign = () => {
+    if (!validateCampaign()) {
+      return;
+    }
+
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentComplete = () => {
+    setShowPaymentModal(false);
+    toast.success("Campaign launched successfully!");
     onSubmit(campaign as Campaign);
   };
 
@@ -169,11 +191,18 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
         </div>
         
         <div className="p-6 border-t border-border/60 flex items-center justify-between">
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit}>
-            Create Campaign
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button variant="outline" onClick={handleSaveAsDraft}>
+              <Save className="h-4 w-4 mr-2" />
+              Save as Draft
+            </Button>
+          </div>
+          <Button onClick={handleLaunchCampaign}>
+            <Rocket className="h-4 w-4 mr-2" />
+            Launch Campaign
           </Button>
         </div>
       </motion.div>
@@ -185,6 +214,15 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
       >
         <CampaignPreview campaign={campaign} />
       </motion.div>
+
+      {showPaymentModal && (
+        <CampaignPaymentModal
+          campaign={campaign as Campaign}
+          open={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onPaymentComplete={handlePaymentComplete}
+        />
+      )}
     </motion.div>
   );
 };

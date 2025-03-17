@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -99,6 +100,44 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
     onChange({
       ...campaign,
       guidelines
+    });
+  };
+
+  // Add the missing functions
+  const addPlace = () => {
+    const nextPosition = Math.max(...places.map(p => p.position)) + 1;
+    const newPlace = { position: nextPosition, prize: 100 };
+    const updatedPlaces = [...places, newPlace];
+    setPlaces(updatedPlaces);
+    onChange({
+      ...campaign,
+      type: "challenge",
+      prizePool: { places: updatedPlaces }
+    });
+  };
+
+  const removePlace = (position: number) => {
+    const updatedPlaces = places.filter(place => place.position !== position);
+    setPlaces(updatedPlaces);
+    onChange({
+      ...campaign,
+      type: "challenge",
+      prizePool: { places: updatedPlaces }
+    });
+  };
+
+  const updatePlace = (position: number, prize: number) => {
+    const updatedPlaces = places.map(place => {
+      if (place.position === position) {
+        return { ...place, prize };
+      }
+      return place;
+    });
+    setPlaces(updatedPlaces);
+    onChange({
+      ...campaign,
+      type: "challenge",
+      prizePool: { places: updatedPlaces }
     });
   };
 
