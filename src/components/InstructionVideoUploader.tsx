@@ -1,77 +1,94 @@
 
-import { useState } from "react";
-import { Video, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { Video, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface InstructionVideoUploaderProps {
-  videoUrl?: string;
-  onVideoChange: (url: string) => void;
+  videoFile?: File | null;
+  onVideoChange: (file: File | null) => void;
 }
 
-const InstructionVideoUploader = ({ videoUrl = '', onVideoChange }: InstructionVideoUploaderProps) => {
-  const [inputValue, setInputValue] = useState(videoUrl);
+const InstructionVideoUploader = ({ videoFile, onVideoChange }: InstructionVideoUploaderProps) => {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-    onVideoChange(e.target.value);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    
+    if (file) {
+      if (!file.type.startsWith('video/')) {
+        toast.error("Please upload a valid video file");
+        return;
+      }
+      
+      // Create a preview URL for the video
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+      onVideoChange(file);
+    }
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   const clearVideo = () => {
-    setInputValue('');
-    onVideoChange('');
-  };
-
-  const isYouTubeUrl = (url: string) => {
-    return url.includes('youtube.com') || url.includes('youtu.be');
-  };
-
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
+    setPreviewUrl(null);
+    onVideoChange(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
+
+  // When component unmounts or preview changes, revoke object URL to avoid memory leaks
+  const revokeObjectURL = (url: string) => {
+    URL.revokeObjectURL(url);
+  };
+
+  // useEffect(() => {
+  //   return () => {
+  //     if (previewUrl) {
+  //       revokeObjectURL(previewUrl);
+  //     }
+  //   };
+  // }, [previewUrl]);
 
   return (
     <div className="space-y-4">
       <Label>Instruction Video</Label>
       <div className="space-y-2">
-        <Input
-          type="url"
-          placeholder="Enter video URL (YouTube, Vimeo, etc.)"
-          value={inputValue}
-          onChange={handleInputChange}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={handleFileChange}
         />
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full flex items-center justify-center gap-2"
+          onClick={handleButtonClick}
+        >
+          <Upload className="h-4 w-4" />
+          Upload Video
+        </Button>
         <p className="text-xs text-muted-foreground">
-          Provide a link to your instruction video for creators
+          Upload an instruction video for creators (MP4, WebM, MOV)
         </p>
       </div>
 
-      {inputValue && isValidUrl(inputValue) && (
+      {previewUrl && (
         <div className="relative mt-4 rounded-md overflow-hidden border">
-          {isYouTubeUrl(inputValue) ? (
-            <div className="relative pt-[56.25%]">
-              <iframe
-                className="absolute top-0 left-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${inputValue.includes('youtube.com/watch?v=') 
-                  ? inputValue.split('v=')[1].split('&')[0] 
-                  : inputValue.includes('youtu.be/') 
-                    ? inputValue.split('youtu.be/')[1].split('?')[0]
-                    : ''}`}
-                allowFullScreen
-              ></iframe>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center p-8 bg-muted/20">
-              <Video className="h-12 w-12 text-muted-foreground" />
-              <p className="ml-3 text-sm">Video URL added</p>
-            </div>
-          )}
+          <div className="relative pt-[56.25%]">
+            <video 
+              className="absolute top-0 left-0 w-full h-full object-contain"
+              src={previewUrl}
+              controls
+            />
+          </div>
           <Button
             type="button"
             variant="ghost"

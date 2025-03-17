@@ -12,13 +12,18 @@ const Dashboard = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
 
   const handleSubmitCampaign = (campaign: Campaign) => {
-    // Add a unique ID to the campaign
-    const campaignWithId = {
+    // Convert File objects to URLs for storage and display
+    const preparedCampaign = {
       ...campaign,
       id: crypto.randomUUID()
     };
     
-    setCampaigns([...campaigns, campaignWithId]);
+    // Create an object URL if we have a video file
+    if (campaign.instructionVideoFile) {
+      preparedCampaign.instructionVideo = URL.createObjectURL(campaign.instructionVideoFile);
+    }
+    
+    setCampaigns([...campaigns, preparedCampaign]);
     setIsCreating(false);
     toast.success("Campaign created successfully!");
   };

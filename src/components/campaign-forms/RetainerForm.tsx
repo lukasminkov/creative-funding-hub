@@ -98,7 +98,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
     value: campaign.brief?.value || ''
   });
 
-  const [videoUrl, setVideoUrl] = useState(campaign.instructionVideo || '');
+  const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
 
   const minEndDate = addDays(applicationDeadline, 30);
   
@@ -254,10 +254,11 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
     });
   };
 
-  const handleVideoChange = (url: string) => {
+  const handleVideoChange = (file: File | null) => {
+    setInstructionVideo(file);
     onChange({
       ...campaign,
-      instructionVideo: url
+      instructionVideoFile: file
     });
   };
 
@@ -505,7 +506,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
         />
         
         <InstructionVideoUploader
-          videoUrl={videoUrl}
+          videoFile={instructionVideo}
           onVideoChange={handleVideoChange}
         />
         

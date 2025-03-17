@@ -33,6 +33,7 @@ interface ChallengeFormProps {
 
 const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(campaign.platforms || []);
+  const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
   
   const initialPlaces = campaign.type === "challenge" && campaign.prizePool 
     ? campaign.prizePool.places 
@@ -113,10 +114,11 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
     });
   };
 
-  const handleVideoChange = (url: string) => {
+  const handleVideoChange = (file: File | null) => {
+    setInstructionVideo(file);
     onChange({
       ...campaign,
-      instructionVideo: url
+      instructionVideoFile: file
     });
   };
 
@@ -292,7 +294,7 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
         />
         
         <InstructionVideoUploader
-          videoUrl={campaign.instructionVideo}
+          videoFile={instructionVideo}
           onVideoChange={handleVideoChange}
         />
         

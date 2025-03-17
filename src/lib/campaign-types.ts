@@ -1,134 +1,73 @@
-export type CreatorTier = {
+
+export const CONTENT_TYPES = ["UGC", "Faceless", "Clipping"] as const;
+export const CATEGORIES = ["Fashion", "Beauty", "Tech", "Gaming", "Food", "Travel", "Lifestyle", "Fitness", "Education", "Entertainment", "Finance", "Business", "Health", "Sports", "Music", "News", "Politics", "Science", "Art", "Design", "Photography", "Film", "Writing", "DIY", "Automotive", "Real Estate", "Home", "Parenting", "Pets", "Nature"] as const;
+export const PLATFORMS = ["TikTok", "TikTok Shop", "Instagram Reels", "Twitter", "YouTube Shorts"] as const;
+export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CNY", "INR"] as const;
+
+export type ContentType = typeof CONTENT_TYPES[number];
+export type Category = typeof CATEGORIES[number];
+export type Platform = typeof PLATFORMS[number];
+export type Currency = typeof CURRENCIES[number];
+
+export interface Brief {
+  type: 'link' | 'file';
+  value: string;
+}
+
+export interface CreatorTier {
   name: string;
   price: number;
-};
+}
 
-export type CampaignBase = {
+interface BaseCampaign {
   id?: string;
   title: string;
-  description: string;
-  contentType: string;
-  category: string;
+  description?: string;
+  type: 'retainer' | 'payPerView' | 'challenge';
+  contentType: ContentType;
+  category: Category;
+  platforms: Platform[];
   totalBudget: number;
-  currency: string;
+  currency: Currency;
   endDate: Date;
-  platforms: string[];
   bannerImage?: string;
-  brief?: {
-    type: 'link' | 'file';
-    value: string; // URL for link, filename for file
-  };
-  instructionVideo?: string; // URL to the instruction video
-};
+  brief?: Brief;
+  instructionVideo?: string;
+  instructionVideoFile?: File | null;
+}
 
-export type RetainerCampaign = CampaignBase & {
+export interface RetainerCampaign extends BaseCampaign {
   type: 'retainer';
+  applicationDeadline: Date;
   creatorTiers: CreatorTier[];
   deliverables: {
     videosPerDay: number;
     durationDays: number;
   };
-  requirements: string[]; // New field for individual requirements
-  guidelines: { // New field for guidelines
+  requirements: string[];
+  guidelines: {
     dos: string[];
     donts: string[];
   };
-  trackingLink?: string; // New field for tracking link
-  requestedTrackingLink?: boolean; // New field to request tracking link
-  applicationDeadline: Date; // New field for application deadline
-};
+  trackingLink?: string;
+  requestedTrackingLink?: boolean;
+}
 
-export type PayPerViewCampaign = CampaignBase & {
+export interface PayPerViewCampaign extends BaseCampaign {
   type: 'payPerView';
   ratePerThousand: number;
   maxPayoutPerSubmission: number;
-};
+}
 
-export type ChallengeCampaign = CampaignBase & {
+export interface ChallengeCampaign extends BaseCampaign {
   type: 'challenge';
   prizePool: {
-    places: Array<{
+    places: {
       position: number;
       prize: number;
-    }>;
+    }[];
   };
   submissionDeadline: Date;
-};
+}
 
 export type Campaign = RetainerCampaign | PayPerViewCampaign | ChallengeCampaign;
-
-export const CONTENT_TYPES = [
-  'UGC',
-  'Faceless',
-  'Clipping'
-];
-
-export const CATEGORIES = [
-  'Technology',
-  'Beauty',
-  'Fashion',
-  'Food',
-  'Fitness',
-  'Travel',
-  'Lifestyle',
-  'Gaming',
-  'Education',
-  'Entertainment',
-  'Business',
-  'Health',
-  'Home',
-  'Parenting',
-  'Sports'
-];
-
-export const PLATFORMS = [
-  'TikTok Shop',
-  'TikTok',
-  'Instagram Reels',
-  'Twitter',
-  'YouTube Shorts'
-];
-
-export const CURRENCIES = [
-  'USD',
-  'EUR',
-  'GBP',
-  'CAD',
-  'AUD',
-  'JPY',
-  'CNY',
-  'INR'
-];
-
-// Helper functions
-export function calculatePayout(campaign: Campaign): number {
-  switch(campaign.type) {
-    case 'retainer':
-      return campaign.creatorTiers.reduce((sum, tier) => sum + tier.price, 0);
-    case 'payPerView':
-      return campaign.totalBudget;
-    case 'challenge':
-      return campaign.prizePool.places.reduce((sum, place) => sum + place.prize, 0);
-  }
-}
-
-export function getDaysLeft(endDate: Date): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setHours(0, 0, 0, 0);
-  
-  const diffTime = end.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  return diffDays > 0 ? diffDays : 0;
-}
-
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(amount);
-}

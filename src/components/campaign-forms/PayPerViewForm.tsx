@@ -32,6 +32,7 @@ interface PayPerViewFormProps {
 
 const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(campaign.platforms || []);
+  const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
   
   const handlePlatformToggle = (platform: string) => {
     const newPlatforms = selectedPlatforms.includes(platform)
@@ -49,10 +50,11 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
     });
   };
 
-  const handleVideoChange = (url: string) => {
+  const handleVideoChange = (file: File | null) => {
+    setInstructionVideo(file);
     onChange({
       ...campaign,
-      instructionVideo: url
+      instructionVideoFile: file
     });
   };
 
@@ -233,7 +235,7 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
         />
         
         <InstructionVideoUploader
-          videoUrl={campaign.instructionVideo}
+          videoFile={instructionVideo}
           onVideoChange={handleVideoChange}
         />
         
