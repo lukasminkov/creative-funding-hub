@@ -2,8 +2,9 @@
 import { motion } from "framer-motion";
 import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Clock } from "lucide-react";
+import { Upload, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface CampaignPreviewProps {
   campaign: Partial<Campaign>;
@@ -21,7 +22,7 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
     } else if (isRetainer) {
       return `${campaign.creatorTiers?.length || 0} Tiers`;
     } else if (isChallenge && campaign.type === "challenge") {
-      return `${formatCurrency(campaign.prizePool?.firstPlace || 0, campaign.currency)} Top Prize`;
+      return `${campaign.prizePool?.places.length || 0} Winners`;
     }
     return "-";
   };
@@ -54,24 +55,36 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mb-6 bg-muted/50 rounded-lg p-6 text-center"
+              className="mb-6 bg-muted/50 rounded-lg p-6 text-center relative"
             >
-              <div className="mb-3">
+              {campaign.bannerImage && (
+                <div className="absolute inset-0 rounded-lg overflow-hidden">
+                  <img 
+                    src={campaign.bannerImage} 
+                    alt="Campaign banner" 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/60"></div>
+                </div>
+              )}
+              
+              <div className={`mb-3 relative ${campaign.bannerImage ? 'text-white' : ''}`}>
                 <h3 className="text-lg font-medium">
                   {campaign.title || "Campaign Title"}
                 </h3>
-                <p className="text-muted-foreground text-sm line-clamp-2">
+                <p className={`${campaign.bannerImage ? 'text-white/80' : 'text-muted-foreground'} text-sm line-clamp-2`}>
                   {campaign.description || "Campaign description will appear here"}
                 </p>
               </div>
               
-              <p className="text-sm text-muted-foreground mt-4">
-                We recommend uploading videos with a 16:9 aspect ratio
+              <p className={`text-sm ${campaign.bannerImage ? 'text-white/70' : 'text-muted-foreground'} mt-4 relative`}>
+                {campaign.type === "challenge" ? "Submit your best content to win prizes" 
+                : "We're looking for creators to partner with"}
               </p>
               
-              <Button variant="outline" className="mt-4 gap-2">
+              <Button variant="outline" className={`mt-4 gap-2 relative ${campaign.bannerImage ? 'bg-white hover:bg-white/90' : ''}`}>
                 <Upload className="h-4 w-4" />
-                Upload Tutorial
+                {isChallenge ? "Submit Entry" : "Apply Now"}
               </Button>
             </motion.div>
             
@@ -153,17 +166,95 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
               className="mt-4"
             >
               <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">MAX PAYOUT (PER SUBMISSION)</h4>
-                <p className="font-medium text-sm">
-                  {getPayoutText()}
-                </p>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                  {isRetainer ? "REQUIREMENTS" : 
+                   isChallenge ? "TOP PRIZE" : 
+                   "MAX PAYOUT (PER SUBMISSION)"}
+                </h4>
+                {isRetainer && campaign.type === "retainer" && campaign.requirements && campaign.requirements.length > 0 ? (
+                  <div className="space-y-2">
+                    {campaign.requirements.slice(0, 2).map((req, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        <p className="text-sm">
+                          {req}
+                        </p>
+                      </div>
+                    ))}
+                    {campaign.requirements.length > 2 && (
+                      <p className="text-xs text-muted-foreground">
+                        +{campaign.requirements.length - 2} more requirements
+                      </p>
+                    )}
+                  </div>
+                ) : isChallenge && campaign.type === "challenge" && campaign.prizePool ? (
+                  <p className="font-medium text-sm">
+                    {campaign.prizePool.places && campaign.prizePool.places.length > 0 
+                      ? formatCurrency(campaign.prizePool.places[0].prize, campaign.currency) 
+                      : "-"}
+                  </p>
+                ) : (
+                  <p className="font-medium text-sm">
+                    {getPayoutText()}
+                  </p>
+                )}
               </div>
             </motion.div>
+            
+            {isRetainer && campaign.type === "retainer" && campaign.guidelines && 
+             (campaign.guidelines.dos.length > 0 || campaign.guidelines.donts.length > 0) && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="mt-4"
+              >
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">GUIDELINES</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    {campaign.guidelines.dos.length > 0 && (
+                      <Badge variant="outline" className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-200">
+                        {campaign.guidelines.dos.length} Do's
+                      </Badge>
+                    )}
+                    {campaign.guidelines.donts.length > 0 && (
+                      <Badge variant="outline" className="bg-red-500/10 text-red-600 hover:bg-red-500/20 border-red-200">
+                        {campaign.guidelines.donts.length} Don'ts
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            
+            {campaign.platforms && campaign.platforms.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="mt-4"
+              >
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">PLATFORMS</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    {campaign.platforms.map((platform) => (
+                      <Badge key={platform} variant="outline">
+                        {platform}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
             
             <div className="mt-auto pt-6">
               <p className="text-sm text-muted-foreground text-center">
                 <Clock className="inline-block mr-1 h-3 w-3 align-text-bottom" />
-                {daysLeft > 0 
+                {isRetainer && campaign.type === "retainer" && campaign.applicationDeadline 
+                  ? `Applications close in ${getDaysLeft(campaign.applicationDeadline)} days` 
+                  : isChallenge && campaign.type === "challenge" && campaign.submissionDeadline
+                  ? `Submissions close in ${getDaysLeft(campaign.submissionDeadline)} days`
+                  : daysLeft > 0 
                   ? `Campaign ends in ${daysLeft} days` 
                   : "Set an end date for your campaign"
                 }

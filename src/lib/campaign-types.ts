@@ -2,7 +2,6 @@
 export type CreatorTier = {
   name: string;
   price: number;
-  requirements: string;
 };
 
 export type CampaignBase = {
@@ -15,6 +14,7 @@ export type CampaignBase = {
   currency: string;
   endDate: Date;
   platforms: string[];
+  bannerImage?: string; // New field for banner image
 };
 
 export type RetainerCampaign = CampaignBase & {
@@ -24,6 +24,14 @@ export type RetainerCampaign = CampaignBase & {
     videosPerDay: number;
     durationDays: number;
   };
+  requirements: string[]; // New field for individual requirements
+  guidelines: { // New field for guidelines
+    dos: string[];
+    donts: string[];
+  };
+  trackingLink?: string; // New field for tracking link
+  requestedTrackingLink?: boolean; // New field to request tracking link
+  applicationDeadline: Date; // New field for application deadline
 };
 
 export type PayPerViewCampaign = CampaignBase & {
@@ -35,11 +43,10 @@ export type PayPerViewCampaign = CampaignBase & {
 export type ChallengeCampaign = CampaignBase & {
   type: 'challenge';
   prizePool: {
-    firstPlace: number;
-    secondPlace: number;
-    thirdPlace: number;
-    runnerUps: number;
-    runnerUpsCount: number;
+    places: Array<{
+      position: number;
+      prize: number;
+    }>;
   };
   submissionDeadline: Date;
 };
@@ -47,16 +54,9 @@ export type ChallengeCampaign = CampaignBase & {
 export type Campaign = RetainerCampaign | PayPerViewCampaign | ChallengeCampaign;
 
 export const CONTENT_TYPES = [
-  'Product Review',
-  'Unboxing',
-  'Tutorial',
-  'Day in the Life',
-  'Behind the Scenes',
-  'Testimonial',
-  'Challenge',
-  'Trending Format',
-  'Educational',
-  'Entertainment'
+  'UGC',
+  'Faceless',
+  'Clipping'
 ];
 
 export const CATEGORIES = [
@@ -78,15 +78,11 @@ export const CATEGORIES = [
 ];
 
 export const PLATFORMS = [
+  'TikTok Shop',
   'TikTok',
-  'Instagram',
-  'YouTube',
+  'Instagram Reels',
   'Twitter',
-  'Facebook',
-  'LinkedIn',
-  'Pinterest',
-  'Snapchat',
-  'Twitch'
+  'YouTube Shorts'
 ];
 
 export const CURRENCIES = [
@@ -108,12 +104,7 @@ export function calculatePayout(campaign: Campaign): number {
     case 'payPerView':
       return campaign.totalBudget;
     case 'challenge':
-      return (
-        campaign.prizePool.firstPlace +
-        campaign.prizePool.secondPlace +
-        campaign.prizePool.thirdPlace +
-        campaign.prizePool.runnerUps * campaign.prizePool.runnerUpsCount
-      );
+      return campaign.prizePool.places.reduce((sum, place) => sum + place.prize, 0);
   }
 }
 

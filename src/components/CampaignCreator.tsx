@@ -26,7 +26,10 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     currency: "USD",
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
     platforms: [],
-    type: "retainer"
+    type: "retainer",
+    applicationDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now for application deadline
+    requirements: [],
+    guidelines: { dos: [], donts: [] }
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
@@ -58,6 +61,23 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     if (!campaign.platforms || campaign.platforms.length === 0) {
       toast.error("Please select at least one platform");
       return;
+    }
+
+    // Validate type-specific fields
+    if (campaign.type === "retainer") {
+      if (!campaign.applicationDeadline) {
+        toast.error("Please set an application deadline");
+        return;
+      }
+      if (!campaign.platforms || campaign.platforms.length !== 1) {
+        toast.error("Please select exactly one platform for retainer campaigns");
+        return;
+      }
+    } else if (campaign.type === "challenge") {
+      if (!campaign.submissionDeadline) {
+        toast.error("Please set a submission deadline");
+        return;
+      }
     }
 
     toast.success("Campaign created successfully!");

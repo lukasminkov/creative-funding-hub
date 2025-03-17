@@ -19,10 +19,11 @@ import {
   PopoverTrigger 
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Trophy } from "lucide-react";
+import { CalendarIcon, Trophy, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import BannerImageUpload from "../BannerImageUpload";
 
 interface ChallengeFormProps {
   campaign: Partial<Campaign>;
@@ -31,13 +32,16 @@ interface ChallengeFormProps {
 
 const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(campaign.platforms || []);
-  const [prizePool, setPrizePool] = useState({
-    firstPlace: campaign.type === "challenge" && campaign.prizePool ? campaign.prizePool.firstPlace : 1000,
-    secondPlace: campaign.type === "challenge" && campaign.prizePool ? campaign.prizePool.secondPlace : 500,
-    thirdPlace: campaign.type === "challenge" && campaign.prizePool ? campaign.prizePool.thirdPlace : 250,
-    runnerUps: campaign.type === "challenge" && campaign.prizePool ? campaign.prizePool.runnerUps : 100,
-    runnerUpsCount: campaign.type === "challenge" && campaign.prizePool ? campaign.prizePool.runnerUpsCount : 5
-  });
+  
+  const initialPlaces = campaign.type === "challenge" && campaign.prizePool 
+    ? campaign.prizePool.places 
+    : [
+        { position: 1, prize: 1000 },
+        { position: 2, prize: 500 },
+        { position: 3, prize: 250 }
+      ];
+  
+  const [places, setPlaces] = useState(initialPlaces);
   
   const handlePlatformToggle = (platform: string) => {
     const newPlatforms = selectedPlatforms.includes(platform)
@@ -48,26 +52,72 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
     onChange({ ...campaign, platforms: newPlatforms });
   };
 
-  const updatePrizePool = (field: keyof typeof prizePool, value: number) => {
-    const updatedPrizePool = { ...prizePool, [field]: value };
-    setPrizePool(updatedPrizePool);
+  const addPlace = () => {
+    if (places.length >= 10) return;
+    
+    const newPosition = places.length + 1;
+    const newPlaces = [...places, { position: newPosition, prize: 100 }];
+    
+    setPlaces(newPlaces);
+    updatePrizePool(newPlaces);
+  };
+
+  const removePlace = (position: number) => {
+    if (places.length <= 1) return;
+    
+    // Remove the place at the given position
+    const filteredPlaces = places.filter(place => place.position !== position);
+    
+    // Reindex positions
+    const reindexedPlaces = filteredPlaces.map((place, index) => ({
+      ...place,
+      position: index + 1
+    }));
+    
+    setPlaces(reindexedPlaces);
+    updatePrizePool(reindexedPlaces);
+  };
+
+  const updatePlace = (position: number, prize: number) => {
+    const updatedPlaces = places.map(place => {
+      if (place.position === position) {
+        return { ...place, prize };
+      }
+      return place;
+    });
+    
+    setPlaces(updatedPlaces);
+    updatePrizePool(updatedPlaces);
+  };
+
+  const updatePrizePool = (updatedPlaces: typeof places) => {
     onChange({
       ...campaign,
       type: "challenge",
-      prizePool: updatedPrizePool
+      prizePool: {
+        places: updatedPlaces
+      }
+    });
+  };
+
+  const handleBannerImageSelect = (imageUrl: string) => {
+    onChange({
+      ...campaign,
+      bannerImage: imageUrl
     });
   };
 
   // Calculate total prize pool
-  const totalPrizePool = 
-    prizePool.firstPlace + 
-    prizePool.secondPlace + 
-    prizePool.thirdPlace + 
-    (prizePool.runnerUps * prizePool.runnerUpsCount);
+  const totalPrizePool = places.reduce((sum, place) => sum + place.prize, 0);
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <div className="space-y-6">
+        <BannerImageUpload 
+          onImageSelect={handleBannerImageSelect}
+          currentImage={campaign.bannerImage}
+        />
+        
         <div className="grid gap-4">
           <div className="space-y-2">
             <Label htmlFor="title">
@@ -237,107 +287,63 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
           <Card className="mb-6 overflow-hidden bg-muted/30">
             <CardContent className="p-0">
               <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
-                <div className="p-4 text-center">
-                  <div className="flex justify-center mb-2">
-                    <Trophy className="h-6 w-6 text-yellow-500" />
+                {places.slice(0, 3).map((place) => (
+                  <div key={place.position} className="p-4 text-center">
+                    <div className="flex justify-center mb-2">
+                      <Trophy className={cn(
+                        "h-6 w-6",
+                        place.position === 1 ? "text-yellow-500" : 
+                        place.position === 2 ? "text-gray-400" : 
+                        "text-amber-700"
+                      )} />
+                    </div>
+                    <p className="text-sm font-medium mb-1">{place.position}st Place</p>
+                    <p className="text-lg font-semibold">{new Intl.NumberFormat('en-US', { 
+                      style: 'currency', 
+                      currency: campaign.currency || 'USD',
+                      minimumFractionDigits: 0 
+                    }).format(place.prize)}</p>
                   </div>
-                  <p className="text-sm font-medium mb-1">1st Place</p>
-                  <p className="text-lg font-semibold">{new Intl.NumberFormat('en-US', { 
-                    style: 'currency', 
-                    currency: campaign.currency || 'USD',
-                    minimumFractionDigits: 0 
-                  }).format(prizePool.firstPlace)}</p>
-                </div>
-                <div className="p-4 text-center">
-                  <div className="flex justify-center mb-2">
-                    <Trophy className="h-6 w-6 text-gray-400" />
-                  </div>
-                  <p className="text-sm font-medium mb-1">2nd Place</p>
-                  <p className="text-lg font-semibold">{new Intl.NumberFormat('en-US', { 
-                    style: 'currency', 
-                    currency: campaign.currency || 'USD',
-                    minimumFractionDigits: 0 
-                  }).format(prizePool.secondPlace)}</p>
-                </div>
-                <div className="p-4 text-center">
-                  <div className="flex justify-center mb-2">
-                    <Trophy className="h-6 w-6 text-amber-700" />
-                  </div>
-                  <p className="text-sm font-medium mb-1">3rd Place</p>
-                  <p className="text-lg font-semibold">{new Intl.NumberFormat('en-US', { 
-                    style: 'currency', 
-                    currency: campaign.currency || 'USD',
-                    minimumFractionDigits: 0 
-                  }).format(prizePool.thirdPlace)}</p>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
           
-          <div className="grid gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstPlace">1st Place Prize</Label>
-                <Input
-                  id="firstPlace"
-                  type="number"
-                  min={0}
-                  value={prizePool.firstPlace}
-                  onChange={(e) => updatePrizePool("firstPlace", Number(e.target.value))}
-                />
+          <div className="grid gap-4">
+            {places.map((place) => (
+              <div key={place.position} className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <span className="font-semibold">{place.position}</span>
+                </div>
+                <div className="flex-grow">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={place.prize}
+                    onChange={(e) => updatePlace(place.position, Number(e.target.value))}
+                  />
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => removePlace(place.position)}
+                  disabled={places.length <= 1}
+                >
+                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="secondPlace">2nd Place Prize</Label>
-                <Input
-                  id="secondPlace"
-                  type="number"
-                  min={0}
-                  value={prizePool.secondPlace}
-                  onChange={(e) => updatePrizePool("secondPlace", Number(e.target.value))}
-                />
-              </div>
-            </div>
+            ))}
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="thirdPlace">3rd Place Prize</Label>
-                <Input
-                  id="thirdPlace"
-                  type="number"
-                  min={0}
-                  value={prizePool.thirdPlace}
-                  onChange={(e) => updatePrizePool("thirdPlace", Number(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="runnerUps">Runner-up Prize (each)</Label>
-                <Input
-                  id="runnerUps"
-                  type="number"
-                  min={0}
-                  value={prizePool.runnerUps}
-                  onChange={(e) => updatePrizePool("runnerUps", Number(e.target.value))}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="runnerUpsCount">Number of Runner-ups</Label>
-              <Input
-                id="runnerUpsCount"
-                type="number"
-                min={0}
-                max={20}
-                value={prizePool.runnerUpsCount}
-                onChange={(e) => updatePrizePool("runnerUpsCount", Number(e.target.value))}
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Total for runner-ups: {new Intl.NumberFormat('en-US', { 
-                  style: 'currency', 
-                  currency: campaign.currency || 'USD' 
-                }).format(prizePool.runnerUps * prizePool.runnerUpsCount)}
-              </p>
-            </div>
+            {places.length < 10 && (
+              <Button 
+                variant="outline" 
+                onClick={addPlace} 
+                className="mt-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Prize Place
+              </Button>
+            )}
           </div>
           
           <div className="mt-6 space-y-2">

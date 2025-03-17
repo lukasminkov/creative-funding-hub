@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { X, Plus } from "lucide-react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, CreatorTier } from "@/lib/campaign-types";
+import { X, Plus, Link2, ExternalLink } from "lucide-react";
+import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { 
   Popover,
   PopoverContent,
@@ -24,13 +24,21 @@ import {
 import { 
   Card, 
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { 
+  Switch,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui";
 import { CalendarIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import BannerImageUpload from "../BannerImageUpload";
+import PlatformSelector from "../PlatformSelector";
+import RequirementsList from "../RequirementsList";
+import GuidelinesList from "../GuidelinesList";
 
 interface RetainerFormProps {
   campaign: Partial<Campaign>;
@@ -38,12 +46,12 @@ interface RetainerFormProps {
 }
 
 const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(campaign.platforms || []);
   const [creatorTiers, setCreatorTiers] = useState<CreatorTier[]>(
     campaign.type === "retainer" && campaign.creatorTiers 
       ? campaign.creatorTiers 
-      : [{ name: "Basic", price: 500, requirements: "At least 10K followers" }]
+      : [{ name: "Basic", price: 500 }]
   );
+  
   const [deliverables, setDeliverables] = useState({
     videosPerDay: campaign.type === "retainer" && campaign.deliverables 
       ? campaign.deliverables.videosPerDay 
@@ -53,20 +61,46 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
       : 30
   });
 
-  const handlePlatformToggle = (platform: string) => {
-    const newPlatforms = selectedPlatforms.includes(platform)
-      ? selectedPlatforms.filter(p => p !== platform)
-      : [...selectedPlatforms, platform];
-    
-    setSelectedPlatforms(newPlatforms);
-    onChange({ ...campaign, platforms: newPlatforms });
+  const [requirements, setRequirements] = useState<string[]>(
+    campaign.type === "retainer" && campaign.requirements
+      ? campaign.requirements
+      : []
+  );
+
+  const [guidelines, setGuidelines] = useState({
+    dos: campaign.type === "retainer" && campaign.guidelines
+      ? campaign.guidelines.dos
+      : [],
+    donts: campaign.type === "retainer" && campaign.guidelines
+      ? campaign.guidelines.donts
+      : []
+  });
+
+  const [trackingLink, setTrackingLink] = useState(
+    campaign.type === "retainer" ? campaign.trackingLink || "" : ""
+  );
+
+  const [requestTrackingLink, setRequestTrackingLink] = useState(
+    campaign.type === "retainer" ? campaign.requestedTrackingLink || false : false
+  );
+
+  const [applicationDeadline, setApplicationDeadline] = useState<Date>(
+    campaign.type === "retainer" && campaign.applicationDeadline
+      ? campaign.applicationDeadline
+      : new Date()
+  );
+
+  // Ensure campaign end date is at least 30 days after application deadline
+  const minEndDate = addDays(applicationDeadline, 30);
+  
+  const handlePlatformSelect = (platform: string) => {
+    onChange({ ...campaign, platforms: [platform] });
   };
 
   const addCreatorTier = () => {
     const newTier: CreatorTier = {
       name: `Tier ${creatorTiers.length + 1}`,
-      price: 0,
-      requirements: ""
+      price: 0
     };
     const updatedTiers = [...creatorTiers, newTier];
     setCreatorTiers(updatedTiers);
@@ -115,9 +149,105 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
     });
   };
 
+  const handleRequirementsChange = (newRequirements: string[]) => {
+    setRequirements(newRequirements);
+    onChange({
+      ...campaign,
+      type: "retainer",
+      requirements: newRequirements
+    });
+  };
+
+  const handleGuidelinesChange = (newGuidelines: { dos: string[], donts: string[] }) => {
+    setGuidelines(newGuidelines);
+    onChange({
+      ...campaign,
+      type: "retainer",
+      guidelines: newGuidelines
+    });
+  };
+
+  const handleApplicationDeadlineChange = (date: Date | undefined) => {
+    if (!date) return;
+    
+    setApplicationDeadline(date);
+    
+    // If current end date is less than 30 days after new application deadline,
+    // update the end date as well
+    const currentEndDate = campaign.endDate;
+    if (!currentEndDate || currentEndDate < addDays(date, 30)) {
+      onChange({
+        ...campaign,
+        type: "retainer",
+        applicationDeadline: date,
+        endDate: addDays(date, 30)
+      });
+    } else {
+      onChange({
+        ...campaign,
+        type: "retainer",
+        applicationDeadline: date
+      });
+    }
+  };
+
+  const handleBannerImageSelect = (imageUrl: string) => {
+    onChange({
+      ...campaign,
+      bannerImage: imageUrl
+    });
+  };
+
+  const handleTrackingLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const link = e.target.value;
+    setTrackingLink(link);
+    
+    if (link) {
+      setRequestTrackingLink(false);
+      onChange({
+        ...campaign,
+        type: "retainer",
+        trackingLink: link,
+        requestedTrackingLink: false
+      });
+    } else {
+      onChange({
+        ...campaign,
+        type: "retainer",
+        trackingLink: "",
+        requestedTrackingLink: requestTrackingLink
+      });
+    }
+  };
+
+  const handleRequestTrackingLinkChange = (checked: boolean) => {
+    setRequestTrackingLink(checked);
+    
+    if (checked) {
+      setTrackingLink("");
+      onChange({
+        ...campaign,
+        type: "retainer",
+        trackingLink: "",
+        requestedTrackingLink: true
+      });
+    } else {
+      onChange({
+        ...campaign,
+        type: "retainer",
+        requestedTrackingLink: false
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <div className="space-y-6">
+        <BannerImageUpload 
+          onImageSelect={handleBannerImageSelect}
+          currentImage={campaign.bannerImage}
+        />
+        
         <div className="grid gap-4">
           <div className="space-y-2">
             <Label htmlFor="title">
@@ -217,14 +347,55 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
               </Select>
             </div>
           </div>
-          
+        </div>
+        
+        <PlatformSelector
+          selectedPlatform={campaign.platforms?.[0] || undefined}
+          onChange={handlePlatformSelect}
+          singleSelection={true}
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="endDate">
-              End Date <span className="text-destructive">*</span>
+            <Label htmlFor="applicationDeadline">
+              Application Deadline <span className="text-destructive">*</span>
             </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  id="applicationDeadline"
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {applicationDeadline ? (
+                    format(applicationDeadline, "PPP")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={applicationDeadline}
+                  onSelect={handleApplicationDeadlineChange}
+                  initialFocus
+                  disabled={(date) => date < new Date()}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="endDate">
+              Campaign End <span className="text-destructive">*</span>
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="endDate"
                   variant="outline"
                   className="w-full justify-start text-left font-normal"
                 >
@@ -242,36 +413,81 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
                   selected={campaign.endDate}
                   onSelect={(date) => onChange({ ...campaign, endDate: date || new Date() })}
                   initialFocus
-                  disabled={(date) => date < new Date()}
+                  disabled={(date) => date < minEndDate}
                   className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
+            <p className="text-xs text-muted-foreground">
+              Must be at least 30 days after application deadline
+            </p>
           </div>
         </div>
         
-        <div className="space-y-2">
-          <Label>
-            Platforms <span className="text-destructive">*</span>
-          </Label>
-          <div className="flex flex-wrap gap-2">
-            {PLATFORMS.map((platform) => (
-              <Badge
-                key={platform}
-                variant={selectedPlatforms.includes(platform) ? "default" : "outline"}
-                className={cn(
-                  "cursor-pointer hover:bg-primary/90 transition-all",
-                  selectedPlatforms.includes(platform) 
-                    ? "bg-primary text-primary-foreground" 
-                    : "bg-background hover:text-primary-foreground"
-                )}
-                onClick={() => handlePlatformToggle(platform)}
-              >
-                {platform}
-              </Badge>
-            ))}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Tracking Link</Label>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex">
+                <div className="flex-grow relative">
+                  <Input
+                    type="url"
+                    placeholder="Enter tracking link"
+                    value={trackingLink}
+                    onChange={handleTrackingLinkChange}
+                    disabled={requestTrackingLink}
+                    className={requestTrackingLink ? "bg-muted text-muted-foreground" : ""}
+                  />
+                  {trackingLink && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={trackingLink.startsWith('http') ? trackingLink : `https://${trackingLink}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Open link</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="request-tracking"
+                  checked={requestTrackingLink}
+                  onCheckedChange={handleRequestTrackingLinkChange}
+                />
+                <Label htmlFor="request-tracking" className="text-sm cursor-pointer">
+                  I don't have a tracking link, please provide one
+                </Label>
+              </div>
+            </div>
           </div>
         </div>
+        
+        <RequirementsList
+          requirements={requirements}
+          onChange={handleRequirementsChange}
+          maxItems={5}
+        />
+        
+        <GuidelinesList
+          dos={guidelines.dos}
+          donts={guidelines.donts}
+          onChange={handleGuidelinesChange}
+        />
         
         <div className="pt-4 border-t border-border/60">
           <div className="flex items-center justify-between mb-4">
@@ -324,15 +540,6 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
                           onChange={(e) => updateCreatorTier(index, "price", Number(e.target.value))}
                         />
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`tier-${index}-requirements`}>Requirements</Label>
-                      <Input
-                        id={`tier-${index}-requirements`}
-                        value={tier.requirements}
-                        onChange={(e) => updateCreatorTier(index, "requirements", e.target.value)}
-                        placeholder="e.g. Minimum followers, past performance"
-                      />
                     </div>
                   </CardContent>
                 </Card>
