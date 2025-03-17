@@ -1,8 +1,7 @@
-
 import { motion } from "framer-motion";
 import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Calendar, CheckCircle, ChevronRight, TrendingUp, Upload } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle, ChevronRight, TrendingUp, Upload, XCircle, Trophy, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -182,19 +181,21 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
                   </p>
                 </div>
                 
-                {/* Guidelines */}
-                {isRetainer && campaign.type === "retainer" && campaign.guidelines && (
+                {/* Guidelines - Now for all campaign types */}
+                {campaign.guidelines && (campaign.guidelines.dos.length > 0 || campaign.guidelines.donts.length > 0) && (
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold mb-2">Brand Guidelines:</h3>
                     <div className="space-y-2">
                       {campaign.guidelines.dos.map((guideline, index) => (
-                        <div key={`do-${index}`} className="bg-gray-800 rounded p-2 text-sm">
-                          {guideline}
+                        <div key={`do-${index}`} className="flex items-start gap-2 bg-gray-800 rounded p-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                          <span>{guideline}</span>
                         </div>
                       ))}
                       {campaign.guidelines.donts.map((guideline, index) => (
-                        <div key={`dont-${index}`} className="bg-gray-800 rounded p-2 text-sm">
-                          {guideline}
+                        <div key={`dont-${index}`} className="flex items-start gap-2 bg-gray-800 rounded p-2 text-sm">
+                          <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                          <span>{guideline}</span>
                         </div>
                       ))}
                       {campaign.guidelines.dos.length === 0 && campaign.guidelines.donts.length === 0 && (
@@ -206,7 +207,7 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
                   </div>
                 )}
                 
-                {/* Requirements */}
+                {/* Requirements - Only for Retainer */}
                 {isRetainer && campaign.type === "retainer" && campaign.requirements && campaign.requirements.length > 0 && (
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold mb-2">Requirements:</h3>
@@ -217,6 +218,63 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
                           <p className="text-sm text-gray-300">{req}</p>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Creator Tiers - Only for Retainer */}
+                {isRetainer && campaign.type === "retainer" && campaign.creatorTiers && campaign.creatorTiers.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-2">Creator Tiers:</h3>
+                    <div className="space-y-2">
+                      {campaign.creatorTiers.map((tier, index) => (
+                        <div key={index} className="bg-gray-800 rounded p-3 flex justify-between items-center">
+                          <span className="font-medium">{tier.name}</span>
+                          <Badge className="bg-primary">{formatCurrency(tier.price, campaign.currency)}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Prize Pool Distribution - Only for Challenge */}
+                {isChallenge && campaign.type === "challenge" && campaign.prizePool && campaign.prizePool.places.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-2">Prize Distribution:</h3>
+                    <div className="space-y-2">
+                      {campaign.prizePool.places.slice(0, 3).map((place) => (
+                        <div key={place.position} className="bg-gray-800 rounded p-3 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <Trophy className={`h-5 w-5 ${
+                              place.position === 1 ? "text-yellow-500" : 
+                              place.position === 2 ? "text-gray-400" : 
+                              "text-amber-700"
+                            }`} />
+                            <span className="font-medium">{place.position === 1 ? "1st" : place.position === 2 ? "2nd" : "3rd"} Place</span>
+                          </div>
+                          <Badge className="bg-primary">{formatCurrency(place.prize, campaign.currency)}</Badge>
+                        </div>
+                      ))}
+                      {campaign.prizePool.places.length > 3 && (
+                        <div className="text-center text-sm text-gray-400">
+                          +{campaign.prizePool.places.length - 3} more prize positions
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Tracking Link - For all campaign types */}
+                {(campaign.trackingLink || campaign.requestedTrackingLink) && (
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-2">Tracking Link:</h3>
+                    <div className="bg-gray-800 rounded p-3 flex items-center gap-2">
+                      <LinkIcon className="h-4 w-4 text-blue-400" />
+                      <span className="text-sm">
+                        {campaign.requestedTrackingLink 
+                          ? "Creators must provide tracking link" 
+                          : campaign.trackingLink || "https://tracking.example.com"}
+                      </span>
                     </div>
                   </div>
                 )}

@@ -29,7 +29,9 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     type: "retainer",
     applicationDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now for application deadline
     requirements: [],
-    guidelines: { dos: [], donts: [] }
+    guidelines: { dos: [], donts: [] },
+    trackingLink: "",
+    requestedTrackingLink: false
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {

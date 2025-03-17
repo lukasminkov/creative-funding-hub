@@ -19,6 +19,11 @@ export interface CreatorTier {
   price: number;
 }
 
+export interface Guidelines {
+  dos: string[];
+  donts: string[];
+}
+
 interface BaseCampaign {
   id?: string;
   title: string;
@@ -34,6 +39,9 @@ interface BaseCampaign {
   brief?: Brief;
   instructionVideo?: string;
   instructionVideoFile?: File | null;
+  guidelines: Guidelines;
+  trackingLink?: string;
+  requestedTrackingLink?: boolean;
 }
 
 export interface RetainerCampaign extends BaseCampaign {
@@ -45,12 +53,6 @@ export interface RetainerCampaign extends BaseCampaign {
     durationDays: number;
   };
   requirements: string[];
-  guidelines: {
-    dos: string[];
-    donts: string[];
-  };
-  trackingLink?: string;
-  requestedTrackingLink?: boolean;
 }
 
 export interface PayPerViewCampaign extends BaseCampaign {

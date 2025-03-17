@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -19,12 +18,14 @@ import {
   PopoverTrigger 
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Link as LinkIcon, CheckSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import BannerImageUpload from "../BannerImageUpload";
 import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
+import GuidelinesList from "../GuidelinesList";
+import { Switch } from "@/components/ui/switch";
 
 interface PayPerViewFormProps {
   campaign: Partial<Campaign>;
@@ -63,6 +64,13 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
     onChange({
       ...campaign,
       bannerImage: imageUrl
+    });
+  };
+
+  const handleGuidelinesChange = (guidelines: { dos: string[]; donts: string[] }) => {
+    onChange({
+      ...campaign,
+      guidelines
     });
   };
 
@@ -239,6 +247,48 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
           videoFile={instructionVideo}
           onVideoChange={handleVideoChange}
         />
+        
+        <GuidelinesList
+          dos={campaign.guidelines?.dos || []}
+          donts={campaign.guidelines?.donts || []}
+          onChange={handleGuidelinesChange}
+        />
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="trackingLink">Tracking Link</Label>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="requestedTrackingLink"
+                checked={campaign.requestedTrackingLink || false}
+                onCheckedChange={(checked) => 
+                  onChange({ ...campaign, requestedTrackingLink: checked })
+                }
+              />
+              <Label htmlFor="requestedTrackingLink" className="text-sm text-muted-foreground">
+                Request from creators
+              </Label>
+            </div>
+          </div>
+          <div className="flex">
+            <div className="flex h-10 w-10 items-center justify-center rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground">
+              <LinkIcon className="h-4 w-4" />
+            </div>
+            <Input
+              id="trackingLink"
+              placeholder="Enter tracking link"
+              value={campaign.trackingLink || ""}
+              onChange={(e) => onChange({ ...campaign, trackingLink: e.target.value })}
+              className="rounded-l-none"
+              disabled={campaign.requestedTrackingLink}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {campaign.requestedTrackingLink 
+              ? "Creators will be required to provide a tracking link" 
+              : "Provide a link for creators to use in their content"}
+          </p>
+        </div>
         
         <div className="pt-4 border-t border-border/60">
           <h3 className="text-lg font-medium mb-4">Pay Per View Settings</h3>
