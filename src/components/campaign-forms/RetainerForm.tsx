@@ -28,12 +28,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { 
-  Switch,
+  Switch 
+} from "@/components/ui/switch";
+import { 
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
-} from "@/components/ui";
+} from "@/components/ui/tooltip";
 import { CalendarIcon } from "lucide-react";
 import BannerImageUpload from "../BannerImageUpload";
 import PlatformSelector from "../PlatformSelector";

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { PlusCircle, X, Grip } from "lucide-react";
+import { PlusCircle, X, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +45,7 @@ const RequirementsList = ({
       <div>
         <Label>{title}</Label>
         <p className="text-sm text-muted-foreground mt-1">
-          Add up to {maxItems} specific requirements
+          Add up to {maxItems} specific requirements ({requirements.length}/{maxItems})
         </p>
       </div>
 
@@ -55,7 +55,7 @@ const RequirementsList = ({
             key={index} 
             className="flex items-center gap-2 bg-muted/30 p-2.5 rounded-md group"
           >
-            <Grip className="h-4 w-4 text-muted-foreground cursor-grab" />
+            <CheckCircle className="h-4 w-4 text-primary shrink-0" />
             <p className="flex-grow text-sm">{requirement}</p>
             <Button
               type="button"
@@ -81,6 +81,7 @@ const RequirementsList = ({
             />
             <Button
               type="button"
+              variant="outline"
               onClick={handleAddRequirement}
               disabled={!newRequirement.trim()}
               className="shrink-0"

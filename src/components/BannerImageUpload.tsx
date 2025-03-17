@@ -1,8 +1,9 @@
 
 import { useState, useRef } from "react";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface BannerImageUploadProps {
   onImageSelect: (imageUrl: string) => void;
@@ -11,6 +12,7 @@ interface BannerImageUploadProps {
 
 const BannerImageUpload = ({ onImageSelect, currentImage }: BannerImageUploadProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(currentImage);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,9 +38,34 @@ const BannerImageUpload = ({ onImageSelect, currentImage }: BannerImageUploadPro
     }
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setPreviewUrl(result);
+      onImageSelect(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
-    <div className="space-y-4">
-      <Label>Banner Image</Label>
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">Banner Image</Label>
       
       {previewUrl ? (
         <div className="relative rounded-lg overflow-hidden">
@@ -47,6 +74,23 @@ const BannerImageUpload = ({ onImageSelect, currentImage }: BannerImageUploadPro
             alt="Banner preview" 
             className="w-full h-48 object-cover rounded-lg"
           />
+          <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+            <Button 
+              variant="outline"
+              size="sm"
+              className="mr-2 bg-white text-black hover:bg-white/90"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Change
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={clearImage}
+            >
+              Remove
+            </Button>
+          </div>
           <Button 
             variant="destructive" 
             size="icon" 
@@ -58,15 +102,25 @@ const BannerImageUpload = ({ onImageSelect, currentImage }: BannerImageUploadPro
         </div>
       ) : (
         <div 
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center h-48 cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors"
+          className={cn(
+            "border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center h-48 cursor-pointer transition-colors",
+            isDragging 
+              ? "border-primary bg-primary/5" 
+              : "border-gray-300 bg-muted/30 hover:bg-muted/50"
+          )}
           onClick={() => fileInputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
-          <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">
-            Click to upload a banner image
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-3">
+            <Image className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground mb-1 text-center">
+            Drag and drop your banner image here or click to browse
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Recommended size: 1200x400px
+          <p className="text-xs text-muted-foreground text-center">
+            Recommended size: 1200x400px • JPG, PNG, or GIF
           </p>
         </div>
       )}
