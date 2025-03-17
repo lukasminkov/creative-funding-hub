@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -22,6 +21,9 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import BannerImageUpload from "../BannerImageUpload";
+import BriefUploader from "../BriefUploader";
+import InstructionVideoUploader from "../InstructionVideoUploader";
 
 interface PayPerViewFormProps {
   campaign: Partial<Campaign>;
@@ -40,9 +42,35 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
     onChange({ ...campaign, platforms: newPlatforms });
   };
 
+  const handleBriefChange = (type: 'link' | 'file', value: string) => {
+    onChange({
+      ...campaign,
+      brief: { type, value }
+    });
+  };
+
+  const handleVideoChange = (url: string) => {
+    onChange({
+      ...campaign,
+      instructionVideo: url
+    });
+  };
+
+  const handleBannerImageSelect = (imageUrl: string) => {
+    onChange({
+      ...campaign,
+      bannerImage: imageUrl
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
+        <BannerImageUpload
+          onImageSelect={handleBannerImageSelect}
+          currentImage={campaign.bannerImage}
+        />
+        
         <div className="grid gap-4">
           <div className="space-y-2">
             <Label htmlFor="title">
@@ -197,6 +225,17 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
             ))}
           </div>
         </div>
+        
+        <BriefUploader 
+          briefType={campaign.brief?.type}
+          briefValue={campaign.brief?.value}
+          onBriefChange={handleBriefChange}
+        />
+        
+        <InstructionVideoUploader
+          videoUrl={campaign.instructionVideo}
+          onVideoChange={handleVideoChange}
+        />
         
         <div className="pt-4 border-t border-border/60">
           <h3 className="text-lg font-medium mb-4">Pay Per View Settings</h3>

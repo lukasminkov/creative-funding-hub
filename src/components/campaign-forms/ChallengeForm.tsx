@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -24,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import BannerImageUpload from "../BannerImageUpload";
+import BriefUploader from "../BriefUploader";
+import InstructionVideoUploader from "../InstructionVideoUploader";
 
 interface ChallengeFormProps {
   campaign: Partial<Campaign>;
@@ -65,10 +66,8 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
   const removePlace = (position: number) => {
     if (places.length <= 1) return;
     
-    // Remove the place at the given position
     const filteredPlaces = places.filter(place => place.position !== position);
     
-    // Reindex positions
     const reindexedPlaces = filteredPlaces.map((place, index) => ({
       ...place,
       position: index + 1
@@ -107,7 +106,20 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
     });
   };
 
-  // Calculate total prize pool
+  const handleBriefChange = (type: 'link' | 'file', value: string) => {
+    onChange({
+      ...campaign,
+      brief: { type, value }
+    });
+  };
+
+  const handleVideoChange = (url: string) => {
+    onChange({
+      ...campaign,
+      instructionVideo: url
+    });
+  };
+
   const totalPrizePool = places.reduce((sum, place) => sum + place.prize, 0);
 
   return (
@@ -272,6 +284,17 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
             ))}
           </div>
         </div>
+        
+        <BriefUploader 
+          briefType={campaign.brief?.type}
+          briefValue={campaign.brief?.value}
+          onBriefChange={handleBriefChange}
+        />
+        
+        <InstructionVideoUploader
+          videoUrl={campaign.instructionVideo}
+          onVideoChange={handleVideoChange}
+        />
         
         <div className="pt-4 border-t border-border/60">
           <div className="flex justify-between items-center mb-4">

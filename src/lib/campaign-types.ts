@@ -1,4 +1,3 @@
-
 export type CreatorTier = {
   name: string;
   price: number;
@@ -14,7 +13,12 @@ export type CampaignBase = {
   currency: string;
   endDate: Date;
   platforms: string[];
-  bannerImage?: string; // New field for banner image
+  bannerImage?: string;
+  brief?: {
+    type: 'link' | 'file';
+    value: string; // URL for link, filename for file
+  };
+  instructionVideo?: string; // URL to the instruction video
 };
 
 export type RetainerCampaign = CampaignBase & {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { X, Plus, Link2, ExternalLink } from "lucide-react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier } from "@/lib/campaign-types";
@@ -41,6 +40,8 @@ import BannerImageUpload from "../BannerImageUpload";
 import PlatformSelector from "../PlatformSelector";
 import RequirementsList from "../RequirementsList";
 import GuidelinesList from "../GuidelinesList";
+import BriefUploader from "../BriefUploader";
+import InstructionVideoUploader from "../InstructionVideoUploader";
 
 interface RetainerFormProps {
   campaign: Partial<Campaign>;
@@ -92,7 +93,13 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
       : new Date()
   );
 
-  // Ensure campaign end date is at least 30 days after application deadline
+  const [brief, setBrief] = useState({
+    type: campaign.brief?.type || 'link',
+    value: campaign.brief?.value || ''
+  });
+
+  const [videoUrl, setVideoUrl] = useState(campaign.instructionVideo || '');
+
   const minEndDate = addDays(applicationDeadline, 30);
   
   const handlePlatformSelect = (platform: string) => {
@@ -174,8 +181,6 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
     
     setApplicationDeadline(date);
     
-    // If current end date is less than 30 days after new application deadline,
-    // update the end date as well
     const currentEndDate = campaign.endDate;
     if (!currentEndDate || currentEndDate < addDays(date, 30)) {
       onChange({
@@ -240,6 +245,20 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
         requestedTrackingLink: false
       });
     }
+  };
+
+  const handleBriefChange = (type: 'link' | 'file', value: string) => {
+    onChange({
+      ...campaign,
+      brief: { type, value }
+    });
+  };
+
+  const handleVideoChange = (url: string) => {
+    onChange({
+      ...campaign,
+      instructionVideo: url
+    });
   };
 
   return (
@@ -478,6 +497,17 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
             </div>
           </div>
         </div>
+        
+        <BriefUploader 
+          briefType={brief.type}
+          briefValue={brief.value}
+          onBriefChange={handleBriefChange}
+        />
+        
+        <InstructionVideoUploader
+          videoUrl={videoUrl}
+          onVideoChange={handleVideoChange}
+        />
         
         <RequirementsList
           requirements={requirements}
