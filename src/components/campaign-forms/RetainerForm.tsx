@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { X, Plus, Link2, ExternalLink } from "lucide-react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier, Platform, ContentType, Category, Currency } from "@/lib/campaign-types";
+import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
+import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -102,9 +102,18 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
 
   const minEndDate = addDays(applicationDeadline, 30);
   
+  const [tikTokShopCommission, setTikTokShopCommission] = useState<TikTokShopCommission>(
+    campaign.tikTokShopCommission || {
+      openCollabCommission: 0,
+      increasedCommission: 0
+    }
+  );
+
   const handlePlatformSelect = (platform: Platform) => {
     onChange({ ...campaign, platforms: [platform] });
   };
+
+  const isTikTokShop = campaign.platforms?.[0] === "TikTok Shop";
 
   const addCreatorTier = () => {
     const newTier: CreatorTier = {
@@ -245,6 +254,15 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
         requestedTrackingLink: false
       });
     }
+  };
+
+  const handleTikTokShopCommissionChange = (field: keyof TikTokShopCommission, value: number) => {
+    const newCommission = { ...tikTokShopCommission, [field]: value };
+    setTikTokShopCommission(newCommission);
+    onChange({
+      ...campaign,
+      tikTokShopCommission: newCommission
+    });
   };
 
   const handleBriefChange = (type: 'link' | 'file', value: string) => {
@@ -448,7 +466,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
         
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Tracking Link</Label>
+            <Label>{isTikTokShop ? "TAP Link" : "Tracking Link"}</Label>
           </div>
           
           <div className="space-y-4">
@@ -457,7 +475,7 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
                 <div className="flex-grow relative">
                   <Input
                     type="url"
-                    placeholder="Enter tracking link"
+                    placeholder={isTikTokShop ? "Enter TAP link" : "Enter tracking link"}
                     value={trackingLink}
                     onChange={handleTrackingLinkChange}
                     disabled={requestTrackingLink}
@@ -492,12 +510,52 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
                   onCheckedChange={handleRequestTrackingLinkChange}
                 />
                 <Label htmlFor="request-tracking" className="text-sm cursor-pointer">
-                  I don't have a tracking link, please provide one
+                  {isTikTokShop ? "I don't have a TAP link, please provide one" : "I don't have a tracking link, please provide one"}
                 </Label>
               </div>
             </div>
           </div>
         </div>
+        
+        {isTikTokShop && (
+          <div className="pt-4 border-t border-border/60">
+            <h3 className="text-lg font-medium mb-4">TikTok Shop Commission</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="openCollabCommission">Open Collab Commission %</Label>
+                <div className="flex">
+                  <Input
+                    id="openCollabCommission"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={tikTokShopCommission.openCollabCommission}
+                    onChange={(e) => handleTikTokShopCommissionChange("openCollabCommission", Number(e.target.value))}
+                  />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
+                    <Percent className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="increasedCommission">Increased Commission %</Label>
+                <div className="flex">
+                  <Input
+                    id="increasedCommission"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={tikTokShopCommission.increasedCommission}
+                    onChange={(e) => handleTikTokShopCommissionChange("increasedCommission", Number(e.target.value))}
+                  />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
+                    <Percent className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <BriefUploader 
           briefType={brief.type}
@@ -518,7 +576,6 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
         
         <GuidelinesList
           dos={guidelines.dos}
-          donts={guidelines.donts}
           onChange={handleGuidelinesChange}
         />
         

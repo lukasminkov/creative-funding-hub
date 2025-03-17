@@ -24,6 +24,11 @@ export interface Guidelines {
   donts: string[];
 }
 
+export interface TikTokShopCommission {
+  openCollabCommission: number;
+  increasedCommission: number;
+}
+
 interface BaseCampaign {
   id?: string;
   title: string;
@@ -42,6 +47,7 @@ interface BaseCampaign {
   guidelines: Guidelines;
   trackingLink?: string;
   requestedTrackingLink?: boolean;
+  tikTokShopCommission?: TikTokShopCommission;
 }
 
 export interface RetainerCampaign extends BaseCampaign {

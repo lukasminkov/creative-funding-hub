@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +18,7 @@ import {
   PopoverTrigger 
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Trophy, Plus, Trash2, Link as LinkIcon } from "lucide-react";
+import { CalendarIcon, Trophy, Plus, Trash2, Link as LinkIcon, Percent } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +36,12 @@ interface ChallengeFormProps {
 const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(campaign.platforms || []);
   const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
+  const [tikTokShopCommission, setTikTokShopCommission] = useState<TikTokShopCommission>(
+    campaign.tikTokShopCommission || {
+      openCollabCommission: 0,
+      increasedCommission: 0
+    }
+  );
   
   const initialPlaces = campaign.type === "challenge" && campaign.prizePool 
     ? campaign.prizePool.places 
@@ -56,49 +62,14 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
     onChange({ ...campaign, platforms: newPlatforms });
   };
 
-  const addPlace = () => {
-    if (places.length >= 10) return;
-    
-    const newPosition = places.length + 1;
-    const newPlaces = [...places, { position: newPosition, prize: 100 }];
-    
-    setPlaces(newPlaces);
-    updatePrizePool(newPlaces);
-  };
+  const hasTikTokShop = selectedPlatforms.includes("TikTok Shop");
 
-  const removePlace = (position: number) => {
-    if (places.length <= 1) return;
-    
-    const filteredPlaces = places.filter(place => place.position !== position);
-    
-    const reindexedPlaces = filteredPlaces.map((place, index) => ({
-      ...place,
-      position: index + 1
-    }));
-    
-    setPlaces(reindexedPlaces);
-    updatePrizePool(reindexedPlaces);
-  };
-
-  const updatePlace = (position: number, prize: number) => {
-    const updatedPlaces = places.map(place => {
-      if (place.position === position) {
-        return { ...place, prize };
-      }
-      return place;
-    });
-    
-    setPlaces(updatedPlaces);
-    updatePrizePool(updatedPlaces);
-  };
-
-  const updatePrizePool = (updatedPlaces: typeof places) => {
+  const handleTikTokShopCommissionChange = (field: keyof TikTokShopCommission, value: number) => {
+    const newCommission = { ...tikTokShopCommission, [field]: value };
+    setTikTokShopCommission(newCommission);
     onChange({
       ...campaign,
-      type: "challenge",
-      prizePool: {
-        places: updatedPlaces
-      }
+      tikTokShopCommission: newCommission
     });
   };
 
@@ -315,7 +286,7 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
         
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="trackingLink">Tracking Link</Label>
+            <Label htmlFor="trackingLink">{hasTikTokShop ? "TAP Link" : "Tracking Link"}</Label>
             <div className="flex items-center space-x-2">
               <Switch
                 id="requestedTrackingLink"
@@ -335,7 +306,7 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
             </div>
             <Input
               id="trackingLink"
-              placeholder="Enter tracking link"
+              placeholder={hasTikTokShop ? "Enter TAP link" : "Enter tracking link"}
               value={campaign.trackingLink || ""}
               onChange={(e) => onChange({ ...campaign, trackingLink: e.target.value })}
               className="rounded-l-none"
@@ -344,10 +315,54 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
           </div>
           <p className="text-xs text-muted-foreground">
             {campaign.requestedTrackingLink 
-              ? "Creators will be required to provide a tracking link" 
-              : "Provide a link for creators to use in their content"}
+              ? hasTikTokShop
+                ? "Creators will be required to provide a TAP link"
+                : "Creators will be required to provide a tracking link" 
+              : hasTikTokShop
+                ? "Provide a TAP link for creators to use in their content"
+                : "Provide a link for creators to use in their content"}
           </p>
         </div>
+        
+        {hasTikTokShop && (
+          <div className="pt-4 border-t border-border/60">
+            <h3 className="text-lg font-medium mb-4">TikTok Shop Commission</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="openCollabCommission">Open Collab Commission %</Label>
+                <div className="flex">
+                  <Input
+                    id="openCollabCommission"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={tikTokShopCommission.openCollabCommission}
+                    onChange={(e) => handleTikTokShopCommissionChange("openCollabCommission", Number(e.target.value))}
+                  />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
+                    <Percent className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="increasedCommission">Increased Commission %</Label>
+                <div className="flex">
+                  <Input
+                    id="increasedCommission"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={tikTokShopCommission.increasedCommission}
+                    onChange={(e) => handleTikTokShopCommissionChange("increasedCommission", Number(e.target.value))}
+                  />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
+                    <Percent className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="pt-4 border-t border-border/60">
           <div className="flex justify-between items-center mb-4">
