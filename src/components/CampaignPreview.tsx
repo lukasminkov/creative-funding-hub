@@ -219,7 +219,7 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
         {campaign.requestedTrackingLink && (
           <div className="p-3 bg-muted/30 rounded-lg text-sm mb-6">
             <p className="text-muted-foreground">
-              {hasTikTokShop ? "TAP link will be requested from creators" : "Tracking link will be requested from creators"}
+              {hasTikTokShop ? "TAP link will be provided by Payper" : "Tracking link will be provided by Payper"}
             </p>
           </div>
         )}

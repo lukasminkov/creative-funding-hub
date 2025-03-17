@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -103,7 +102,6 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
     });
   };
 
-  // Add the missing functions
   const addPlace = () => {
     const nextPosition = Math.max(...places.map(p => p.position)) + 1;
     const newPlace = { position: nextPosition, prize: 100 };
@@ -335,7 +333,7 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
                 }
               />
               <Label htmlFor="requestedTrackingLink" className="text-sm text-muted-foreground">
-                Request from creators
+                Request from Payper
               </Label>
             </div>
           </div>
@@ -355,8 +353,8 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
           <p className="text-xs text-muted-foreground">
             {campaign.requestedTrackingLink 
               ? hasTikTokShop
-                ? "Creators will be required to provide a TAP link"
-                : "Creators will be required to provide a tracking link" 
+                ? "Payper will provide a TAP link for your campaign"
+                : "Payper will provide a tracking link for your campaign" 
               : hasTikTokShop
                 ? "Provide a TAP link for creators to use in their content"
                 : "Provide a link for creators to use in their content"}

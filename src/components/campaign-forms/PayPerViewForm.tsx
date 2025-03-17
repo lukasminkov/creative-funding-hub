@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -283,7 +284,7 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
                 }
               />
               <Label htmlFor="requestedTrackingLink" className="text-sm text-muted-foreground">
-                Request from creators
+                Request from Payper
               </Label>
             </div>
           </div>
@@ -303,8 +304,8 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
           <p className="text-xs text-muted-foreground">
             {campaign.requestedTrackingLink 
               ? hasTikTokShop 
-                ? "Creators will be required to provide a TAP link"
-                : "Creators will be required to provide a tracking link" 
+                ? "Payper will provide a TAP link for your campaign"
+                : "Payper will provide a tracking link for your campaign" 
               : hasTikTokShop
                 ? "Provide a TAP link for creators to use in their content"
                 : "Provide a link for creators to use in their content"}
