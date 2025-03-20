@@ -18,6 +18,22 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
   }
 
   const hasTikTokShop = campaign.platforms?.includes("TikTok Shop");
+  
+  // Calculate payout range for retainer campaigns
+  const getPayoutRange = () => {
+    if (campaign.type === "retainer" && campaign.creatorTiers && campaign.creatorTiers.length > 0) {
+      const prices = campaign.creatorTiers.map(tier => tier.price);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      
+      if (minPrice === maxPrice) {
+        return formatCurrency(minPrice, campaign.currency || "USD");
+      }
+      
+      return `${formatCurrency(minPrice, campaign.currency || "USD")} - ${formatCurrency(maxPrice, campaign.currency || "USD")}`;
+    }
+    return null;
+  };
 
   return (
     <div className="sticky top-20 w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
@@ -68,10 +84,19 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {campaign.totalBudget && campaign.currency && (
+          {/* For non-retainer campaigns, show budget */}
+          {campaign.type !== "retainer" && campaign.totalBudget && campaign.currency && (
             <div>
               <p className="text-sm text-gray-500">Budget</p>
               <p className="font-medium text-gray-800">{formatCurrency(campaign.totalBudget, campaign.currency)}</p>
+            </div>
+          )}
+          
+          {/* For retainer campaigns, show payout range */}
+          {campaign.type === "retainer" && getPayoutRange() && (
+            <div>
+              <p className="text-sm text-gray-500">Payout Range</p>
+              <p className="font-medium text-gray-800">{getPayoutRange()}</p>
             </div>
           )}
           
