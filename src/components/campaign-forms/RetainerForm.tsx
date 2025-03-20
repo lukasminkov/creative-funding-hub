@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, DELIVERABLE_MODES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission, DeliverableMode } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -43,6 +42,7 @@ import RequirementsList from "../RequirementsList";
 import GuidelinesList from "../GuidelinesList";
 import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface RetainerFormProps {
   campaign: Partial<Campaign>;
@@ -56,12 +56,21 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
       : [{ name: "Basic", price: 500 }]
   );
   
+  const [deliverableMode, setDeliverableMode] = useState<DeliverableMode>(
+    campaign.type === "retainer" && campaign.deliverables?.mode
+      ? campaign.deliverables.mode
+      : "videosPerDay"
+  );
+
   const [deliverables, setDeliverables] = useState({
-    videosPerDay: campaign.type === "retainer" && campaign.deliverables 
+    videosPerDay: campaign.type === "retainer" && campaign.deliverables?.videosPerDay 
       ? campaign.deliverables.videosPerDay 
       : 1,
-    durationDays: campaign.type === "retainer" && campaign.deliverables 
+    durationDays: campaign.type === "retainer" && campaign.deliverables?.durationDays 
       ? campaign.deliverables.durationDays 
+      : 30,
+    totalVideos: campaign.type === "retainer" && campaign.deliverables?.totalVideos
+      ? campaign.deliverables.totalVideos
       : 30
   });
 
@@ -158,13 +167,52 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
     });
   };
 
+  const handleDeliverableModeChange = (mode: DeliverableMode) => {
+    setDeliverableMode(mode);
+    
+    let updatedDeliverables;
+    if (mode === "videosPerDay") {
+      updatedDeliverables = {
+        mode,
+        videosPerDay: deliverables.videosPerDay,
+        durationDays: deliverables.durationDays
+      };
+    } else {
+      updatedDeliverables = {
+        mode,
+        totalVideos: deliverables.totalVideos
+      };
+    }
+    
+    onChange({
+      ...campaign,
+      type: "retainer",
+      deliverables: updatedDeliverables
+    });
+  };
+
   const updateDeliverables = (field: keyof typeof deliverables, value: number) => {
     const updatedDeliverables = { ...deliverables, [field]: value };
     setDeliverables(updatedDeliverables);
+    
+    let campaignDeliverables;
+    if (deliverableMode === "videosPerDay") {
+      campaignDeliverables = {
+        mode: deliverableMode,
+        videosPerDay: field === "videosPerDay" ? value : updatedDeliverables.videosPerDay,
+        durationDays: field === "durationDays" ? value : updatedDeliverables.durationDays
+      };
+    } else {
+      campaignDeliverables = {
+        mode: deliverableMode,
+        totalVideos: field === "totalVideos" ? value : updatedDeliverables.totalVideos
+      };
+    }
+    
     onChange({ 
       ...campaign, 
       type: "retainer", 
-      deliverables: updatedDeliverables 
+      deliverables: campaignDeliverables
     });
   };
 
@@ -642,28 +690,60 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
         
         <div className="pt-4 border-t border-border/60">
           <h3 className="text-lg font-medium mb-4">Deliverables</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="videosPerDay">Videos Per Day</Label>
-              <Input
-                id="videosPerDay"
-                type="number"
-                min={1}
-                value={deliverables.videosPerDay}
-                onChange={(e) => updateDeliverables("videosPerDay", Number(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="durationDays">Duration (Days)</Label>
-              <Input
-                id="durationDays"
-                type="number"
-                min={1}
-                value={deliverables.durationDays}
-                onChange={(e) => updateDeliverables("durationDays", Number(e.target.value))}
-              />
-            </div>
+          
+          <div className="mb-4">
+            <Label className="mb-2 block">Deliverable Type</Label>
+            <RadioGroup 
+              value={deliverableMode}
+              onValueChange={(value) => handleDeliverableModeChange(value as DeliverableMode)}
+              className="flex flex-col space-y-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="videosPerDay" id="videosPerDay" />
+                <Label htmlFor="videosPerDay" className="cursor-pointer">Videos per day</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="totalVideos" id="totalVideos" />
+                <Label htmlFor="totalVideos" className="cursor-pointer">Total videos</Label>
+              </div>
+            </RadioGroup>
           </div>
+          
+          {deliverableMode === "videosPerDay" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="videosPerDay">Videos Per Day</Label>
+                <Input
+                  id="videosPerDay"
+                  type="number"
+                  min={1}
+                  value={deliverables.videosPerDay}
+                  onChange={(e) => updateDeliverables("videosPerDay", Number(e.target.value))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="durationDays">Duration (Days)</Label>
+                <Input
+                  id="durationDays"
+                  type="number"
+                  min={1}
+                  value={deliverables.durationDays}
+                  onChange={(e) => updateDeliverables("durationDays", Number(e.target.value))}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="totalVideos">Total Videos</Label>
+              <Input
+                id="totalVideos"
+                type="number"
+                min={1}
+                value={deliverables.totalVideos}
+                onChange={(e) => updateDeliverables("totalVideos", Number(e.target.value))}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

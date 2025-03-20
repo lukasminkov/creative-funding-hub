@@ -3,11 +3,13 @@ export const CONTENT_TYPES = ["UGC", "Faceless", "Clipping"] as const;
 export const CATEGORIES = ["Fashion", "Beauty", "Tech", "Gaming", "Food", "Travel", "Lifestyle", "Fitness", "Education", "Entertainment", "Finance", "Business", "Health", "Sports", "Music", "News", "Politics", "Science", "Art", "Design", "Photography", "Film", "Writing", "DIY", "Automotive", "Real Estate", "Home", "Parenting", "Pets", "Nature"] as const;
 export const PLATFORMS = ["TikTok", "TikTok Shop", "Instagram Reels", "Twitter", "YouTube Shorts"] as const;
 export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CNY", "INR"] as const;
+export const DELIVERABLE_MODES = ["videosPerDay", "totalVideos"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
 export type Category = typeof CATEGORIES[number];
 export type Platform = typeof PLATFORMS[number];
 export type Currency = typeof CURRENCIES[number];
+export type DeliverableMode = typeof DELIVERABLE_MODES[number];
 
 export interface Brief {
   type: 'link' | 'file';
@@ -29,6 +31,7 @@ export interface TikTokShopCommission {
   increasedCommission: number;
 }
 
+// Add brandId and brandName to BaseCampaign
 interface BaseCampaign {
   id?: string;
   title: string;
@@ -48,6 +51,8 @@ interface BaseCampaign {
   trackingLink?: string;
   requestedTrackingLink?: boolean;
   tikTokShopCommission?: TikTokShopCommission;
+  brandId?: string;
+  brandName?: string;
 }
 
 export interface RetainerCampaign extends BaseCampaign {
@@ -55,8 +60,10 @@ export interface RetainerCampaign extends BaseCampaign {
   applicationDeadline: Date;
   creatorTiers: CreatorTier[];
   deliverables: {
-    videosPerDay: number;
-    durationDays: number;
+    mode: DeliverableMode;
+    videosPerDay?: number;
+    durationDays?: number;
+    totalVideos?: number;
   };
   requirements: string[];
 }
