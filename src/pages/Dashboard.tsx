@@ -4,18 +4,29 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CampaignCreator from "@/components/CampaignCreator";
+import BrandSelector, { Brand } from "@/components/BrandSelector";
 import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
 
 const Dashboard = () => {
   const [isCreating, setIsCreating] = useState(true);
+  const [showBrandSelector, setShowBrandSelector] = useState(true);
+  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+  const handleBrandSelect = (brand: Brand) => {
+    setSelectedBrand(brand);
+    setShowBrandSelector(false);
+    toast.success(`Selected brand: ${brand.name}`);
+  };
 
   const handleSubmitCampaign = (campaign: Campaign) => {
     // Convert File objects to URLs for storage and display
     const preparedCampaign = {
       ...campaign,
-      id: crypto.randomUUID()
+      id: crypto.randomUUID(),
+      brandId: selectedBrand?.id,
+      brandName: selectedBrand?.name
     };
     
     // Create an object URL if we have a video file
@@ -25,7 +36,18 @@ const Dashboard = () => {
     
     setCampaigns([...campaigns, preparedCampaign]);
     setIsCreating(false);
+    setShowBrandSelector(true);
+    setSelectedBrand(null);
     toast.success("Campaign created successfully!");
+  };
+
+  const handleCancelCreation = () => {
+    if (showBrandSelector) {
+      setIsCreating(false);
+    } else {
+      // Go back to brand selection
+      setShowBrandSelector(true);
+    }
   };
 
   return (
@@ -43,7 +65,10 @@ const Dashboard = () => {
           
           <div className="flex items-center gap-2">
             {!isCreating && (
-              <Button onClick={() => setIsCreating(true)}>
+              <Button onClick={() => {
+                setIsCreating(true);
+                setShowBrandSelector(true);
+              }}>
                 Create Campaign
               </Button>
             )}
@@ -53,10 +78,25 @@ const Dashboard = () => {
 
       <main className="container mx-auto px-4 py-8">
         {isCreating ? (
-          <CampaignCreator 
-            onCancel={() => setIsCreating(false)} 
-            onSubmit={handleSubmitCampaign} 
-          />
+          showBrandSelector ? (
+            <BrandSelector 
+              onBrandSelect={handleBrandSelect} 
+              onCancel={() => setIsCreating(false)} 
+            />
+          ) : (
+            <div>
+              {selectedBrand && (
+                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Creating campaign for:</span>
+                  <span className="bg-muted px-2 py-1 rounded-md font-medium">{selectedBrand.name}</span>
+                </div>
+              )}
+              <CampaignCreator 
+                onCancel={handleCancelCreation} 
+                onSubmit={handleSubmitCampaign} 
+              />
+            </div>
+          )
         ) : (
           <div className="grid gap-8">
             {campaigns.length > 0 ? (
@@ -69,13 +109,19 @@ const Dashboard = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         <div className="absolute bottom-0 left-0 p-4">
                           <h3 className="text-lg font-medium text-white">{campaign.title}</h3>
-                          <p className="text-sm text-white/80">{campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign</p>
+                          <p className="text-sm text-white/80">
+                            {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
+                            {campaign.brandName && ` • ${campaign.brandName}`}
+                          </p>
                         </div>
                       </div>
                     ) : (
                       <div className="p-4 border-b border-border/60">
                         <h3 className="text-lg font-medium">{campaign.title}</h3>
-                        <p className="text-sm text-muted-foreground">{campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign</p>
+                        <p className="text-sm text-muted-foreground">
+                          {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
+                          {campaign.brandName && ` • ${campaign.brandName}`}
+                        </p>
                       </div>
                     )}
                     
@@ -100,7 +146,10 @@ const Dashboard = () => {
                 <p className="text-muted-foreground mb-6">
                   Create your first campaign to get started
                 </p>
-                <Button onClick={() => setIsCreating(true)}>
+                <Button onClick={() => {
+                  setIsCreating(true);
+                  setShowBrandSelector(true);
+                }}>
                   Create Campaign
                 </Button>
               </div>
