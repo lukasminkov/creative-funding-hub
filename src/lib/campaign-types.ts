@@ -1,14 +1,19 @@
+
 export const CONTENT_TYPES = ["UGC", "Faceless", "Clipping"] as const;
 export const CATEGORIES = ["Fashion", "Beauty", "Tech", "Gaming", "Food", "Travel", "Lifestyle", "Fitness", "Education", "Entertainment", "Finance", "Business", "Health", "Sports", "Music", "News", "Politics", "Science", "Art", "Design", "Photography", "Film", "Writing", "DIY", "Automotive", "Real Estate", "Home", "Parenting", "Pets", "Nature"] as const;
 export const PLATFORMS = ["TikTok", "TikTok Shop", "Instagram Reels", "Twitter", "YouTube Shorts"] as const;
 export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CNY", "INR"] as const;
 export const DELIVERABLE_MODES = ["videosPerDay", "totalVideos"] as const;
+export const VISIBILITY_TYPES = ["public", "applicationOnly", "restricted"] as const;
+export const QUESTION_TYPES = ["text", "image", "number", "link"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
 export type Category = typeof CATEGORIES[number];
 export type Platform = typeof PLATFORMS[number];
 export type Currency = typeof CURRENCIES[number];
 export type DeliverableMode = typeof DELIVERABLE_MODES[number];
+export type VisibilityType = typeof VISIBILITY_TYPES[number];
+export type QuestionType = typeof QUESTION_TYPES[number];
 
 export interface Brief {
   type: 'link' | 'file';
@@ -35,6 +40,19 @@ export interface ExampleVideo {
   url: string;
 }
 
+export interface ApplicationQuestion {
+  id: string;
+  question: string;
+  type: QuestionType;
+  required: boolean;
+}
+
+export interface RestrictedAccess {
+  type: 'offer' | 'invite';
+  offerIds?: string[];
+  inviteLink?: string;
+}
+
 interface BaseCampaign {
   id?: string;
   title: string;
@@ -57,6 +75,9 @@ interface BaseCampaign {
   brandId?: string;
   brandName?: string;
   exampleVideos?: ExampleVideo[];
+  visibility: VisibilityType;
+  applicationQuestions?: ApplicationQuestion[];
+  restrictedAccess?: RestrictedAccess;
 }
 
 export interface RetainerCampaign extends BaseCampaign {

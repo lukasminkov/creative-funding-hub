@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Campaign, CONTENT_TYPES, CATEGORIES } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RetainerForm from "./campaign-forms/RetainerForm";
@@ -11,6 +11,7 @@ import CampaignPreview from "./CampaignPreview";
 import CampaignPaymentModal from "./CampaignPaymentModal";
 import { Save, Rocket } from "lucide-react";
 import { toast } from "sonner";
+import VisibilitySelector from "./VisibilitySelector";
 
 interface CampaignCreatorProps {
   onCancel: () => void;
@@ -35,11 +36,25 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     guidelines: { dos: [], donts: [] },
     trackingLink: "",
     requestedTrackingLink: false,
-    exampleVideos: []
+    exampleVideos: [],
+    visibility: "public"
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
     setCampaign({ ...campaign, ...updatedCampaign });
+  };
+
+  const handleVisibilityChange = (
+    visibility: any, 
+    applicationQuestions?: ApplicationQuestion[], 
+    restrictedAccess?: RestrictedAccess
+  ) => {
+    setCampaign({
+      ...campaign,
+      visibility,
+      applicationQuestions,
+      restrictedAccess
+    });
   };
 
   const validateCampaign = (): boolean => {
@@ -80,6 +95,20 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
         toast.error("Please set a submission deadline");
         return false;
       }
+    }
+
+    // Visibility validation
+    if (campaign.visibility === "applicationOnly" && 
+        (!campaign.applicationQuestions || campaign.applicationQuestions.length === 0)) {
+      toast.error("Please add at least one application question");
+      return false;
+    }
+
+    if (campaign.visibility === "restricted" && 
+        campaign.restrictedAccess?.type === "offer" && 
+        (!campaign.restrictedAccess.offerIds || campaign.restrictedAccess.offerIds.length === 0)) {
+      toast.error("Please select at least one offer for restricted access");
+      return false;
     }
 
     return true;
@@ -152,11 +181,44 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
+                  className="space-y-8"
                 >
-                  <RetainerForm
-                    campaign={campaign}
-                    onChange={handleCampaignChange}
-                  />
+                  <div className="space-y-6">
+                    <div className="pb-6 border-b border-border/50">
+                      <h3 className="text-lg font-medium mb-1">General Information</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This information will be visible on the explore page
+                      </p>
+                    </div>
+                    
+                    <RetainerForm
+                      campaign={campaign}
+                      onChange={handleCampaignChange}
+                      showCreatorInfoSection={false}
+                    />
+                    
+                    <VisibilitySelector
+                      visibility={campaign.visibility || "public"}
+                      applicationQuestions={campaign.applicationQuestions}
+                      restrictedAccess={campaign.restrictedAccess}
+                      onChange={handleVisibilityChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="pb-6 border-b border-border/50">
+                      <h3 className="text-lg font-medium mb-1">Creator Information</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This information will only be visible to creators who have joined or been accepted
+                      </p>
+                    </div>
+                    
+                    <RetainerForm
+                      campaign={campaign}
+                      onChange={handleCampaignChange}
+                      showCreatorInfoSection={true}
+                    />
+                  </div>
                 </motion.div>
               </TabsContent>
               
@@ -166,11 +228,44 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
+                  className="space-y-8"
                 >
-                  <PayPerViewForm
-                    campaign={campaign}
-                    onChange={handleCampaignChange}
-                  />
+                  <div className="space-y-6">
+                    <div className="pb-6 border-b border-border/50">
+                      <h3 className="text-lg font-medium mb-1">General Information</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This information will be visible on the explore page
+                      </p>
+                    </div>
+                    
+                    <PayPerViewForm
+                      campaign={campaign}
+                      onChange={handleCampaignChange}
+                      showCreatorInfoSection={false}
+                    />
+                    
+                    <VisibilitySelector
+                      visibility={campaign.visibility || "public"}
+                      applicationQuestions={campaign.applicationQuestions}
+                      restrictedAccess={campaign.restrictedAccess}
+                      onChange={handleVisibilityChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="pb-6 border-b border-border/50">
+                      <h3 className="text-lg font-medium mb-1">Creator Information</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This information will only be visible to creators who have joined or been accepted
+                      </p>
+                    </div>
+                    
+                    <PayPerViewForm
+                      campaign={campaign}
+                      onChange={handleCampaignChange}
+                      showCreatorInfoSection={true}
+                    />
+                  </div>
                 </motion.div>
               </TabsContent>
               
@@ -180,11 +275,44 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
+                  className="space-y-8"
                 >
-                  <ChallengeForm
-                    campaign={campaign}
-                    onChange={handleCampaignChange}
-                  />
+                  <div className="space-y-6">
+                    <div className="pb-6 border-b border-border/50">
+                      <h3 className="text-lg font-medium mb-1">General Information</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This information will be visible on the explore page
+                      </p>
+                    </div>
+                    
+                    <ChallengeForm
+                      campaign={campaign}
+                      onChange={handleCampaignChange}
+                      showCreatorInfoSection={false}
+                    />
+                    
+                    <VisibilitySelector
+                      visibility={campaign.visibility || "public"}
+                      applicationQuestions={campaign.applicationQuestions}
+                      restrictedAccess={campaign.restrictedAccess}
+                      onChange={handleVisibilityChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="pb-6 border-b border-border/50">
+                      <h3 className="text-lg font-medium mb-1">Creator Information</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This information will only be visible to creators who have joined or been accepted
+                      </p>
+                    </div>
+                    
+                    <ChallengeForm
+                      campaign={campaign}
+                      onChange={handleCampaignChange}
+                      showCreatorInfoSection={true}
+                    />
+                  </div>
                 </motion.div>
               </TabsContent>
             </AnimatePresence>
