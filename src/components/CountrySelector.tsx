@@ -1,7 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { CountryOption, COUNTRY_OPTIONS, getCountryLabel } from "@/lib/campaign-types";
-import { Globe, Map } from "lucide-react";
+import { Globe } from "lucide-react";
 import {
   Select,
   SelectContent,

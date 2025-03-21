@@ -39,7 +39,8 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     requestedTrackingLink: false,
     exampleVideos: [],
     visibility: "public",
-    countryAvailability: COUNTRY_OPTIONS[0] // Default to worldwide
+    countryAvailability: COUNTRY_OPTIONS[0], // Default to worldwide
+    requirements: [] // Added requirements
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {

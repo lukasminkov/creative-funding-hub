@@ -1,3 +1,4 @@
+
 import { Campaign, formatCurrency, getDaysLeft, getCountryLabel } from "@/lib/campaign-types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -126,6 +127,17 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+          
+          {campaign.requirements && campaign.requirements.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm text-gray-500 mb-2">Requirements</p>
+              <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
+                {campaign.requirements.map((requirement, index) => (
+                  <li key={index}>{requirement}</li>
+                ))}
+              </ul>
             </div>
           )}
           

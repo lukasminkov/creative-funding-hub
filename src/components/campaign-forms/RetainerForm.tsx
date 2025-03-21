@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, Platform, ContentType, Category, Currency, DeliverableMode, DELIVERABLE_MODES, TikTokShopCommission, ExampleVideo, CountryOption } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
 import ExampleVideos from "../ExampleVideos";
 import CountrySelector from "../CountrySelector";
+import RequirementsList from "../RequirementsList";
 
 interface RetainerFormProps {
   campaign: Partial<Campaign>;
@@ -69,17 +71,6 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
       : 30
   );
   
-  const [requirements, setRequirements] = useState<string[]>(
-    campaign.type === "retainer" && campaign.requirements ? campaign.requirements : []
-  );
-  
-  const [newRequirement, setNewRequirement] = useState("");
-  
-  const [guidelines, setGuidelines] = useState({
-    dos: campaign.guidelines ? campaign.guidelines.dos : [],
-    donts: campaign.guidelines ? campaign.guidelines.donts : []
-  });
-
   const [trackingLink, setTrackingLink] = useState(campaign.trackingLink || "");
   const [requestTrackingLink, setRequestTrackingLink] = useState(campaign.requestedTrackingLink || false);
 
@@ -106,36 +97,16 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
   const isTikTokShop = campaign.platforms?.includes("TikTok Shop");
 
   const handleGuidelinesChange = (newGuidelines: { dos: string[], donts: string[] }) => {
-    setGuidelines(newGuidelines);
     onChange({
       ...campaign,
-      type: "retainer",
       guidelines: newGuidelines
     });
   };
 
-  const handleAddRequirement = () => {
-    if (newRequirement.trim()) {
-      const updatedRequirements = [...requirements, newRequirement.trim()];
-      setRequirements(updatedRequirements);
-      setNewRequirement("");
-      
-      onChange({
-        ...campaign,
-        type: "retainer",
-        requirements: updatedRequirements
-      });
-    }
-  };
-
-  const handleRemoveRequirement = (index: number) => {
-    const updatedRequirements = requirements.filter((_, i) => i !== index);
-    setRequirements(updatedRequirements);
-    
+  const handleRequirementsChange = (requirements: string[]) => {
     onChange({
       ...campaign,
-      type: "retainer",
-      requirements: updatedRequirements
+      requirements
     });
   };
 
@@ -182,17 +153,19 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
   const handleDeliverableModeChange = (mode: DeliverableMode) => {
     setDeliverableMode(mode);
     
-    let deliverables = {};
+    let deliverables = {
+      mode: mode
+    };
     
     if (mode === "videosPerDay") {
       deliverables = {
-        mode,
+        ...deliverables,
         videosPerDay,
         durationDays
       };
     } else {
       deliverables = {
-        mode,
+        ...deliverables,
         totalVideos
       };
     }
@@ -253,14 +226,12 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
       setRequestTrackingLink(false);
       onChange({
         ...campaign,
-        type: "retainer",
         trackingLink: link,
         requestedTrackingLink: false
       });
     } else {
       onChange({
         ...campaign,
-        type: "retainer",
         trackingLink: "",
         requestedTrackingLink: requestTrackingLink
       });
@@ -274,14 +245,12 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
       setTrackingLink("");
       onChange({
         ...campaign,
-        type: "retainer",
         trackingLink: "",
         requestedTrackingLink: true
       });
     } else {
       onChange({
         ...campaign,
-        type: "retainer",
         requestedTrackingLink: false
       });
     }
@@ -457,7 +426,7 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
                     className="w-full justify-start text-left font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {campaign.applicationDeadline ? (
+                    {campaign.type === "retainer" && campaign.applicationDeadline ? (
                       format(campaign.applicationDeadline, "PPP")
                     ) : (
                       <span>Pick a date</span>
@@ -467,8 +436,12 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
                 <PopoverContent className="w-auto p-0 bg-card" align="start">
                   <Calendar
                     mode="single"
-                    selected={campaign.applicationDeadline}
-                    onSelect={(date) => onChange({ ...campaign, applicationDeadline: date })}
+                    selected={campaign.type === "retainer" ? campaign.applicationDeadline : undefined}
+                    onSelect={(date) => onChange({ 
+                      ...campaign, 
+                      type: "retainer",
+                      applicationDeadline: date as Date 
+                    })}
                     initialFocus
                     disabled={(date) => date < new Date()}
                   />
@@ -502,7 +475,7 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
                   <Calendar
                     mode="single"
                     selected={campaign.endDate}
-                    onSelect={(date) => onChange({ ...campaign, endDate: date })}
+                    onSelect={(date) => onChange({ ...campaign, endDate: date as Date })}
                     initialFocus
                     disabled={(date) => date < new Date()}
                   />
@@ -523,6 +496,14 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           <CountrySelector 
             selectedCountry={campaign.countryAvailability || "worldwide"}
             onChange={handleCountryChange}
+          />
+        )}
+        
+        {/* Requirements moved to general information section */}
+        {!showCreatorInfoSection && (
+          <RequirementsList
+            requirements={campaign.requirements || []}
+            onChange={handleRequirementsChange}
           />
         )}
         
@@ -638,65 +619,16 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           </div>
         )}
         
-        {/* Only show guidelines list in the General Information section */}
-        {!showCreatorInfoSection && (
+        {/* Guidelines list moved to Creator Information section */}
+        {showCreatorInfoSection && (
           <GuidelinesList
-            dos={guidelines.dos}
-            donts={guidelines.donts}
+            dos={campaign.guidelines?.dos || []}
+            donts={campaign.guidelines?.donts || []}
             onChange={handleGuidelinesChange}
           />
         )}
         
         {/* Creator info section */}
-        {showCreatorInfoSection && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Requirements</Label>
-            </div>
-            
-            <div className="space-y-3">
-              {requirements.map((req, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div className="flex-grow p-2 bg-muted rounded-md text-sm">
-                    {req}
-                  </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleRemoveRequirement(index)}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Add a requirement"
-                  value={newRequirement}
-                  onChange={(e) => setNewRequirement(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddRequirement();
-                    }
-                  }}
-                  className="flex-grow"
-                />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleAddRequirement}
-                >
-                  Add
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-        
         {showCreatorInfoSection && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">

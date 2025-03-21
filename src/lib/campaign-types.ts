@@ -7,6 +7,7 @@ export const DELIVERABLE_MODES = ["videosPerDay", "totalVideos"] as const;
 export const VISIBILITY_TYPES = ["public", "applicationOnly", "restricted"] as const;
 export const QUESTION_TYPES = ["text", "image", "number", "link"] as const;
 export const COUNTRY_OPTIONS = ["worldwide", "usa", "mexico", "canada", "dach"] as const;
+export const OFFER_OPTIONS = ["MediaLabs Creator", "MediaLabs Campus", "Brez Clipping", "GROWTH Clippers", "Freezertarps Clipping", "Banks Interns"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
 export type Category = typeof CATEGORIES[number];
@@ -16,6 +17,7 @@ export type DeliverableMode = typeof DELIVERABLE_MODES[number];
 export type VisibilityType = typeof VISIBILITY_TYPES[number];
 export type QuestionType = typeof QUESTION_TYPES[number];
 export type CountryOption = typeof COUNTRY_OPTIONS[number];
+export type OfferOption = typeof OFFER_OPTIONS[number];
 
 export interface Brief {
   type: 'link' | 'file';
@@ -81,6 +83,7 @@ interface BaseCampaign {
   applicationQuestions?: ApplicationQuestion[];
   restrictedAccess?: RestrictedAccess;
   countryAvailability: CountryOption;
+  requirements: string[];
 }
 
 export interface RetainerCampaign extends BaseCampaign {
@@ -93,7 +96,6 @@ export interface RetainerCampaign extends BaseCampaign {
     durationDays?: number;
     totalVideos?: number;
   };
-  requirements: string[];
 }
 
 export interface PayPerViewCampaign extends BaseCampaign {
