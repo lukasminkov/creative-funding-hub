@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,34 +11,23 @@ import {
   SelectTrigger,
   SelectValue 
 } from "@/components/ui/select";
-import { motion, AnimatePresence } from "framer-motion";
-import { Calendar } from "@/components/ui/calendar";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import { 
   Popover,
   PopoverContent,
   PopoverTrigger 
 } from "@/components/ui/popover";
-import { 
-  Card, 
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { 
-  Switch 
-} from "@/components/ui/switch";
-import { 
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, ExternalLink, Percent } from "lucide-react";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { CalendarIcon } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import BannerImageUpload from "../BannerImageUpload";
 import PlatformSelector from "../PlatformSelector";
-import RequirementsList from "../RequirementsList";
 import GuidelinesList from "../GuidelinesList";
 import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
@@ -52,42 +40,36 @@ interface PayPerViewFormProps {
 }
 
 const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: PayPerViewFormProps) => {
-  const [requirements, setRequirements] = useState<string[]>(
-    campaign.type === "payPerView" && campaign.requirements
-      ? campaign.requirements
-      : []
+  // Update the useState initializers to ensure we're using the proper campaign type
+  const [ratePerThousand, setRatePerThousand] = useState<number>(
+    campaign.type === "payPerView" && "ratePerThousand" in campaign 
+      ? campaign.ratePerThousand 
+      : 0
+  );
+  
+  const [maxPayoutPerSubmission, setMaxPayoutPerSubmission] = useState<number>(
+    campaign.type === "payPerView" && "maxPayoutPerSubmission" in campaign 
+      ? campaign.maxPayoutPerSubmission 
+      : 0
   );
 
   const [guidelines, setGuidelines] = useState({
-    dos: campaign.type === "payPerView" && campaign.guidelines
-      ? campaign.guidelines.dos
-      : [],
-    donts: campaign.type === "payPerView" && campaign.guidelines
-      ? campaign.guidelines.donts
-      : []
+    dos: campaign.guidelines ? campaign.guidelines.dos : [],
+    donts: campaign.guidelines ? campaign.guidelines.donts : []
   });
 
-  const [trackingLink, setTrackingLink] = useState(
-    campaign.type === "payPerView" ? campaign.trackingLink || "" : ""
-  );
+  const [trackingLink, setTrackingLink] = useState(campaign.trackingLink || "");
+  const [requestTrackingLink, setRequestTrackingLink] = useState(campaign.requestedTrackingLink || false);
 
-  const [requestTrackingLink, setRequestTrackingLink] = useState(
-    campaign.type === "payPerView" ? campaign.requestedTrackingLink || false : false
-  );
-
-  const [endDate, setEndDate] = useState<Date>(
-    campaign.type === "payPerView" && campaign.endDate
-      ? campaign.endDate
-      : new Date()
-  );
-  
   const [brief, setBrief] = useState({
     type: campaign.brief?.type || 'link',
     value: campaign.brief?.value || ''
   });
 
   const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
-  
+
+  const [exampleVideos, setExampleVideos] = useState<ExampleVideo[]>(campaign.exampleVideos || []);
+
   const [tikTokShopCommission, setTikTokShopCommission] = useState<TikTokShopCommission>(
     campaign.tikTokShopCommission || {
       openCollabCommission: 0,
@@ -101,15 +83,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
 
   const isTikTokShop = campaign.platforms?.[0] === "TikTok Shop";
 
-  const handleRequirementsChange = (newRequirements: string[]) => {
-    setRequirements(newRequirements);
-    onChange({
-      ...campaign,
-      type: "payPerView",
-      requirements: newRequirements
-    });
-  };
-
   const handleGuidelinesChange = (newGuidelines: { dos: string[], donts: string[] }) => {
     setGuidelines(newGuidelines);
     onChange({
@@ -119,17 +92,21 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
     });
   };
 
-  const handleEndDateChange = (date: Date | undefined) => {
-    if (!date) return;
-    
-    setEndDate(date);
-    onChange({ ...campaign, endDate: date });
-  };
-
-  const handleBannerImageSelect = (imageUrl: string) => {
+  const handleRatePerThousandChange = (value: number) => {
+    setRatePerThousand(value);
     onChange({
       ...campaign,
-      bannerImage: imageUrl
+      type: "payPerView",
+      ratePerThousand: value
+    });
+  };
+
+  const handleMaxPayoutChange = (value: number) => {
+    setMaxPayoutPerSubmission(value);
+    onChange({
+      ...campaign,
+      type: "payPerView",
+      maxPayoutPerSubmission: value
     });
   };
 
@@ -175,6 +152,13 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
     }
   };
 
+  const handleBannerImageSelect = (imageUrl: string) => {
+    onChange({
+      ...campaign,
+      bannerImage: imageUrl
+    });
+  };
+
   const handleTikTokShopCommissionChange = (field: keyof TikTokShopCommission, value: number) => {
     const newCommission = { ...tikTokShopCommission, [field]: value };
     setTikTokShopCommission(newCommission);
@@ -192,13 +176,12 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
   };
 
   const handleVideoChange = (file: File | null) => {
-    setInstructionVideo(file);
     onChange({
       ...campaign,
       instructionVideoFile: file
     });
   };
-  
+
   const handleExampleVideosChange = (videos: ExampleVideo[]) => {
     onChange({
       ...campaign,
@@ -320,38 +303,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
                 </Select>
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="ratePerThousand">
-                Rate per Thousand Views <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="ratePerThousand"
-                type="number"
-                min={0}
-                placeholder="Enter rate per thousand views"
-                value={(campaign as any).ratePerThousand || ""}
-                onChange={(e) => onChange({ ...campaign, ratePerThousand: Number(e.target.value) })}
-              />
-            </div>
-          </div>
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="maxPayoutPerSubmission">
-                Max Payout per Submission <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="maxPayoutPerSubmission"
-                type="number"
-                min={0}
-                placeholder="Enter max payout per submission"
-                value={(campaign as any).maxPayoutPerSubmission || ""}
-                onChange={(e) => onChange({ ...campaign, maxPayoutPerSubmission: Number(e.target.value) })}
-              />
-            </div>
           </div>
         )}
         
@@ -364,46 +315,35 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
         )}
         
         {!showCreatorInfoSection && (
-          <div className="space-y-2">
-            <Label htmlFor="endDate">
-              Campaign End <span className="text-destructive">*</span>
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="endDate"
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? (
-                    format(endDate, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={handleEndDateChange}
-                  initialFocus
-                  disabled={(date) => date < new Date()}
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="ratePerThousand">
+                Rate per 1000 Views
+              </Label>
+              <Input
+                id="ratePerThousand"
+                type="number"
+                min={0}
+                placeholder="Enter rate"
+                value={ratePerThousand}
+                onChange={(e) => handleRatePerThousandChange(Number(e.target.value))}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="maxPayout">
+                Max Payout per Submission
+              </Label>
+              <Input
+                id="maxPayout"
+                type="number"
+                min={0}
+                placeholder="Enter max payout"
+                value={maxPayoutPerSubmission}
+                onChange={(e) => handleMaxPayoutChange(Number(e.target.value))}
+              />
+            </div>
           </div>
-        )}
-        
-        {/* Only show requirements list in the General Information section */}
-        {!showCreatorInfoSection && (
-          <RequirementsList
-            requirements={requirements}
-            onChange={handleRequirementsChange}
-            maxItems={5}
-          />
         )}
         
         {/* Only show guidelines list in the General Information section */}

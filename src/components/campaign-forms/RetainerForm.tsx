@@ -339,6 +339,8 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
     });
   };
 
+  const minEndDate = applicationDeadline ? addDays(applicationDeadline, 30) : addDays(new Date(), 30);
+
   return (
     <div className="space-y-6">
       <div className="space-y-6">
@@ -806,4 +808,3 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
 };
 
 export default RetainerForm;
-

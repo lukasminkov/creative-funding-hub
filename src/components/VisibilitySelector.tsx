@@ -38,9 +38,12 @@ const VisibilitySelector = ({
   const [inviteLink, setInviteLink] = useState(restrictedAccess.inviteLink || '');
 
   const availableOffers = [
-    { id: "offer1", name: "Premium Creator Network" },
-    { id: "offer2", name: "Fashion Influencer Program" },
-    { id: "offer3", name: "Beauty Brand Partnership" }
+    { id: "offer1", name: "MediaLabs Creator" },
+    { id: "offer2", name: "MediaLabs Campus" },
+    { id: "offer3", name: "Brez Clipping" },
+    { id: "offer4", name: "GROWTH Clippers" },
+    { id: "offer5", name: "Freezertarps Clipping" },
+    { id: "offer6", name: "Banks Interns" }
   ];
   const [selectedOffers, setSelectedOffers] = useState<string[]>(restrictedAccess.offerIds || []);
 
@@ -97,26 +100,35 @@ const VisibilitySelector = ({
     }
   };
 
-  const handleOfferToggle = (offerId: string) => {
-    let newSelectedOffers;
-    
+  const handleOfferSelect = (offerId: string) => {
     if (selectedOffers.includes(offerId)) {
-      newSelectedOffers = selectedOffers.filter(id => id !== offerId);
+      const newSelectedOffers = selectedOffers.filter(id => id !== offerId);
+      setSelectedOffers(newSelectedOffers);
+      
+      if (visibility === "restricted" && accessType === 'offer') {
+        onChange(
+          visibility, 
+          undefined, 
+          { 
+            type: 'offer', 
+            offerIds: newSelectedOffers 
+          }
+        );
+      }
     } else {
-      newSelectedOffers = [...selectedOffers, offerId];
-    }
-    
-    setSelectedOffers(newSelectedOffers);
-    
-    if (visibility === "restricted" && accessType === 'offer') {
-      onChange(
-        visibility, 
-        undefined, 
-        { 
-          type: 'offer', 
-          offerIds: newSelectedOffers 
-        }
-      );
+      const newSelectedOffers = [...selectedOffers, offerId];
+      setSelectedOffers(newSelectedOffers);
+      
+      if (visibility === "restricted" && accessType === 'offer') {
+        onChange(
+          visibility, 
+          undefined, 
+          { 
+            type: 'offer', 
+            offerIds: newSelectedOffers 
+          }
+        );
+      }
     }
   };
 
@@ -347,27 +359,58 @@ const VisibilitySelector = ({
                 <div className="pt-3 pb-1">
                   <div className="text-sm mb-3">Select offers that can participate:</div>
                   <div className="space-y-2">
-                    {availableOffers.map((offer) => (
-                      <div key={offer.id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={`offer-${offer.id}`}
-                          checked={selectedOffers.includes(offer.id)}
-                          onChange={() => handleOfferToggle(offer.id)}
-                          className="mr-2 rounded text-primary"
-                        />
-                        <Label htmlFor={`offer-${offer.id}`} className="text-sm">
-                          {offer.name}
-                        </Label>
+                    <Select
+                      onValueChange={handleOfferSelect}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select offers" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableOffers.map((offer) => (
+                          <SelectItem
+                            key={offer.id}
+                            value={offer.id}
+                            className={selectedOffers.includes(offer.id) ? "bg-primary/10" : ""}
+                          >
+                            {offer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {selectedOffers.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-sm font-medium mb-2">Selected offers:</div>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedOffers.map((offerId) => {
+                            const offer = availableOffers.find(o => o.id === offerId);
+                            return offer ? (
+                              <div 
+                                key={offerId}
+                                className="flex items-center bg-primary/10 rounded-md px-2 py-1 text-sm"
+                              >
+                                <span>{offer.name}</span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-5 w-5 ml-1"
+                                  onClick={() => handleOfferSelect(offerId)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    )}
                   
-                  {selectedOffers.length === 0 && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Select at least one offer to enable this option.
-                    </p>
-                  )}
+                    {selectedOffers.length === 0 && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Select at least one offer to enable this option.
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
               
