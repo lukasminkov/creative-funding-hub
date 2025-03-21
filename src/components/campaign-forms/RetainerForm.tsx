@@ -89,8 +89,8 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
     }
   );
 
-  const handlePlatformSelect = (platforms: Platform[]) => {
-    onChange({ ...campaign, platforms });
+  const handlePlatformSelect = (platform: Platform) => {
+    onChange({ ...campaign, platforms: [platform] });
   };
 
   const isTikTokShop = campaign.platforms?.includes("TikTok Shop");

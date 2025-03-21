@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
 import ExampleVideos from "../ExampleVideos";
 import CountrySelector from "../CountrySelector";
+import RequirementsList from "../RequirementsList";
 import { CountryOption } from "@/lib/campaign-types";
 
 interface PayPerViewFormProps {
@@ -199,6 +201,14 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
     });
   };
 
+  // Add requirements change handler
+  const handleRequirementsChange = (requirements: string[]) => {
+    onChange({
+      ...campaign,
+      requirements
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-6">
@@ -313,6 +323,42 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
                 </Select>
               </div>
             </div>
+            
+            {/* Add end date selector */}
+            <div className="space-y-2">
+              <Label htmlFor="endDate">
+                End Date <span className="text-destructive">*</span>
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className="w-full justify-start text-left font-normal"
+                    id="endDate"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {campaign.endDate ? (
+                      format(campaign.endDate, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={campaign.endDate}
+                    onSelect={(date) => onChange({
+                      ...campaign,
+                      endDate: date
+                    })}
+                    initialFocus
+                    disabled={(date) => date < new Date()}
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         )}
         
@@ -364,8 +410,16 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           </div>
         )}
         
-        {/* Only show guidelines list in the General Information section */}
+        {/* Add RequirementsList in the General Information section */}
         {!showCreatorInfoSection && (
+          <RequirementsList
+            requirements={campaign.requirements || []}
+            onChange={handleRequirementsChange}
+          />
+        )}
+        
+        {/* Only show guidelines list in the creator info section */}
+        {showCreatorInfoSection && (
           <GuidelinesList
             dos={guidelines.dos}
             donts={guidelines.donts}

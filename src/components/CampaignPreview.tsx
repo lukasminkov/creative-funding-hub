@@ -234,34 +234,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {campaign.guidelines && (
-            <div className="mb-6">
-              <p className="text-sm text-gray-500 mb-2">Guidelines</p>
-              
-              {campaign.guidelines.dos && campaign.guidelines.dos.length > 0 && (
-                <div className="mb-2">
-                  <p className="text-xs font-medium text-green-600 mb-1">Do's</p>
-                  <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
-                    {campaign.guidelines.dos.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {campaign.guidelines.donts && campaign.guidelines.donts.length > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-red-600 mb-1">Don'ts</p>
-                  <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
-                    {campaign.guidelines.donts.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-          
           {campaign.trackingLink && (
             <div className="mb-6">
               <p className="text-sm text-gray-500">
