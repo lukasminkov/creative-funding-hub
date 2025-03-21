@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, DELIVERABLE_MODES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission, DeliverableMode } from "@/lib/campaign-types";
@@ -526,6 +527,24 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           </div>
         )}
         
+        {/* Only show requirements list in the General Information section */}
+        {!showCreatorInfoSection && (
+          <RequirementsList
+            requirements={requirements}
+            onChange={handleRequirementsChange}
+            maxItems={5}
+          />
+        )}
+        
+        {/* Only show guidelines list in the General Information section */}
+        {!showCreatorInfoSection && (
+          <GuidelinesList
+            dos={guidelines.dos}
+            donts={guidelines.donts}
+            onChange={handleGuidelinesChange}
+          />
+        )}
+        
         {showCreatorInfoSection && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -635,18 +654,6 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
             onVideoChange={handleVideoChange}
           />
         )}
-        
-        <RequirementsList
-          requirements={requirements}
-          onChange={handleRequirementsChange}
-          maxItems={5}
-        />
-        
-        <GuidelinesList
-          dos={guidelines.dos}
-          donts={guidelines.donts}
-          onChange={handleGuidelinesChange}
-        />
         
         <div className="pt-4 border-t border-border/60">
           <div className="flex items-center justify-between mb-4">
