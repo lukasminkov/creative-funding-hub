@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +26,7 @@ import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
 import GuidelinesList from "../GuidelinesList";
 import { Switch } from "@/components/ui/switch";
+import ExampleVideos from "../ExampleVideos";
 
 interface PayPerViewFormProps {
   campaign: Partial<Campaign>;
@@ -89,6 +89,13 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
     onChange({
       ...campaign,
       guidelines
+    });
+  };
+
+  const handleExampleVideosChange = (exampleVideos: ExampleVideo[]) => {
+    onChange({
+      ...campaign,
+      exampleVideos
     });
   };
 
@@ -254,6 +261,12 @@ const PayPerViewForm = ({ campaign, onChange }: PayPerViewFormProps) => {
             ))}
           </div>
         </div>
+        
+        <ExampleVideos
+          exampleVideos={campaign.exampleVideos || []}
+          selectedPlatforms={selectedPlatforms}
+          onChange={handleExampleVideosChange}
+        />
         
         <BriefUploader 
           briefType={campaign.brief?.type}

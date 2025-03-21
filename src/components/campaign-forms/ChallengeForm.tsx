@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,7 @@ import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
 import GuidelinesList from "../GuidelinesList";
 import { Switch } from "@/components/ui/switch";
+import ExampleVideos from "../ExampleVideos";
 
 interface ChallengeFormProps {
   campaign: Partial<Campaign>;
@@ -140,6 +141,13 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
   };
 
   const totalPrizePool = places.reduce((sum, place) => sum + place.prize, 0);
+
+  const handleExampleVideosChange = (exampleVideos: ExampleVideo[]) => {
+    onChange({
+      ...campaign,
+      exampleVideos
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -303,6 +311,12 @@ const ChallengeForm = ({ campaign, onChange }: ChallengeFormProps) => {
             ))}
           </div>
         </div>
+        
+        <ExampleVideos
+          exampleVideos={campaign.exampleVideos || []}
+          selectedPlatforms={selectedPlatforms}
+          onChange={handleExampleVideosChange}
+        />
         
         <BriefUploader 
           briefType={campaign.brief?.type}

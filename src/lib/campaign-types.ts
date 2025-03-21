@@ -1,4 +1,3 @@
-
 export const CONTENT_TYPES = ["UGC", "Faceless", "Clipping"] as const;
 export const CATEGORIES = ["Fashion", "Beauty", "Tech", "Gaming", "Food", "Travel", "Lifestyle", "Fitness", "Education", "Entertainment", "Finance", "Business", "Health", "Sports", "Music", "News", "Politics", "Science", "Art", "Design", "Photography", "Film", "Writing", "DIY", "Automotive", "Real Estate", "Home", "Parenting", "Pets", "Nature"] as const;
 export const PLATFORMS = ["TikTok", "TikTok Shop", "Instagram Reels", "Twitter", "YouTube Shorts"] as const;
@@ -31,7 +30,11 @@ export interface TikTokShopCommission {
   increasedCommission: number;
 }
 
-// Add brandId and brandName to BaseCampaign
+export interface ExampleVideo {
+  platform: Platform;
+  url: string;
+}
+
 interface BaseCampaign {
   id?: string;
   title: string;
@@ -53,6 +56,7 @@ interface BaseCampaign {
   tikTokShopCommission?: TikTokShopCommission;
   brandId?: string;
   brandName?: string;
+  exampleVideos?: ExampleVideo[];
 }
 
 export interface RetainerCampaign extends BaseCampaign {
@@ -87,7 +91,6 @@ export interface ChallengeCampaign extends BaseCampaign {
 
 export type Campaign = RetainerCampaign | PayPerViewCampaign | ChallengeCampaign;
 
-// Helper functions
 export const formatCurrency = (amount: number, currency: Currency = "USD"): string => {
   return new Intl.NumberFormat('en-US', { 
     style: 'currency', 

@@ -34,7 +34,8 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     requirements: [],
     guidelines: { dos: [], donts: [] },
     trackingLink: "",
-    requestedTrackingLink: false
+    requestedTrackingLink: false,
+    exampleVideos: []
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
