@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, DELIVERABLE_MODES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission, DeliverableMode } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, DELIVERABLE_MODES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission, DeliverableMode, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ import RequirementsList from "../RequirementsList";
 import GuidelinesList from "../GuidelinesList";
 import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
+import ExampleVideos from "../ExampleVideos";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface RetainerFormProps {
@@ -112,8 +113,8 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
 
   const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
 
-  const minEndDate = addDays(applicationDeadline, 30);
-  
+  const [exampleVideos, setExampleVideos] = useState<ExampleVideo[]>(campaign.exampleVideos || []);
+
   const [tikTokShopCommission, setTikTokShopCommission] = useState<TikTokShopCommission>(
     campaign.tikTokShopCommission || {
       openCollabCommission: 0,
@@ -328,6 +329,13 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
     onChange({
       ...campaign,
       instructionVideoFile: file
+    });
+  };
+
+  const handleExampleVideosChange = (videos: ExampleVideo[]) => {
+    onChange({
+      ...campaign,
+      exampleVideos: videos
     });
   };
 
@@ -765,6 +773,17 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           </div>
         )}
         
+        {/* Example Videos */}
+        {showCreatorInfoSection && (
+          <div className="pt-4 border-t border-border/60">
+            <ExampleVideos
+              exampleVideos={campaign.exampleVideos || []}
+              selectedPlatforms={campaign.platforms || []}
+              onChange={handleExampleVideosChange}
+            />
+          </div>
+        )}
+        
         {/* Brief Uploader */}
         {showCreatorInfoSection && (
           <BriefUploader 
@@ -787,3 +806,4 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
 };
 
 export default RetainerForm;
+

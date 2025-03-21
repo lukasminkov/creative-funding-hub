@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, PLATFORMS, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -36,7 +35,7 @@ interface ChallengeFormProps {
   showCreatorInfoSection?: boolean;
 }
 
-const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection = true }: ChallengeFormProps) => {
+const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection = false }: ChallengeFormProps) => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(campaign.platforms || []);
   const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
   const [tikTokShopCommission, setTikTokShopCommission] = useState<TikTokShopCommission>(
@@ -144,14 +143,13 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection = true }: Ch
 
   const totalPrizePool = places.reduce((sum, place) => sum + place.prize, 0);
 
-  const handleExampleVideosChange = (exampleVideos: ExampleVideo[]) => {
+  const handleExampleVideosChange = (videos: ExampleVideo[]) => {
     onChange({
       ...campaign,
-      exampleVideos
+      exampleVideos: videos
     });
   };
 
-  // Content for the General Information section
   const renderGeneralInfo = () => (
     <div className="space-y-6">
       <BannerImageUpload 
@@ -316,7 +314,7 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection = true }: Ch
       
       <ExampleVideos
         exampleVideos={campaign.exampleVideos || []}
-        selectedPlatforms={selectedPlatforms}
+        selectedPlatforms={campaign.platforms || []}
         onChange={handleExampleVideosChange}
       />
       
@@ -478,9 +476,14 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection = true }: Ch
     </div>
   );
 
-  // Content for the Creator Information section
   const renderCreatorInfo = () => (
     <div className="space-y-6">
+      <ExampleVideos
+        exampleVideos={campaign.exampleVideos || []}
+        selectedPlatforms={campaign.platforms || []}
+        onChange={handleExampleVideosChange}
+      />
+      
       <BriefUploader 
         briefType={campaign.brief?.type}
         briefValue={campaign.brief?.value}
@@ -540,7 +543,6 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection = true }: Ch
     </div>
   );
 
-  // Render based on which section we want to show
   if (showCreatorInfoSection) {
     return renderCreatorInfo();
   }
