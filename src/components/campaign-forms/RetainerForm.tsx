@@ -47,9 +47,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 interface RetainerFormProps {
   campaign: Partial<Campaign>;
   onChange: (campaign: Partial<Campaign>) => void;
+  showCreatorInfoSection?: boolean;
 }
 
-const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
+const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: RetainerFormProps) => {
   const [creatorTiers, setCreatorTiers] = useState<CreatorTier[]>(
     campaign.type === "retainer" && campaign.creatorTiers 
       ? campaign.creatorTiers 
@@ -332,241 +333,255 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
   return (
     <div className="space-y-6">
       <div className="space-y-6">
-        <BannerImageUpload 
-          onImageSelect={handleBannerImageSelect}
-          currentImage={campaign.bannerImage}
-        />
+        {!showCreatorInfoSection && (
+          <BannerImageUpload 
+            onImageSelect={handleBannerImageSelect}
+            currentImage={campaign.bannerImage}
+          />
+        )}
         
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">
-              Campaign Title <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="title"
-              placeholder="Enter campaign title"
-              value={campaign.title || ""}
-              onChange={(e) => onChange({ ...campaign, title: e.target.value })}
-              className="placeholder-animate"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Campaign Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Enter campaign description"
-              rows={3}
-              value={campaign.description || ""}
-              onChange={(e) => onChange({ ...campaign, description: e.target.value })}
-              className="placeholder-animate"
-            />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="contentType">
-              Content Type <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={campaign.contentType || ""}
-              onValueChange={(value) => onChange({ ...campaign, contentType: value as ContentType })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choose type" />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                {CONTENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="category">
-              Category <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={campaign.category || ""}
-              onValueChange={(value) => onChange({ ...campaign, category: value as Category })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choose category" />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                {CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="budget">
-                Total Budget <span className="text-destructive">*</span>
+        {!showCreatorInfoSection && (
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">
+                Campaign Title <span className="text-destructive">*</span>
               </Label>
-            </div>
-            <div className="flex">
               <Input
-                id="budget"
-                type="number"
-                min={0}
-                placeholder="Enter budget"
-                value={campaign.totalBudget || ""}
-                onChange={(e) => onChange({ ...campaign, totalBudget: Number(e.target.value) })}
-                className="rounded-r-none"
+                id="title"
+                placeholder="Enter campaign title"
+                value={campaign.title || ""}
+                onChange={(e) => onChange({ ...campaign, title: e.target.value })}
+                className="placeholder-animate"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Campaign Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Enter campaign description"
+                rows={3}
+                value={campaign.description || ""}
+                onChange={(e) => onChange({ ...campaign, description: e.target.value })}
+                className="placeholder-animate"
+              />
+            </div>
+          </div>
+        )}
+        
+        {!showCreatorInfoSection && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="contentType">
+                Content Type <span className="text-destructive">*</span>
+              </Label>
               <Select
-                value={campaign.currency || "USD"}
-                onValueChange={(value) => onChange({ ...campaign, currency: value as Currency })}
+                value={campaign.contentType || ""}
+                onValueChange={(value) => onChange({ ...campaign, contentType: value as ContentType })}
               >
-                <SelectTrigger className="w-24 rounded-l-none border-l-0">
-                  <SelectValue placeholder="USD" />
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose type" />
                 </SelectTrigger>
                 <SelectContent className="bg-card">
-                  {CURRENCIES.map((currency) => (
-                    <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                  {CONTENT_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="category">
+                Category <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={campaign.category || ""}
+                onValueChange={(value) => onChange({ ...campaign, category: value as Category })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose category" />
+                </SelectTrigger>
+                <SelectContent className="bg-card">
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
-        </div>
+        )}
         
-        <PlatformSelector
-          selectedPlatform={campaign.platforms?.[0] || undefined}
-          onChange={handlePlatformSelect}
-          singleSelection={true}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="applicationDeadline">
-              Application Deadline <span className="text-destructive">*</span>
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="applicationDeadline"
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {applicationDeadline ? (
-                    format(applicationDeadline, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={applicationDeadline}
-                  onSelect={handleApplicationDeadlineChange}
-                  initialFocus
-                  disabled={(date) => date < new Date()}
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="endDate">
-              Campaign End <span className="text-destructive">*</span>
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="endDate"
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {campaign.endDate ? (
-                    format(campaign.endDate, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={campaign.endDate}
-                  onSelect={(date) => onChange({ ...campaign, endDate: date || new Date() })}
-                  initialFocus
-                  disabled={(date) => date < minEndDate}
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            <p className="text-xs text-muted-foreground">
-              Must be at least 30 days after application deadline
-            </p>
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Label>{isTikTokShop ? "TAP Link" : "Tracking Link"}</Label>
-          </div>
-          
-          <div className="space-y-4">
+        {!showCreatorInfoSection && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <div className="flex">
-                <div className="flex-grow relative">
-                  <Input
-                    type="url"
-                    placeholder={isTikTokShop ? "Enter TAP link" : "Enter tracking link"}
-                    value={trackingLink}
-                    onChange={handleTrackingLinkChange}
-                    disabled={requestTrackingLink}
-                    className={requestTrackingLink ? "bg-muted text-muted-foreground" : ""}
-                  />
-                  {trackingLink && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <a
-                            href={trackingLink.startsWith('http') ? trackingLink : `https://${trackingLink}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Open link</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="request-tracking"
-                  checked={requestTrackingLink}
-                  onCheckedChange={handleRequestTrackingLinkChange}
-                />
-                <Label htmlFor="request-tracking" className="text-sm cursor-pointer">
-                  {isTikTokShop ? "I don't have a TAP link, please provide one" : "I don't have a tracking link, please provide one"}
+              <div className="flex items-center justify-between">
+                <Label htmlFor="budget">
+                  Total Budget <span className="text-destructive">*</span>
                 </Label>
+              </div>
+              <div className="flex">
+                <Input
+                  id="budget"
+                  type="number"
+                  min={0}
+                  placeholder="Enter budget"
+                  value={campaign.totalBudget || ""}
+                  onChange={(e) => onChange({ ...campaign, totalBudget: Number(e.target.value) })}
+                  className="rounded-r-none"
+                />
+                <Select
+                  value={campaign.currency || "USD"}
+                  onValueChange={(value) => onChange({ ...campaign, currency: value as Currency })}
+                >
+                  <SelectTrigger className="w-24 rounded-l-none border-l-0">
+                    <SelectValue placeholder="USD" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card">
+                    {CURRENCIES.map((currency) => (
+                      <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
-        </div>
+        )}
         
-        {isTikTokShop && (
+        {!showCreatorInfoSection && (
+          <PlatformSelector
+            selectedPlatform={campaign.platforms?.[0] || undefined}
+            onChange={handlePlatformSelect}
+            singleSelection={true}
+          />
+        )}
+        
+        {!showCreatorInfoSection && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="applicationDeadline">
+                Application Deadline <span className="text-destructive">*</span>
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="applicationDeadline"
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {applicationDeadline ? (
+                      format(applicationDeadline, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={applicationDeadline}
+                    onSelect={handleApplicationDeadlineChange}
+                    initialFocus
+                    disabled={(date) => date < new Date()}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="endDate">
+                Campaign End <span className="text-destructive">*</span>
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="endDate"
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {campaign.endDate ? (
+                      format(campaign.endDate, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={campaign.endDate}
+                    onSelect={(date) => onChange({ ...campaign, endDate: date || new Date() })}
+                    initialFocus
+                    disabled={(date) => date < minEndDate}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground">
+                Must be at least 30 days after application deadline
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {showCreatorInfoSection && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>{isTikTokShop ? "TAP Link" : "Tracking Link"}</Label>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex">
+                  <div className="flex-grow relative">
+                    <Input
+                      type="url"
+                      placeholder={isTikTokShop ? "Enter TAP link" : "Enter tracking link"}
+                      value={trackingLink}
+                      onChange={handleTrackingLinkChange}
+                      disabled={requestTrackingLink}
+                      className={requestTrackingLink ? "bg-muted text-muted-foreground" : ""}
+                    />
+                    {trackingLink && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <a
+                              href={trackingLink.startsWith('http') ? trackingLink : `https://${trackingLink}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Open link</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="request-tracking"
+                    checked={requestTrackingLink}
+                    onCheckedChange={handleRequestTrackingLinkChange}
+                  />
+                  <Label htmlFor="request-tracking" className="text-sm cursor-pointer">
+                    {isTikTokShop ? "I don't have a TAP link, please provide one" : "I don't have a tracking link, please provide one"}
+                  </Label>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {isTikTokShop && showCreatorInfoSection && (
           <div className="pt-4 border-t border-border/60">
             <h3 className="text-lg font-medium mb-4">TikTok Shop Commission</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -606,16 +621,20 @@ const RetainerForm = ({ campaign, onChange }: RetainerFormProps) => {
           </div>
         )}
         
-        <BriefUploader 
-          briefType={brief.type}
-          briefValue={brief.value}
-          onBriefChange={handleBriefChange}
-        />
+        {showCreatorInfoSection && (
+          <BriefUploader 
+            briefType={brief.type}
+            briefValue={brief.value}
+            onBriefChange={handleBriefChange}
+          />
+        )}
         
-        <InstructionVideoUploader
-          videoFile={instructionVideo}
-          onVideoChange={handleVideoChange}
-        />
+        {showCreatorInfoSection && (
+          <InstructionVideoUploader
+            videoFile={instructionVideo}
+            onVideoChange={handleVideoChange}
+          />
+        )}
         
         <RequirementsList
           requirements={requirements}

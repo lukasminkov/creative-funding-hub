@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { VisibilityType, VISIBILITY_TYPES, ApplicationQuestion, QuestionType, QUESTION_TYPES, RestrictedAccess } from "@/lib/campaign-types";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Globe, Lock, Users, Plus, X, Image, Typography, Calculator, Link as LinkIcon } from "lucide-react";
+import { Globe, Lock, Users, Plus, X, Image, Type, Calculator, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -38,7 +37,6 @@ const VisibilitySelector = ({
   const [accessType, setAccessType] = useState<'offer' | 'invite'>(restrictedAccess.type || 'invite');
   const [inviteLink, setInviteLink] = useState(restrictedAccess.inviteLink || '');
 
-  // Mock data for offers - in a real app this would come from an API
   const availableOffers = [
     { id: "offer1", name: "Premium Creator Network" },
     { id: "offer2", name: "Fashion Influencer Program" },
@@ -48,7 +46,6 @@ const VisibilitySelector = ({
 
   const handleVisibilityChange = (value: VisibilityType) => {
     if (value === "applicationOnly" && questions.length === 0) {
-      // Add a default question when switching to application mode
       addQuestion();
     }
 
@@ -157,7 +154,7 @@ const VisibilitySelector = ({
   const getQuestionTypeIcon = (type: QuestionType) => {
     switch (type) {
       case "text":
-        return <Typography className="h-4 w-4" />;
+        return <Type className="h-4 w-4" />;
       case "image":
         return <Image className="h-4 w-4" />;
       case "number":
@@ -165,7 +162,7 @@ const VisibilitySelector = ({
       case "link":
         return <LinkIcon className="h-4 w-4" />;
       default:
-        return <Typography className="h-4 w-4" />;
+        return <Type className="h-4 w-4" />;
     }
   };
 
@@ -243,7 +240,6 @@ const VisibilitySelector = ({
         </RadioGroup>
       </div>
 
-      {/* Application Only Settings */}
       {visibility === "applicationOnly" && (
         <Card className="mt-4">
           <CardContent className="pt-6">
@@ -327,7 +323,6 @@ const VisibilitySelector = ({
         </Card>
       )}
 
-      {/* Restricted Access Settings */}
       {visibility === "restricted" && (
         <Card className="mt-4">
           <CardContent className="pt-6">
