@@ -28,6 +28,8 @@ import InstructionVideoUploader from "../InstructionVideoUploader";
 import GuidelinesList from "../GuidelinesList";
 import { Switch } from "@/components/ui/switch";
 import ExampleVideos from "../ExampleVideos";
+import CountrySelector from "../CountrySelector";
+import { CountryOption } from "@/lib/campaign-types";
 
 interface ChallengeFormProps {
   campaign: Partial<Campaign>;
@@ -147,6 +149,13 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection = false }: C
     onChange({
       ...campaign,
       exampleVideos: videos
+    });
+  };
+
+  const handleCountryChange = (country: CountryOption) => {
+    onChange({
+      ...campaign,
+      countryAvailability: country
     });
   };
 

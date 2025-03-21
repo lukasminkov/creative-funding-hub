@@ -1,5 +1,4 @@
-
-import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
+import { Campaign, formatCurrency, getDaysLeft, getCountryLabel } from "@/lib/campaign-types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CampaignPreviewProps {
@@ -20,7 +19,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
 
   const hasTikTokShop = campaign.platforms?.includes("TikTok Shop");
   
-  // Calculate payout range for retainer campaigns
   const getPayoutRange = () => {
     if (campaign.type === "retainer" && campaign.creatorTiers && campaign.creatorTiers.length > 0) {
       const prices = campaign.creatorTiers.map(tier => tier.price);
@@ -39,7 +37,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
   return (
     <div className="sticky top-20 w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm max-h-[calc(100vh-120px)]">
       <ScrollArea className="h-[calc(100vh-120px)]">
-        {/* Banner and Title */}
         {campaign.bannerImage ? (
           <div className="h-48 relative">
             <img 
@@ -65,12 +62,10 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
         )}
         
         <div className="p-6">
-          {/* Description */}
           {campaign.description && (
             <p className="text-sm text-gray-700 mb-6">{campaign.description}</p>
           )}
           
-          {/* Key Details */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             {campaign.contentType && (
               <div>
@@ -86,7 +81,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
               </div>
             )}
             
-            {/* For non-retainer campaigns, show budget */}
             {campaign.type !== "retainer" && campaign.totalBudget && campaign.currency && (
               <div>
                 <p className="text-sm text-gray-500">Budget</p>
@@ -94,7 +88,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
               </div>
             )}
             
-            {/* For retainer campaigns, show payout range */}
             {campaign.type === "retainer" && getPayoutRange() && (
               <div>
                 <p className="text-sm text-gray-500">Payout Range</p>
@@ -111,9 +104,15 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
                 </p>
               </div>
             )}
+            
+            {campaign.countryAvailability && (
+              <div>
+                <p className="text-sm text-gray-500">Availability</p>
+                <p className="font-medium text-gray-800">{getCountryLabel(campaign.countryAvailability)}</p>
+              </div>
+            )}
           </div>
           
-          {/* Platforms */}
           {campaign.platforms && campaign.platforms.length > 0 && (
             <div className="mb-6">
               <p className="text-sm text-gray-500 mb-2">Platforms</p>
@@ -130,7 +129,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {/* TikTok Shop Commission */}
           {hasTikTokShop && campaign.tikTokShopCommission && (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <p className="text-sm font-medium text-gray-800 mb-2">TikTok Shop Commission</p>
@@ -147,7 +145,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {/* Retainer Specific */}
           {campaign.type === "retainer" && campaign.creatorTiers && campaign.creatorTiers.length > 0 && (
             <div className="mb-6">
               <p className="text-sm text-gray-500 mb-2">Creator Tiers</p>
@@ -162,7 +159,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {/* Pay Per View Specific */}
           {campaign.type === "payPerView" && (
             <div className="mb-6">
               <p className="text-sm text-gray-500 mb-2">Pay Per View</p>
@@ -187,7 +183,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {/* Challenge Specific */}
           {campaign.type === "challenge" && campaign.prizePool && campaign.prizePool.places && (
             <div className="mb-6">
               <p className="text-sm text-gray-500 mb-2">Prize Pool</p>
@@ -207,7 +202,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {/* Guidelines */}
           {campaign.guidelines && (
             <div className="mb-6">
               <p className="text-sm text-gray-500 mb-2">Guidelines</p>
@@ -236,7 +230,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {/* Tracking Link */}
           {campaign.trackingLink && (
             <div className="mb-6">
               <p className="text-sm text-gray-500">
@@ -253,7 +246,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {/* Requested Tracking Link */}
           {campaign.requestedTrackingLink && (
             <div className="p-3 bg-gray-50 rounded-lg text-sm mb-6">
               <p className="text-gray-600">
@@ -267,7 +259,6 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
   );
 };
 
-// Helper function to get ordinal suffix
 function getOrdinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;

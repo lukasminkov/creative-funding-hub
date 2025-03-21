@@ -6,6 +6,7 @@ export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CNY", "INR
 export const DELIVERABLE_MODES = ["videosPerDay", "totalVideos"] as const;
 export const VISIBILITY_TYPES = ["public", "applicationOnly", "restricted"] as const;
 export const QUESTION_TYPES = ["text", "image", "number", "link"] as const;
+export const COUNTRY_OPTIONS = ["worldwide", "usa", "mexico", "canada", "dach"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
 export type Category = typeof CATEGORIES[number];
@@ -14,6 +15,7 @@ export type Currency = typeof CURRENCIES[number];
 export type DeliverableMode = typeof DELIVERABLE_MODES[number];
 export type VisibilityType = typeof VISIBILITY_TYPES[number];
 export type QuestionType = typeof QUESTION_TYPES[number];
+export type CountryOption = typeof COUNTRY_OPTIONS[number];
 
 export interface Brief {
   type: 'link' | 'file';
@@ -78,6 +80,7 @@ interface BaseCampaign {
   visibility: VisibilityType;
   applicationQuestions?: ApplicationQuestion[];
   restrictedAccess?: RestrictedAccess;
+  countryAvailability: CountryOption;
 }
 
 export interface RetainerCampaign extends BaseCampaign {
@@ -124,4 +127,21 @@ export const getDaysLeft = (date: Date): number => {
   const diffTime = date.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays > 0 ? diffDays : 0;
+};
+
+export const getCountryLabel = (countryOption: CountryOption): string => {
+  switch (countryOption) {
+    case 'worldwide':
+      return 'Worldwide';
+    case 'usa':
+      return 'United States';
+    case 'mexico':
+      return 'Mexico';
+    case 'canada':
+      return 'Canada';
+    case 'dach':
+      return 'DACH (Germany, Austria, Switzerland)';
+    default:
+      return 'Worldwide';
+  }
 };

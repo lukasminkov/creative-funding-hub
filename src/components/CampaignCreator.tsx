@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -38,7 +38,8 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     trackingLink: "",
     requestedTrackingLink: false,
     exampleVideos: [],
-    visibility: "public"
+    visibility: "public",
+    countryAvailability: COUNTRY_OPTIONS[0] // Default to worldwide
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
@@ -82,6 +83,11 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
 
     if (!campaign.platforms || campaign.platforms.length === 0) {
       toast.error("Please select at least one platform");
+      return false;
+    }
+
+    if (!campaign.countryAvailability) {
+      toast.error("Please select country availability");
       return false;
     }
 

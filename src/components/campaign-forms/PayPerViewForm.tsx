@@ -32,6 +32,8 @@ import GuidelinesList from "../GuidelinesList";
 import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
 import ExampleVideos from "../ExampleVideos";
+import CountrySelector from "../CountrySelector";
+import { CountryOption } from "@/lib/campaign-types";
 
 interface PayPerViewFormProps {
   campaign: Partial<Campaign>;
@@ -189,6 +191,14 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
     });
   };
 
+  // Add country selector handler
+  const handleCountryChange = (country: CountryOption) => {
+    onChange({
+      ...campaign,
+      countryAvailability: country
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-6">
@@ -311,6 +321,14 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
             selectedPlatform={campaign.platforms?.[0] || undefined}
             onChange={handlePlatformSelect}
             singleSelection={true}
+          />
+        )}
+        
+        {!showCreatorInfoSection && (
+          /* Add country selector after platforms */
+          <CountrySelector 
+            selectedCountry={campaign.countryAvailability || "worldwide"}
+            onChange={handleCountryChange}
           />
         )}
         

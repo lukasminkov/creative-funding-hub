@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, DELIVERABLE_MODES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission, DeliverableMode, ExampleVideo } from "@/lib/campaign-types";
+import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, Platform, ContentType, Category, Currency, DeliverableMode, DELIVERABLE_MODES, TikTokShopCommission, ExampleVideo, CountryOption } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,39 +11,28 @@ import {
   SelectTrigger,
   SelectValue 
 } from "@/components/ui/select";
-import { motion, AnimatePresence } from "framer-motion";
-import { Calendar } from "@/components/ui/calendar";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import { 
   Popover,
   PopoverContent,
   PopoverTrigger 
 } from "@/components/ui/popover";
-import { 
-  Card, 
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { 
-  Switch 
-} from "@/components/ui/switch";
-import { 
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, ExternalLink, Plus, Trash, X } from "lucide-react";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
-import { CalendarIcon } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import BannerImageUpload from "../BannerImageUpload";
 import PlatformSelector from "../PlatformSelector";
-import RequirementsList from "../RequirementsList";
 import GuidelinesList from "../GuidelinesList";
 import BriefUploader from "../BriefUploader";
 import InstructionVideoUploader from "../InstructionVideoUploader";
 import ExampleVideos from "../ExampleVideos";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import CountrySelector from "../CountrySelector";
 
 interface RetainerFormProps {
   campaign: Partial<Campaign>;
@@ -53,58 +41,47 @@ interface RetainerFormProps {
 }
 
 const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: RetainerFormProps) => {
-  const [creatorTiers, setCreatorTiers] = useState<CreatorTier[]>(
-    campaign.type === "retainer" && campaign.creatorTiers 
-      ? campaign.creatorTiers 
-      : [{ name: "Basic", price: 500 }]
+  const [creatorTiers, setCreatorTiers] = useState<{ name: string; price: number }[]>(
+    campaign.type === "retainer" && campaign.creatorTiers ? campaign.creatorTiers : [{ name: "Standard", price: 0 }]
   );
   
   const [deliverableMode, setDeliverableMode] = useState<DeliverableMode>(
-    campaign.type === "retainer" && campaign.deliverables?.mode
-      ? campaign.deliverables.mode
+    campaign.type === "retainer" && campaign.deliverables?.mode 
+      ? campaign.deliverables.mode 
       : "videosPerDay"
   );
-
-  const [deliverables, setDeliverables] = useState({
-    videosPerDay: campaign.type === "retainer" && campaign.deliverables?.videosPerDay 
+  
+  const [videosPerDay, setVideosPerDay] = useState<number>(
+    campaign.type === "retainer" && campaign.deliverables?.videosPerDay 
       ? campaign.deliverables.videosPerDay 
-      : 1,
-    durationDays: campaign.type === "retainer" && campaign.deliverables?.durationDays 
+      : 1
+  );
+  
+  const [durationDays, setDurationDays] = useState<number>(
+    campaign.type === "retainer" && campaign.deliverables?.durationDays 
       ? campaign.deliverables.durationDays 
-      : 30,
-    totalVideos: campaign.type === "retainer" && campaign.deliverables?.totalVideos
-      ? campaign.deliverables.totalVideos
       : 30
-  });
-
+  );
+  
+  const [totalVideos, setTotalVideos] = useState<number>(
+    campaign.type === "retainer" && campaign.deliverables?.totalVideos 
+      ? campaign.deliverables.totalVideos 
+      : 30
+  );
+  
   const [requirements, setRequirements] = useState<string[]>(
-    campaign.type === "retainer" && campaign.requirements
-      ? campaign.requirements
-      : []
+    campaign.type === "retainer" && campaign.requirements ? campaign.requirements : []
   );
-
+  
+  const [newRequirement, setNewRequirement] = useState("");
+  
   const [guidelines, setGuidelines] = useState({
-    dos: campaign.type === "retainer" && campaign.guidelines
-      ? campaign.guidelines.dos
-      : [],
-    donts: campaign.type === "retainer" && campaign.guidelines
-      ? campaign.guidelines.donts
-      : []
+    dos: campaign.guidelines ? campaign.guidelines.dos : [],
+    donts: campaign.guidelines ? campaign.guidelines.donts : []
   });
 
-  const [trackingLink, setTrackingLink] = useState(
-    campaign.type === "retainer" ? campaign.trackingLink || "" : ""
-  );
-
-  const [requestTrackingLink, setRequestTrackingLink] = useState(
-    campaign.type === "retainer" ? campaign.requestedTrackingLink || false : false
-  );
-
-  const [applicationDeadline, setApplicationDeadline] = useState<Date>(
-    campaign.type === "retainer" && campaign.applicationDeadline
-      ? campaign.applicationDeadline
-      : new Date()
-  );
+  const [trackingLink, setTrackingLink] = useState(campaign.trackingLink || "");
+  const [requestTrackingLink, setRequestTrackingLink] = useState(campaign.requestedTrackingLink || false);
 
   const [brief, setBrief] = useState({
     type: campaign.brief?.type || 'link',
@@ -122,111 +99,11 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
     }
   );
 
-  const handlePlatformSelect = (platform: Platform) => {
-    onChange({ ...campaign, platforms: [platform] });
+  const handlePlatformSelect = (platforms: Platform[]) => {
+    onChange({ ...campaign, platforms });
   };
 
-  const isTikTokShop = campaign.platforms?.[0] === "TikTok Shop";
-
-  const addCreatorTier = () => {
-    const newTier: CreatorTier = {
-      name: `Tier ${creatorTiers.length + 1}`,
-      price: 0
-    };
-    const updatedTiers = [...creatorTiers, newTier];
-    setCreatorTiers(updatedTiers);
-    onChange({ 
-      ...campaign, 
-      type: "retainer", 
-      creatorTiers: updatedTiers 
-    });
-  };
-
-  const removeCreatorTier = (index: number) => {
-    if (creatorTiers.length === 1) return;
-    
-    const updatedTiers = creatorTiers.filter((_, i) => i !== index);
-    setCreatorTiers(updatedTiers);
-    onChange({ 
-      ...campaign, 
-      type: "retainer", 
-      creatorTiers: updatedTiers 
-    });
-  };
-
-  const updateCreatorTier = (index: number, field: keyof CreatorTier, value: string | number) => {
-    const updatedTiers = creatorTiers.map((tier, i) => {
-      if (i === index) {
-        return { ...tier, [field]: value };
-      }
-      return tier;
-    });
-    
-    setCreatorTiers(updatedTiers);
-    onChange({ 
-      ...campaign, 
-      type: "retainer", 
-      creatorTiers: updatedTiers 
-    });
-  };
-
-  const handleDeliverableModeChange = (mode: DeliverableMode) => {
-    setDeliverableMode(mode);
-    
-    let updatedDeliverables;
-    if (mode === "videosPerDay") {
-      updatedDeliverables = {
-        mode,
-        videosPerDay: deliverables.videosPerDay,
-        durationDays: deliverables.durationDays
-      };
-    } else {
-      updatedDeliverables = {
-        mode,
-        totalVideos: deliverables.totalVideos
-      };
-    }
-    
-    onChange({
-      ...campaign,
-      type: "retainer",
-      deliverables: updatedDeliverables
-    });
-  };
-
-  const updateDeliverables = (field: keyof typeof deliverables, value: number) => {
-    const updatedDeliverables = { ...deliverables, [field]: value };
-    setDeliverables(updatedDeliverables);
-    
-    let campaignDeliverables;
-    if (deliverableMode === "videosPerDay") {
-      campaignDeliverables = {
-        mode: deliverableMode,
-        videosPerDay: field === "videosPerDay" ? value : updatedDeliverables.videosPerDay,
-        durationDays: field === "durationDays" ? value : updatedDeliverables.durationDays
-      };
-    } else {
-      campaignDeliverables = {
-        mode: deliverableMode,
-        totalVideos: field === "totalVideos" ? value : updatedDeliverables.totalVideos
-      };
-    }
-    
-    onChange({ 
-      ...campaign, 
-      type: "retainer", 
-      deliverables: campaignDeliverables
-    });
-  };
-
-  const handleRequirementsChange = (newRequirements: string[]) => {
-    setRequirements(newRequirements);
-    onChange({
-      ...campaign,
-      type: "retainer",
-      requirements: newRequirements
-    });
-  };
+  const isTikTokShop = campaign.platforms?.includes("TikTok Shop");
 
   const handleGuidelinesChange = (newGuidelines: { dos: string[], donts: string[] }) => {
     setGuidelines(newGuidelines);
@@ -237,32 +114,134 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
     });
   };
 
-  const handleApplicationDeadlineChange = (date: Date | undefined) => {
-    if (!date) return;
-    
-    setApplicationDeadline(date);
-    
-    const currentEndDate = campaign.endDate;
-    if (!currentEndDate || currentEndDate < addDays(date, 30)) {
+  const handleAddRequirement = () => {
+    if (newRequirement.trim()) {
+      const updatedRequirements = [...requirements, newRequirement.trim()];
+      setRequirements(updatedRequirements);
+      setNewRequirement("");
+      
       onChange({
         ...campaign,
         type: "retainer",
-        applicationDeadline: date,
-        endDate: addDays(date, 30)
-      });
-    } else {
-      onChange({
-        ...campaign,
-        type: "retainer",
-        applicationDeadline: date
+        requirements: updatedRequirements
       });
     }
   };
 
-  const handleBannerImageSelect = (imageUrl: string) => {
+  const handleRemoveRequirement = (index: number) => {
+    const updatedRequirements = requirements.filter((_, i) => i !== index);
+    setRequirements(updatedRequirements);
+    
     onChange({
       ...campaign,
-      bannerImage: imageUrl
+      type: "retainer",
+      requirements: updatedRequirements
+    });
+  };
+
+  const handleAddTier = () => {
+    const updatedTiers = [...creatorTiers, { name: `Tier ${creatorTiers.length + 1}`, price: 0 }];
+    setCreatorTiers(updatedTiers);
+    
+    onChange({
+      ...campaign,
+      type: "retainer",
+      creatorTiers: updatedTiers
+    });
+  };
+
+  const handleRemoveTier = (index: number) => {
+    if (creatorTiers.length > 1) {
+      const updatedTiers = creatorTiers.filter((_, i) => i !== index);
+      setCreatorTiers(updatedTiers);
+      
+      onChange({
+        ...campaign,
+        type: "retainer",
+        creatorTiers: updatedTiers
+      });
+    }
+  };
+
+  const handleTierChange = (index: number, field: 'name' | 'price', value: string | number) => {
+    const updatedTiers = [...creatorTiers];
+    updatedTiers[index] = { 
+      ...updatedTiers[index], 
+      [field]: field === 'price' ? Number(value) : value 
+    };
+    
+    setCreatorTiers(updatedTiers);
+    
+    onChange({
+      ...campaign,
+      type: "retainer",
+      creatorTiers: updatedTiers
+    });
+  };
+
+  const handleDeliverableModeChange = (mode: DeliverableMode) => {
+    setDeliverableMode(mode);
+    
+    let deliverables = {};
+    
+    if (mode === "videosPerDay") {
+      deliverables = {
+        mode,
+        videosPerDay,
+        durationDays
+      };
+    } else {
+      deliverables = {
+        mode,
+        totalVideos
+      };
+    }
+    
+    onChange({
+      ...campaign,
+      type: "retainer",
+      deliverables
+    });
+  };
+
+  const handleVideosPerDayChange = (value: number) => {
+    setVideosPerDay(value);
+    
+    onChange({
+      ...campaign,
+      type: "retainer",
+      deliverables: {
+        mode: deliverableMode,
+        videosPerDay: value,
+        durationDays
+      }
+    });
+  };
+
+  const handleDurationDaysChange = (value: number) => {
+    setDurationDays(value);
+    
+    onChange({
+      ...campaign,
+      type: "retainer",
+      deliverables: {
+        mode: deliverableMode,
+        videosPerDay,
+        durationDays: value
+      }
+    });
+  };
+
+  const handleTotalVideosChange = (value: number) => {
+    setTotalVideos(value);
+    
+    onChange({
+      ...campaign,
+      type: "retainer",
+      deliverables: {
+        mode: deliverableMode,
+        totalVideos: value
+      }
     });
   };
 
@@ -308,6 +287,13 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
     }
   };
 
+  const handleBannerImageSelect = (imageUrl: string) => {
+    onChange({
+      ...campaign,
+      bannerImage: imageUrl
+    });
+  };
+
   const handleTikTokShopCommissionChange = (field: keyof TikTokShopCommission, value: number) => {
     const newCommission = { ...tikTokShopCommission, [field]: value };
     setTikTokShopCommission(newCommission);
@@ -325,7 +311,6 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
   };
 
   const handleVideoChange = (file: File | null) => {
-    setInstructionVideo(file);
     onChange({
       ...campaign,
       instructionVideoFile: file
@@ -339,7 +324,12 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
     });
   };
 
-  const minEndDate = applicationDeadline ? addDays(applicationDeadline, 30) : addDays(new Date(), 30);
+  const handleCountryChange = (country: CountryOption) => {
+    onChange({
+      ...campaign,
+      countryAvailability: country
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -455,19 +445,7 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
                 </Select>
               </div>
             </div>
-          </div>
-        )}
-        
-        {!showCreatorInfoSection && (
-          <PlatformSelector
-            selectedPlatform={campaign.platforms?.[0] || undefined}
-            onChange={handlePlatformSelect}
-            singleSelection={true}
-          />
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
             <div className="space-y-2">
               <Label htmlFor="applicationDeadline">
                 Application Deadline <span className="text-destructive">*</span>
@@ -475,39 +453,40 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    id="applicationDeadline"
                     variant="outline"
                     className="w-full justify-start text-left font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {applicationDeadline ? (
-                      format(applicationDeadline, "PPP")
+                    {campaign.applicationDeadline ? (
+                      format(campaign.applicationDeadline, "PPP")
                     ) : (
                       <span>Pick a date</span>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-card" align="start">
                   <Calendar
                     mode="single"
-                    selected={applicationDeadline}
-                    onSelect={handleApplicationDeadlineChange}
+                    selected={campaign.applicationDeadline}
+                    onSelect={(date) => onChange({ ...campaign, applicationDeadline: date })}
                     initialFocus
                     disabled={(date) => date < new Date()}
-                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
             </div>
-            
+          </div>
+        )}
+        
+        {!showCreatorInfoSection && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="endDate">
-                Campaign End <span className="text-destructive">*</span>
+                End Date <span className="text-destructive">*</span>
               </Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    id="endDate"
                     variant="outline"
                     className="w-full justify-start text-left font-normal"
                   >
@@ -519,31 +498,144 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-card" align="start">
                   <Calendar
                     mode="single"
                     selected={campaign.endDate}
-                    onSelect={(date) => onChange({ ...campaign, endDate: date || new Date() })}
+                    onSelect={(date) => onChange({ ...campaign, endDate: date })}
                     initialFocus
-                    disabled={(date) => date < minEndDate}
-                    className="p-3 pointer-events-auto"
+                    disabled={(date) => date < new Date()}
                   />
                 </PopoverContent>
               </Popover>
-              <p className="text-xs text-muted-foreground">
-                Must be at least 30 days after application deadline
-              </p>
             </div>
           </div>
         )}
         
-        {/* Only show requirements list in the General Information section */}
         {!showCreatorInfoSection && (
-          <RequirementsList
-            requirements={requirements}
-            onChange={handleRequirementsChange}
-            maxItems={5}
+          <PlatformSelector
+            selectedPlatforms={campaign.platforms || []}
+            onChange={handlePlatformSelect}
           />
+        )}
+        
+        {!showCreatorInfoSection && (
+          <CountrySelector 
+            selectedCountry={campaign.countryAvailability || "worldwide"}
+            onChange={handleCountryChange}
+          />
+        )}
+        
+        {!showCreatorInfoSection && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label>Creator Tiers</Label>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAddTier}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Tier
+              </Button>
+            </div>
+            
+            <div className="space-y-3">
+              {creatorTiers.map((tier, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Input
+                    placeholder="Tier name"
+                    value={tier.name}
+                    onChange={(e) => handleTierChange(index, 'name', e.target.value)}
+                    className="flex-grow"
+                  />
+                  <div className="flex w-36">
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="Price"
+                      value={tier.price}
+                      onChange={(e) => handleTierChange(index, 'price', e.target.value)}
+                      className="rounded-r-none"
+                    />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
+                      {campaign.currency || "USD"}
+                    </div>
+                  </div>
+                  {creatorTiers.length > 1 && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleRemoveTier(index)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {!showCreatorInfoSection && (
+          <div className="space-y-4">
+            <div>
+              <Label>Deliverables</Label>
+              <div className="flex mt-2 space-x-2">
+                {DELIVERABLE_MODES.map((mode) => (
+                  <Button
+                    key={mode}
+                    type="button"
+                    variant={deliverableMode === mode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleDeliverableModeChange(mode)}
+                    className="flex-1"
+                  >
+                    {mode === "videosPerDay" ? "Videos Per Day" : "Total Videos"}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            {deliverableMode === "videosPerDay" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="videosPerDay">Videos Per Day</Label>
+                  <Input
+                    id="videosPerDay"
+                    type="number"
+                    min={1}
+                    value={videosPerDay}
+                    onChange={(e) => handleVideosPerDayChange(Number(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="durationDays">Duration (Days)</Label>
+                  <Input
+                    id="durationDays"
+                    type="number"
+                    min={1}
+                    value={durationDays}
+                    onChange={(e) => handleDurationDaysChange(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="totalVideos">Total Videos</Label>
+                <Input
+                  id="totalVideos"
+                  type="number"
+                  min={1}
+                  value={totalVideos}
+                  onChange={(e) => handleTotalVideosChange(Number(e.target.value))}
+                />
+              </div>
+            )}
+          </div>
         )}
         
         {/* Only show guidelines list in the General Information section */}
@@ -555,130 +647,56 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           />
         )}
         
-        {/* Creator tiers - only show in General Information section */}
-        {!showCreatorInfoSection && (
-          <div className="pt-4 border-t border-border/60">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Creator Tiers</h3>
-              <Button size="sm" variant="outline" onClick={addCreatorTier}>
-                <Plus className="h-4 w-4 mr-1" /> Add Tier
-              </Button>
-            </div>
-            
-            <AnimatePresence>
-              {creatorTiers.map((tier, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="mb-4"
-                >
-                  <Card>
-                    <CardHeader className="py-4 px-5">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-base">
-                          {tier.name}
-                        </CardTitle>
-                        {creatorTiers.length > 1 && (
-                          <Button size="icon" variant="ghost" onClick={() => removeCreatorTier(index)}>
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-5 pt-0 space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`tier-${index}-name`}>Tier Name</Label>
-                          <Input
-                            id={`tier-${index}-name`}
-                            value={tier.name}
-                            onChange={(e) => updateCreatorTier(index, "name", e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`tier-${index}-price`}>Price ({campaign.currency})</Label>
-                          <Input
-                            id={`tier-${index}-price`}
-                            type="number"
-                            min={0}
-                            value={tier.price}
-                            onChange={(e) => updateCreatorTier(index, "price", Number(e.target.value))}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-        
-        {/* Deliverables - only show in General Information section */}
-        {!showCreatorInfoSection && (
-          <div className="pt-4 border-t border-border/60">
-            <h3 className="text-lg font-medium mb-4">Deliverables</h3>
-            
-            <div className="mb-4">
-              <Label className="mb-2 block">Deliverable Type</Label>
-              <RadioGroup 
-                value={deliverableMode}
-                onValueChange={(value) => handleDeliverableModeChange(value as DeliverableMode)}
-                className="flex flex-col space-y-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="videosPerDay" id="videosPerDay" />
-                  <Label htmlFor="videosPerDay" className="cursor-pointer">Videos per day</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="totalVideos" id="totalVideos" />
-                  <Label htmlFor="totalVideos" className="cursor-pointer">Total videos</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            
-            {deliverableMode === "videosPerDay" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="videosPerDay">Videos Per Day</Label>
-                  <Input
-                    id="videosPerDay"
-                    type="number"
-                    min={1}
-                    value={deliverables.videosPerDay}
-                    onChange={(e) => updateDeliverables("videosPerDay", Number(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="durationDays">Duration (Days)</Label>
-                  <Input
-                    id="durationDays"
-                    type="number"
-                    min={1}
-                    value={deliverables.durationDays}
-                    onChange={(e) => updateDeliverables("durationDays", Number(e.target.value))}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="totalVideos">Total Videos</Label>
-                <Input
-                  id="totalVideos"
-                  type="number"
-                  min={1}
-                  value={deliverables.totalVideos}
-                  onChange={(e) => updateDeliverables("totalVideos", Number(e.target.value))}
-                />
-              </div>
-            )}
-          </div>
-        )}
-        
         {/* Creator info section */}
+        {showCreatorInfoSection && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label>Requirements</Label>
+            </div>
+            
+            <div className="space-y-3">
+              {requirements.map((req, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="flex-grow p-2 bg-muted rounded-md text-sm">
+                    {req}
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleRemoveRequirement(index)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Add a requirement"
+                  value={newRequirement}
+                  onChange={(e) => setNewRequirement(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddRequirement();
+                    }
+                  }}
+                  className="flex-grow"
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleAddRequirement}
+                >
+                  Add
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {showCreatorInfoSection && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -741,35 +759,25 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="openCollabCommission">Open Collab Commission %</Label>
-                <div className="flex">
-                  <Input
-                    id="openCollabCommission"
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={tikTokShopCommission.openCollabCommission}
-                    onChange={(e) => handleTikTokShopCommissionChange("openCollabCommission", Number(e.target.value))}
-                  />
-                  <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
-                    <Percent className="h-4 w-4" />
-                  </div>
-                </div>
+                <Input
+                  id="openCollabCommission"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={tikTokShopCommission.openCollabCommission}
+                  onChange={(e) => handleTikTokShopCommissionChange("openCollabCommission", Number(e.target.value))}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="increasedCommission">Increased Commission %</Label>
-                <div className="flex">
-                  <Input
-                    id="increasedCommission"
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={tikTokShopCommission.increasedCommission}
-                    onChange={(e) => handleTikTokShopCommissionChange("increasedCommission", Number(e.target.value))}
-                  />
-                  <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
-                    <Percent className="h-4 w-4" />
-                  </div>
-                </div>
+                <Input
+                  id="increasedCommission"
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={tikTokShopCommission.increasedCommission}
+                  onChange={(e) => handleTikTokShopCommissionChange("increasedCommission", Number(e.target.value))}
+                />
               </div>
             </div>
           </div>
