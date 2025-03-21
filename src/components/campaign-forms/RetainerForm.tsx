@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { X, Plus, Link2, ExternalLink, Percent } from "lucide-react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, DELIVERABLE_MODES, CreatorTier, Platform, ContentType, Category, Currency, TikTokShopCommission, DeliverableMode } from "@/lib/campaign-types";
@@ -37,6 +36,7 @@ import {
   TooltipTrigger
 } from "@/components/ui/tooltip";
 import { CalendarIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import BannerImageUpload from "../BannerImageUpload";
 import PlatformSelector from "../PlatformSelector";
 import RequirementsList from "../RequirementsList";
@@ -545,6 +545,130 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           />
         )}
         
+        {/* Creator tiers - only show in General Information section */}
+        {!showCreatorInfoSection && (
+          <div className="pt-4 border-t border-border/60">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium">Creator Tiers</h3>
+              <Button size="sm" variant="outline" onClick={addCreatorTier}>
+                <Plus className="h-4 w-4 mr-1" /> Add Tier
+              </Button>
+            </div>
+            
+            <AnimatePresence>
+              {creatorTiers.map((tier, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="mb-4"
+                >
+                  <Card>
+                    <CardHeader className="py-4 px-5">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">
+                          {tier.name}
+                        </CardTitle>
+                        {creatorTiers.length > 1 && (
+                          <Button size="icon" variant="ghost" onClick={() => removeCreatorTier(index)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-5 pt-0 space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`tier-${index}-name`}>Tier Name</Label>
+                          <Input
+                            id={`tier-${index}-name`}
+                            value={tier.name}
+                            onChange={(e) => updateCreatorTier(index, "name", e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`tier-${index}-price`}>Price ({campaign.currency})</Label>
+                          <Input
+                            id={`tier-${index}-price`}
+                            type="number"
+                            min={0}
+                            value={tier.price}
+                            onChange={(e) => updateCreatorTier(index, "price", Number(e.target.value))}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+        
+        {/* Deliverables - only show in General Information section */}
+        {!showCreatorInfoSection && (
+          <div className="pt-4 border-t border-border/60">
+            <h3 className="text-lg font-medium mb-4">Deliverables</h3>
+            
+            <div className="mb-4">
+              <Label className="mb-2 block">Deliverable Type</Label>
+              <RadioGroup 
+                value={deliverableMode}
+                onValueChange={(value) => handleDeliverableModeChange(value as DeliverableMode)}
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="videosPerDay" id="videosPerDay" />
+                  <Label htmlFor="videosPerDay" className="cursor-pointer">Videos per day</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="totalVideos" id="totalVideos" />
+                  <Label htmlFor="totalVideos" className="cursor-pointer">Total videos</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            {deliverableMode === "videosPerDay" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="videosPerDay">Videos Per Day</Label>
+                  <Input
+                    id="videosPerDay"
+                    type="number"
+                    min={1}
+                    value={deliverables.videosPerDay}
+                    onChange={(e) => updateDeliverables("videosPerDay", Number(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="durationDays">Duration (Days)</Label>
+                  <Input
+                    id="durationDays"
+                    type="number"
+                    min={1}
+                    value={deliverables.durationDays}
+                    onChange={(e) => updateDeliverables("durationDays", Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="totalVideos">Total Videos</Label>
+                <Input
+                  id="totalVideos"
+                  type="number"
+                  min={1}
+                  value={deliverables.totalVideos}
+                  onChange={(e) => updateDeliverables("totalVideos", Number(e.target.value))}
+                />
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Creator info section */}
         {showCreatorInfoSection && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -600,6 +724,7 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           </div>
         )}
         
+        {/* TikTok Shop Commission */}
         {isTikTokShop && showCreatorInfoSection && (
           <div className="pt-4 border-t border-border/60">
             <h3 className="text-lg font-medium mb-4">TikTok Shop Commission</h3>
@@ -640,6 +765,7 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           </div>
         )}
         
+        {/* Brief Uploader */}
         {showCreatorInfoSection && (
           <BriefUploader 
             briefType={brief.type}
@@ -648,129 +774,13 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
           />
         )}
         
+        {/* Instruction Video Uploader */}
         {showCreatorInfoSection && (
           <InstructionVideoUploader
             videoFile={instructionVideo}
             onVideoChange={handleVideoChange}
           />
         )}
-        
-        <div className="pt-4 border-t border-border/60">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium">Creator Tiers</h3>
-            <Button size="sm" variant="outline" onClick={addCreatorTier}>
-              <Plus className="h-4 w-4 mr-1" /> Add Tier
-            </Button>
-          </div>
-          
-          <AnimatePresence>
-            {creatorTiers.map((tier, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="mb-4"
-              >
-                <Card>
-                  <CardHeader className="py-4 px-5">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">
-                        {tier.name}
-                      </CardTitle>
-                      {creatorTiers.length > 1 && (
-                        <Button size="icon" variant="ghost" onClick={() => removeCreatorTier(index)}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-5 pt-0 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`tier-${index}-name`}>Tier Name</Label>
-                        <Input
-                          id={`tier-${index}-name`}
-                          value={tier.name}
-                          onChange={(e) => updateCreatorTier(index, "name", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`tier-${index}-price`}>Price ({campaign.currency})</Label>
-                        <Input
-                          id={`tier-${index}-price`}
-                          type="number"
-                          min={0}
-                          value={tier.price}
-                          onChange={(e) => updateCreatorTier(index, "price", Number(e.target.value))}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-        
-        <div className="pt-4 border-t border-border/60">
-          <h3 className="text-lg font-medium mb-4">Deliverables</h3>
-          
-          <div className="mb-4">
-            <Label className="mb-2 block">Deliverable Type</Label>
-            <RadioGroup 
-              value={deliverableMode}
-              onValueChange={(value) => handleDeliverableModeChange(value as DeliverableMode)}
-              className="flex flex-col space-y-2"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="videosPerDay" id="videosPerDay" />
-                <Label htmlFor="videosPerDay" className="cursor-pointer">Videos per day</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="totalVideos" id="totalVideos" />
-                <Label htmlFor="totalVideos" className="cursor-pointer">Total videos</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          
-          {deliverableMode === "videosPerDay" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="videosPerDay">Videos Per Day</Label>
-                <Input
-                  id="videosPerDay"
-                  type="number"
-                  min={1}
-                  value={deliverables.videosPerDay}
-                  onChange={(e) => updateDeliverables("videosPerDay", Number(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="durationDays">Duration (Days)</Label>
-                <Input
-                  id="durationDays"
-                  type="number"
-                  min={1}
-                  value={deliverables.durationDays}
-                  onChange={(e) => updateDeliverables("durationDays", Number(e.target.value))}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label htmlFor="totalVideos">Total Videos</Label>
-              <Input
-                id="totalVideos"
-                type="number"
-                min={1}
-                value={deliverables.totalVideos}
-                onChange={(e) => updateDeliverables("totalVideos", Number(e.target.value))}
-              />
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

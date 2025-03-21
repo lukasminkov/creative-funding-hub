@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import RetainerForm from "./campaign-forms/RetainerForm";
 import PayPerViewForm from "./campaign-forms/PayPerViewForm";
 import ChallengeForm from "./campaign-forms/ChallengeForm";
@@ -184,7 +185,7 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                   className="space-y-8"
                 >
                   <div className="space-y-6">
-                    <div className="pb-6 border-b border-border/50">
+                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">General Information</h3>
                       <p className="text-sm text-muted-foreground">
                         This information will be visible on the explore page
@@ -205,8 +206,10 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                     />
                   </div>
                   
+                  <Separator className="my-4 bg-muted" />
+                  
                   <div className="space-y-6">
-                    <div className="pb-6 border-b border-border/50">
+                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">Creator Information</h3>
                       <p className="text-sm text-muted-foreground">
                         This information will only be visible to creators who have joined or been accepted
@@ -231,7 +234,7 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                   className="space-y-8"
                 >
                   <div className="space-y-6">
-                    <div className="pb-6 border-b border-border/50">
+                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">General Information</h3>
                       <p className="text-sm text-muted-foreground">
                         This information will be visible on the explore page
@@ -252,8 +255,10 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                     />
                   </div>
                   
+                  <Separator className="my-4 bg-muted" />
+                  
                   <div className="space-y-6">
-                    <div className="pb-6 border-b border-border/50">
+                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">Creator Information</h3>
                       <p className="text-sm text-muted-foreground">
                         This information will only be visible to creators who have joined or been accepted
@@ -278,7 +283,7 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                   className="space-y-8"
                 >
                   <div className="space-y-6">
-                    <div className="pb-6 border-b border-border/50">
+                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">General Information</h3>
                       <p className="text-sm text-muted-foreground">
                         This information will be visible on the explore page
@@ -299,8 +304,10 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
                     />
                   </div>
                   
+                  <Separator className="my-4 bg-muted" />
+                  
                   <div className="space-y-6">
-                    <div className="pb-6 border-b border-border/50">
+                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">Creator Information</h3>
                       <p className="text-sm text-muted-foreground">
                         This information will only be visible to creators who have joined or been accepted
