@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, Platform, ContentType, Category, Currency, DeliverableMode, DELIVERABLE_MODES, TikTokShopCommission, ExampleVideo, CountryOption } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -153,28 +152,26 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: Re
   const handleDeliverableModeChange = (mode: DeliverableMode) => {
     setDeliverableMode(mode);
     
-    let deliverables = {
-      mode: mode
-    };
-    
     if (mode === "videosPerDay") {
-      deliverables = {
-        ...deliverables,
-        videosPerDay,
-        durationDays
-      };
+      onChange({
+        ...campaign,
+        type: "retainer",
+        deliverables: {
+          mode: mode,
+          videosPerDay,
+          durationDays
+        }
+      });
     } else {
-      deliverables = {
-        ...deliverables,
-        totalVideos
-      };
+      onChange({
+        ...campaign,
+        type: "retainer",
+        deliverables: {
+          mode: mode,
+          totalVideos
+        }
+      });
     }
-    
-    onChange({
-      ...campaign,
-      type: "retainer",
-      deliverables
-    });
   };
 
   const handleVideosPerDayChange = (value: number) => {

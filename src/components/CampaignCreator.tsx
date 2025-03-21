@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
@@ -33,14 +32,13 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     platforms: [],
     type: "retainer",
     applicationDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now for application deadline
-    requirements: [],
     guidelines: { dos: [], donts: [] },
     trackingLink: "",
     requestedTrackingLink: false,
     exampleVideos: [],
     visibility: "public",
     countryAvailability: COUNTRY_OPTIONS[0], // Default to worldwide
-    requirements: [] // Added requirements
+    requirements: [] // Requirements list
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
@@ -61,7 +59,6 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
   };
 
   const validateCampaign = (): boolean => {
-    // Basic validation
     if (!campaign.title) {
       toast.error("Please enter a campaign title");
       return false;
@@ -92,7 +89,6 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
       return false;
     }
 
-    // Type-specific validation
     if (campaign.type === "retainer") {
       if (!campaign.applicationDeadline) {
         toast.error("Please set an application deadline");
@@ -105,7 +101,6 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
       }
     }
 
-    // Visibility validation
     if (campaign.visibility === "applicationOnly" && 
         (!campaign.applicationQuestions || campaign.applicationQuestions.length === 0)) {
       toast.error("Please add at least one application question");

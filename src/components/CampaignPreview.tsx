@@ -35,6 +35,17 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
     return null;
   };
 
+  const getDeliverablesSummary = () => {
+    if (campaign.type === "retainer" && campaign.deliverables) {
+      if (campaign.deliverables.mode === "videosPerDay" && campaign.deliverables.videosPerDay && campaign.deliverables.durationDays) {
+        return `${campaign.deliverables.videosPerDay} videos per day for ${campaign.deliverables.durationDays} days (${campaign.deliverables.videosPerDay * campaign.deliverables.durationDays} total)`;
+      } else if (campaign.deliverables.mode === "totalVideos" && campaign.deliverables.totalVideos) {
+        return `${campaign.deliverables.totalVideos} total videos`;
+      }
+    }
+    return null;
+  };
+
   return (
     <div className="sticky top-20 w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm max-h-[calc(100vh-120px)]">
       <ScrollArea className="h-[calc(100vh-120px)]">
@@ -58,6 +69,7 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             <h2 className="text-2xl font-medium text-gray-800">{campaign.title}</h2>
             <p className="text-gray-500 mt-1">
               {campaign.type && campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
+              {campaign.brandName && ` • ${campaign.brandName}`}
             </p>
           </div>
         )}
@@ -138,6 +150,14 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
                   <li key={index}>{requirement}</li>
                 ))}
               </ul>
+            </div>
+          )}
+          
+          {/* Deliverables section */}
+          {campaign.type === "retainer" && getDeliverablesSummary() && (
+            <div className="mb-6">
+              <p className="text-sm text-gray-500 mb-2">Deliverables</p>
+              <p className="font-medium text-gray-800">{getDeliverablesSummary()}</p>
             </div>
           )}
           
