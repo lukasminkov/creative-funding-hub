@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -13,7 +12,6 @@ import {
   Instagram,
   MessageSquare, 
   Plus, 
-  TikTok,
   Twitter,
   Users,
   Youtube
@@ -26,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SocialIcon } from "@/components/icons/SocialIcons";
 
 // Mock creators data
 const mockCreators = [
@@ -85,22 +84,6 @@ const mockApplications = [
     status: "pending"
   }
 ];
-
-// Social icon helper
-const SocialIcon = ({ platform }: { platform: string }) => {
-  switch (platform) {
-    case "instagram":
-      return <Instagram className="h-4 w-4" />;
-    case "tiktok":
-      return <TikTok className="h-4 w-4" />;
-    case "twitter":
-      return <Twitter className="h-4 w-4" />;
-    case "youtube":
-      return <Youtube className="h-4 w-4" />;
-    default:
-      return null;
-  }
-};
 
 export default function CampaignDetailPage() {
   const { id } = useParams();

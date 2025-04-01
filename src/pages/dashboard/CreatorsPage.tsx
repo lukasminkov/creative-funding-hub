@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Instagram, TikTok, Youtube, Twitter } from "lucide-react";
+import { Search } from "lucide-react";
+import { SocialIcon } from "@/components/icons/SocialIcons";
 
 // Mock creators data
 const mockAllCreators = [
@@ -64,22 +64,6 @@ const mockAllCreators = [
     status: "active"
   }
 ];
-
-// Social icon helper
-const SocialIcon = ({ platform }: { platform: string }) => {
-  switch (platform) {
-    case "instagram":
-      return <Instagram className="h-4 w-4" />;
-    case "tiktok":
-      return <TikTok className="h-4 w-4" />;
-    case "twitter":
-      return <Twitter className="h-4 w-4" />;
-    case "youtube":
-      return <Youtube className="h-4 w-4" />;
-    default:
-      return null;
-  }
-};
 
 export default function CreatorsPage() {
   const [searchQuery, setSearchQuery] = useState("");

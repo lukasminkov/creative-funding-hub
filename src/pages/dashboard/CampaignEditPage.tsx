@@ -108,7 +108,7 @@ export default function CampaignEditPage() {
       <CampaignCreator 
         onSubmit={handleSubmitCampaign}
         onCancel={handleCancelEdit}
-        initialValues={campaign}
+        campaign={campaign}
         isEditing={true}
       />
     </div>
