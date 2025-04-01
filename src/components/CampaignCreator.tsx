@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
@@ -16,12 +17,16 @@ import VisibilitySelector from "./VisibilitySelector";
 interface CampaignCreatorProps {
   onCancel: () => void;
   onSubmit: (campaign: Campaign) => void;
+  campaign?: Campaign;
+  isEditing?: boolean;
 }
 
-const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
-  const [campaignType, setCampaignType] = useState<"retainer" | "payPerView" | "challenge">("retainer");
+const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEditing = false }: CampaignCreatorProps) => {
+  const [campaignType, setCampaignType] = useState<"retainer" | "payPerView" | "challenge">(
+    initialCampaign?.type || "retainer"
+  );
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [campaign, setCampaign] = useState<Partial<Campaign>>({
+  const [campaign, setCampaign] = useState<Partial<Campaign>>(initialCampaign || {
     title: "",
     description: "",
     contentType: CONTENT_TYPES[0],
@@ -38,7 +43,6 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
     exampleVideos: [],
     visibility: "public",
     countryAvailability: COUNTRY_OPTIONS[0], // Default to worldwide
-    requirements: [] // Requirements list
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
@@ -132,7 +136,11 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
       return;
     }
 
-    setShowPaymentModal(true);
+    if (isEditing) {
+      onSubmit(campaign as Campaign);
+    } else {
+      setShowPaymentModal(true);
+    }
   };
 
   const handlePaymentComplete = () => {
@@ -154,13 +162,13 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
         className="bg-card border border-border rounded-lg overflow-hidden shadow-sm"
       >
         <div className="p-6 border-b border-border/60">
-          <h2 className="text-2xl font-medium">Create New Campaign</h2>
+          <h2 className="text-2xl font-medium">{isEditing ? "Edit Campaign" : "Create New Campaign"}</h2>
           <p className="text-muted-foreground">Set up rewards for creator content</p>
         </div>
         
         <div className="p-6">
           <Tabs
-            defaultValue="retainer"
+            defaultValue={campaignType}
             value={campaignType}
             onValueChange={(value) => {
               setCampaignType(value as "retainer" | "payPerView" | "challenge");
@@ -335,12 +343,12 @@ const CampaignCreator = ({ onCancel, onSubmit }: CampaignCreatorProps) => {
             </Button>
             <Button variant="outline" onClick={handleSaveAsDraft}>
               <Save className="h-4 w-4 mr-2" />
-              Save as Draft
+              {isEditing ? "Save Changes" : "Save as Draft"}
             </Button>
           </div>
           <Button onClick={handleLaunchCampaign}>
             <Rocket className="h-4 w-4 mr-2" />
-            Launch Campaign
+            {isEditing ? "Update Campaign" : "Launch Campaign"}
           </Button>
         </div>
       </motion.div>

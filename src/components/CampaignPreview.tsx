@@ -1,6 +1,7 @@
 
 import { Campaign, formatCurrency, getDaysLeft, getCountryLabel } from "@/lib/campaign-types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CheckCircle, XCircle } from "lucide-react";
 
 interface CampaignPreviewProps {
   campaign: Partial<Campaign>;
@@ -142,14 +143,44 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           )}
           
-          {campaign.requirements && campaign.requirements.length > 0 && (
+          {/* Guidelines section */}
+          {campaign.guidelines && (campaign.guidelines.dos?.length > 0 || campaign.guidelines.donts?.length > 0) && (
             <div className="mb-6">
-              <p className="text-sm text-gray-500 mb-2">Requirements</p>
-              <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
-                {campaign.requirements.map((requirement, index) => (
-                  <li key={index}>{requirement}</li>
-                ))}
-              </ul>
+              <p className="text-sm text-gray-500 mb-2">Guidelines</p>
+              
+              <div className="space-y-3">
+                {campaign.guidelines.dos && campaign.guidelines.dos.length > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-sm font-medium text-green-800 flex items-center mb-2">
+                      <CheckCircle className="h-4 w-4 mr-1.5" /> Do's
+                    </p>
+                    <ul className="space-y-1.5">
+                      {campaign.guidelines.dos.map((item, index) => (
+                        <li key={index} className="text-sm text-gray-700 flex">
+                          <span className="text-green-500 mr-1.5">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {campaign.guidelines.donts && campaign.guidelines.donts.length > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-sm font-medium text-red-800 flex items-center mb-2">
+                      <XCircle className="h-4 w-4 mr-1.5" /> Don'ts
+                    </p>
+                    <ul className="space-y-1.5">
+                      {campaign.guidelines.donts.map((item, index) => (
+                        <li key={index} className="text-sm text-gray-700 flex">
+                          <span className="text-red-500 mr-1.5">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -81,6 +82,40 @@ const mockApplications = [
     avatar: "https://i.pravatar.cc/150?u=marcus",
     platforms: ["instagram", "youtube"],
     followers: 8500,
+    status: "pending"
+  }
+];
+
+// Mock submissions data
+const mockSubmissions = [
+  {
+    id: 201,
+    creator: "Sarah Johnson",
+    avatar: "https://i.pravatar.cc/150?u=sarah",
+    title: "Product Review Video",
+    platform: "tiktok",
+    views: 8500,
+    date: "2023-09-10",
+    status: "approved"
+  },
+  {
+    id: 202,
+    creator: "Mike Peters",
+    avatar: "https://i.pravatar.cc/150?u=mike",
+    title: "Brand Unboxing",
+    platform: "youtube",
+    views: 12300,
+    date: "2023-09-05",
+    status: "approved"
+  },
+  {
+    id: 203,
+    creator: "Jessica Williams",
+    avatar: "https://i.pravatar.cc/150?u=jessica",
+    title: "Tutorial with Product",
+    platform: "instagram",
+    views: 5600,
+    date: "2023-09-12",
     status: "pending"
   }
 ];
@@ -457,16 +492,45 @@ export default function CampaignDetailPage() {
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold mb-2">Requirements</h3>
-                {campaign.requirements && campaign.requirements.length > 0 ? (
-                  <ul className="list-disc pl-5 space-y-1">
-                    {campaign.requirements.map((req, index) => (
-                      <li key={index} className="text-muted-foreground">{req}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-muted-foreground">No specific requirements.</p>
-                )}
+                <h3 className="text-lg font-semibold mb-2">Guidelines</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 className="font-medium flex items-center mb-3 text-green-700">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-green-500 mr-2">✓</span>
+                      Do's
+                    </h4>
+                    {campaign.guidelines.dos && campaign.guidelines.dos.length > 0 ? (
+                      <ul className="space-y-2">
+                        {campaign.guidelines.dos.map((doItem, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-green-600 mr-2">•</span>
+                            <span className="text-gray-700">{doItem}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-muted-foreground">No specific do's provided.</p>
+                    )}
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h4 className="font-medium flex items-center mb-3 text-red-700">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-red-500 mr-2">✕</span>
+                      Don'ts
+                    </h4>
+                    {campaign.guidelines.donts && campaign.guidelines.donts.length > 0 ? (
+                      <ul className="space-y-2">
+                        {campaign.guidelines.donts.map((dontItem, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-red-600 mr-2">•</span>
+                            <span className="text-gray-700">{dontItem}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-muted-foreground">No specific don'ts provided.</p>
+                    )}
+                  </div>
+                </div>
               </div>
               
               <div>
@@ -693,6 +757,76 @@ export default function CampaignDetailPage() {
             </TabsContent>
           </CardContent>
         </Tabs>
+      </Card>
+      
+      {/* Submissions Section */}
+      <div className="mt-8 mb-6">
+        <h3 className="text-xl font-semibold mb-4">Content Submissions</h3>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Submissions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {mockSubmissions.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Creator</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Views</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockSubmissions.map((submission) => (
+                    <TableRow key={submission.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={submission.avatar} alt={submission.creator} />
+                            <AvatarFallback>{submission.creator.substring(0, 2)}</AvatarFallback>
+                          </Avatar>
+                          <div className="font-medium">{submission.creator}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{submission.title}</TableCell>
+                      <TableCell>
+                        <div className="bg-secondary/50 p-1 rounded-full w-fit">
+                          <SocialIcon platform={submission.platform} />
+                        </div>
+                      </TableCell>
+                      <TableCell>{submission.views.toLocaleString()}</TableCell>
+                      <TableCell>{new Date(submission.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          submission.status === 'approved' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm">View</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground mb-4">No submissions yet</p>
+              <Button variant="outline">Remind Creators</Button>
+            </div>
+          )}
+        </CardContent>
       </Card>
     </div>
   );
