@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { ThemeProvider } from "./providers/theme-provider";
 
 // Dashboard routes
 import DashboardIndexPage from "./pages/dashboard/IndexPage";
@@ -24,35 +25,39 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          
-          {/* Dashboard Routes */}
-          <Route path="/dashboard" element={<DashboardIndexPage />}>
-            <Route index element={<DashboardHome />} />
-            <Route path="explore" element={<ExplorePage />} />
-            <Route path="campaigns" element={<CampaignsPage />} />
-            <Route path="campaigns/create" element={<CampaignCreatePage />} />
-            <Route path="campaigns/:id" element={<CampaignDetailPage />} />
-            <Route path="campaigns/:id/edit" element={<CampaignEditPage />} />
-            <Route path="campaigns/:id/chat" element={<CampaignChatPage />} />
-            <Route path="creators" element={<CreatorsPage />} />
-            <Route path="messages" element={<MessagesPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
+    <ThemeProvider defaultTheme="light" storageKey="creator-crm-theme">
+      <TooltipProvider>
+        <div className="min-h-screen transition-colors">
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={<DashboardIndexPage />}>
+                <Route index element={<DashboardHome />} />
+                <Route path="explore" element={<ExplorePage />} />
+                <Route path="campaigns" element={<CampaignsPage />} />
+                <Route path="campaigns/create" element={<CampaignCreatePage />} />
+                <Route path="campaigns/:id" element={<CampaignDetailPage />} />
+                <Route path="campaigns/:id/edit" element={<CampaignEditPage />} />
+                <Route path="campaigns/:id/chat" element={<CampaignChatPage />} />
+                <Route path="creators" element={<CreatorsPage />} />
+                <Route path="messages" element={<MessagesPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
 
-          {/* Redirect old dashboard to new dashboard */}
-          <Route path="/dashboard/campaigns" element={<Navigate to="/dashboard/campaigns" replace />} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+              {/* Redirect old dashboard to new dashboard */}
+              <Route path="/dashboard/campaigns" element={<Navigate to="/dashboard/campaigns" replace />} />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </div>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

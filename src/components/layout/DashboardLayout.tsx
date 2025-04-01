@@ -9,7 +9,9 @@ import {
   MessageSquare, 
   Settings, 
   User, 
-  LogOut
+  LogOut,
+  Moon,
+  Sun
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -29,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/providers/theme-provider";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -56,7 +59,7 @@ const menuItems = [
     icon: User,
   },
   {
-    title: "Messages",
+    title: "Chats",
     path: "/dashboard/messages",
     icon: MessageSquare,
   },
@@ -70,6 +73,7 @@ const menuItems = [
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     setIsMounted(true);
@@ -122,15 +126,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="p-4 space-y-4">
-            <div className="flex items-center gap-3 px-2">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
-                <AvatarFallback>AH</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">ad hoc gaming GmbH</span>
-                <span className="text-xs text-muted-foreground">Business</span>
+            <div className="flex items-center justify-between w-full px-2">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
+                  <AvatarFallback>AH</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">ad hoc gaming GmbH</span>
+                  <span className="text-xs text-muted-foreground">Business</span>
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="ml-auto"
+              >
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
             </div>
             <Button variant="outline" size="sm" className="w-full justify-start">
               <LogOut className="mr-2 h-4 w-4" />
