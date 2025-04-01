@@ -7,7 +7,6 @@ import {
   Home, 
   Layers, 
   MessageSquare, 
-  Search,
   Settings, 
   User, 
   LogOut
@@ -62,11 +61,6 @@ const menuItems = [
     icon: MessageSquare,
   },
   {
-    title: "Analytics",
-    path: "/dashboard/analytics",
-    icon: BarChart3,
-  },
-  {
     title: "Settings",
     path: "/dashboard/settings",
     icon: Settings,
@@ -102,7 +96,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {menuItems.map((item) => {
+                  {menuItems.filter(item => item.title !== "Analytics").map((item) => {
                     const isActive = location.pathname === item.path || 
                       (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
                     
@@ -153,19 +147,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 {menuItems.find(item => item.path === location.pathname || 
                   (item.path !== "/dashboard" && location.pathname.startsWith(item.path)))?.title || "Dashboard"}
               </h1>
-              
-              <div className="flex items-center gap-3">
-                <div className="relative w-64 lg:w-80">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <input
-                    placeholder="Search..."
-                    className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-4 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </div>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </div>
             </div>
           </header>
           <main className="flex-1">

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -61,6 +62,10 @@ const mockApplications = [
     avatar: "https://i.pravatar.cc/150?u=tyler",
     platforms: ["instagram", "tiktok", "youtube"],
     followers: 15000,
+    totalViews: 120000,
+    totalGmv: 5200,
+    customQuestion1: "I've worked with similar brands before",
+    customQuestion2: "I can deliver within 1 week",
     status: "pending"
   },
   {
@@ -69,6 +74,10 @@ const mockApplications = [
     avatar: "https://i.pravatar.cc/150?u=aisha",
     platforms: ["tiktok"],
     followers: 22000,
+    totalViews: 180000,
+    totalGmv: 7500,
+    customQuestion1: "My audience loves tech products",
+    customQuestion2: "Available for immediate start",
     status: "pending"
   },
   {
@@ -77,6 +86,10 @@ const mockApplications = [
     avatar: "https://i.pravatar.cc/150?u=marcus",
     platforms: ["instagram", "youtube"],
     followers: 8500,
+    totalViews: 75000,
+    totalGmv: 3100,
+    customQuestion1: "I specialize in unboxing videos",
+    customQuestion2: "Can provide additional promotion",
     status: "pending"
   }
 ];
@@ -153,19 +166,6 @@ export default function CampaignDetailPage() {
           <div className="h-8 w-48 bg-muted rounded mb-4"></div>
           <div className="h-6 w-64 bg-muted rounded"></div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {Array(4).fill(0).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="pb-2">
-                <div className="h-4 w-24 bg-muted rounded"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-20 bg-muted rounded mb-2"></div>
-                <div className="h-3 w-32 bg-muted rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       </div>
     );
   }
@@ -227,14 +227,6 @@ export default function CampaignDetailPage() {
     progressText = `${Math.round(progress)}% complete`;
   }
 
-  // Simulated stats
-  const stats = {
-    views: 15000 + Math.floor(Math.random() * 10000),
-    submissions: 12 + Math.floor(Math.random() * 10),
-    creators: 3 + Math.floor(Math.random() * 3),
-    spent: campaign.totalBudget * (progress/100),
-  };
-
   return (
     <div className="container py-8">
       <div className="flex items-center mb-2">
@@ -286,60 +278,6 @@ export default function CampaignDetailPage() {
         </div>
       </div>
 
-      {/* Campaign Analytics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.views.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              From creator content
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats.spent.toLocaleString('en-US', { maximumFractionDigits: 2 })}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Of ${campaign.totalBudget.toLocaleString()} total
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Submissions</CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.submissions}</div>
-            <p className="text-xs text-muted-foreground">
-              Content submissions received
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Creators</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.creators}</div>
-            <p className="text-xs text-muted-foreground">
-              Working on this campaign
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Campaign Status Card */}
       <Card className="mb-8">
         <CardHeader>
@@ -363,13 +301,13 @@ export default function CampaignDetailPage() {
                 <div>
                   <div className="text-sm text-muted-foreground">Cost Per View</div>
                   <div className="text-lg font-semibold">
-                    ${((stats.spent / stats.views) || 0).toFixed(4)}
+                    ${(((campaign.totalBudget * (progress/100)) / 15000) || 0).toFixed(4)}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Remaining Budget</div>
                   <div className="text-lg font-semibold">
-                    ${(campaign.totalBudget - stats.spent).toFixed(2)}
+                    ${(campaign.totalBudget - (campaign.totalBudget * (progress/100))).toFixed(2)}
                   </div>
                 </div>
                 <div className="md:col-span-2">
@@ -415,7 +353,7 @@ export default function CampaignDetailPage() {
                 <div>
                   <div className="text-sm text-muted-foreground">Submissions</div>
                   <div className="text-lg font-semibold">
-                    {stats.submissions}
+                    {mockSubmissions.length}
                   </div>
                 </div>
                 <div>
@@ -433,6 +371,84 @@ export default function CampaignDetailPage() {
               </>
             )}
           </div>
+        </CardContent>
+      </Card>
+      
+      {/* Submissions Section - Moved above Creators & Applications */}
+      <div className="mb-6">
+        <h3 className="text-xl font-semibold mb-4">Content Submissions</h3>
+      </div>
+      
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Submissions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {mockSubmissions.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Creator</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Views</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockSubmissions.map((submission) => (
+                    <TableRow key={submission.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={submission.avatar} alt={submission.creator} />
+                            <AvatarFallback>{submission.creator.substring(0, 2)}</AvatarFallback>
+                          </Avatar>
+                          <div className="font-medium">{submission.creator}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{submission.title}</TableCell>
+                      <TableCell>
+                        <div className="bg-secondary/50 p-1 rounded-full w-fit">
+                          <SocialIcon platform={submission.platform} />
+                        </div>
+                      </TableCell>
+                      <TableCell>{submission.views.toLocaleString()}</TableCell>
+                      <TableCell>{new Date(submission.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          submission.status === 'approved' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="space-x-2">
+                          <Button variant="ghost" size="sm">View</Button>
+                          {submission.status === 'pending' && (
+                            <>
+                              <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">Approve</Button>
+                              <Button variant="destructive" size="sm">Deny</Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground mb-4">No submissions yet</p>
+              <Button variant="outline">Remind Creators</Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -511,7 +527,10 @@ export default function CampaignDetailPage() {
                       <TableRow>
                         <TableHead>Creator</TableHead>
                         <TableHead>Platforms</TableHead>
-                        <TableHead>Followers</TableHead>
+                        <TableHead>Total Views</TableHead>
+                        <TableHead>Total GMV</TableHead>
+                        <TableHead>Custom Question 1</TableHead>
+                        <TableHead>Custom Question 2</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -538,7 +557,10 @@ export default function CampaignDetailPage() {
                               ))}
                             </div>
                           </TableCell>
-                          <TableCell>{creator.followers.toLocaleString()}</TableCell>
+                          <TableCell>{creator.totalViews.toLocaleString()}</TableCell>
+                          <TableCell>${creator.totalGmv.toLocaleString()}</TableCell>
+                          <TableCell>{creator.customQuestion1}</TableCell>
+                          <TableCell>{creator.customQuestion2}</TableCell>
                           <TableCell className="text-right space-x-2">
                             <Button variant="outline" size="sm">Review</Button>
                             <Button variant="ghost" size="sm">Approve</Button>
@@ -557,84 +579,6 @@ export default function CampaignDetailPage() {
             </TabsContent>
           </CardContent>
         </Tabs>
-      </Card>
-      
-      {/* Submissions Section */}
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-4">Content Submissions</h3>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Submissions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {mockSubmissions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Creator</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Platform</TableHead>
-                    <TableHead>Views</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockSubmissions.map((submission) => (
-                    <TableRow key={submission.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={submission.avatar} alt={submission.creator} />
-                            <AvatarFallback>{submission.creator.substring(0, 2)}</AvatarFallback>
-                          </Avatar>
-                          <div className="font-medium">{submission.creator}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{submission.title}</TableCell>
-                      <TableCell>
-                        <div className="bg-secondary/50 p-1 rounded-full w-fit">
-                          <SocialIcon platform={submission.platform} />
-                        </div>
-                      </TableCell>
-                      <TableCell>{submission.views.toLocaleString()}</TableCell>
-                      <TableCell>{new Date(submission.date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          submission.status === 'approved' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="space-x-2">
-                          <Button variant="ghost" size="sm">View</Button>
-                          {submission.status === 'pending' && (
-                            <>
-                              <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">Approve</Button>
-                              <Button variant="destructive" size="sm">Deny</Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground mb-4">No submissions yet</p>
-              <Button variant="outline">Remind Creators</Button>
-            </div>
-          )}
-        </CardContent>
       </Card>
     </div>
   );
