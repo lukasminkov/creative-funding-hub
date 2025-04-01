@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
@@ -8,7 +7,6 @@ import { Separator } from "@/components/ui/separator";
 import RetainerForm from "./campaign-forms/RetainerForm";
 import PayPerViewForm from "./campaign-forms/PayPerViewForm";
 import ChallengeForm from "./campaign-forms/ChallengeForm";
-import CampaignPreview from "./CampaignPreview";
 import CampaignPaymentModal from "./CampaignPaymentModal";
 import { Save, Rocket } from "lucide-react";
 import { toast } from "sonner";
@@ -154,7 +152,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="campaign-layout"
+      className="w-full max-w-5xl mx-auto"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -351,14 +349,6 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
             {isEditing ? "Update Campaign" : "Launch Campaign"}
           </Button>
         </div>
-      </motion.div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <CampaignPreview campaign={campaign} />
       </motion.div>
 
       {showPaymentModal && (

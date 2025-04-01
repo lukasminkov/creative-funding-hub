@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -10,12 +9,9 @@ import {
   Edit, 
   Eye, 
   FileCheck, 
-  Instagram,
   MessageSquare, 
   Plus, 
-  Twitter,
   Users,
-  Youtube
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -276,7 +272,6 @@ export default function CampaignDetailPage() {
                 </DrawerDescription>
               </DrawerHeader>
               <div className="p-4 space-y-4">
-                {/* Budget addition form would go here */}
                 <Button className="w-full">Add $1,000 to Budget</Button>
               </div>
             </DrawerContent>
@@ -456,192 +451,267 @@ export default function CampaignDetailPage() {
         </Card>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="md:col-span-2">
-          {campaign.bannerImage && (
-            <div className="rounded-lg overflow-hidden mb-6">
-              <img 
-                src={campaign.bannerImage} 
-                alt={campaign.title} 
-                className="w-full object-cover h-64" 
-              />
+      {campaign.bannerImage && (
+        <div className="rounded-lg overflow-hidden mb-6 shadow">
+          <img 
+            src={campaign.bannerImage} 
+            alt={campaign.title} 
+            className="w-full object-cover h-64" 
+          />
+        </div>
+      )}
+          
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Campaign Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Description</h3>
+            <p className="text-muted-foreground">
+              {campaign.description || "No description provided."}
+            </p>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Platforms</h3>
+            <div className="flex flex-wrap gap-2">
+              {campaign.platforms && campaign.platforms.map(platform => (
+                <div key={platform} className="bg-secondary text-secondary-foreground text-xs px-3 py-1 rounded-full">
+                  {platform}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Guidelines</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-medium flex items-center mb-3 text-green-700">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-green-500 mr-2">✓</span>
+                  Do's
+                </h4>
+                {campaign.guidelines.dos && campaign.guidelines.dos.length > 0 ? (
+                  <ul className="space-y-2">
+                    {campaign.guidelines.dos.map((doItem, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-green-600 mr-2">•</span>
+                        <span className="text-gray-700">{doItem}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground">No specific do's provided.</p>
+                )}
+              </div>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h4 className="font-medium flex items-center mb-3 text-red-700">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-red-500 mr-2">✕</span>
+                  Don'ts
+                </h4>
+                {campaign.guidelines.donts && campaign.guidelines.donts.length > 0 ? (
+                  <ul className="space-y-2">
+                    {campaign.guidelines.donts.map((dontItem, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-red-600 mr-2">•</span>
+                        <span className="text-gray-700">{dontItem}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground">No specific don'ts provided.</p>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Important Dates</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-start gap-2">
+                <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <div className="font-medium">End Date</div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(campaign.endDate).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+              
+              {campaign.type === "retainer" && campaign.applicationDeadline && (
+                <div className="flex items-start gap-2">
+                  <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <div className="font-medium">Application Deadline</div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(campaign.applicationDeadline).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {campaign.type === "challenge" && campaign.submissionDeadline && (
+                <div className="flex items-start gap-2">
+                  <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <div className="font-medium">Submission Deadline</div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(campaign.submissionDeadline).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Campaign specific details based on type */}
+          {campaign.type === "retainer" && campaign.deliverables && (
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Deliverables</h3>
+              <div className="bg-muted/50 rounded-md p-4">
+                {campaign.deliverables.mode === "totalVideos" ? (
+                  <p>{campaign.deliverables.totalVideos} total videos</p>
+                ) : (
+                  <p>
+                    {campaign.deliverables.videosPerDay} videos per day for {campaign.deliverables.durationDays} days
+                  </p>
+                )}
+              </div>
             </div>
           )}
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaign Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-muted-foreground">
-                  {campaign.description || "No description provided."}
+          {campaign.type === "payPerView" && (
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Payment Details</h3>
+              <div className="bg-muted/50 rounded-md p-4">
+                <p>
+                  <strong>Rate per 1,000 views:</strong> ${campaign.ratePerThousand}
+                </p>
+                <p className="mt-1">
+                  <strong>Maximum payout per submission:</strong> ${campaign.maxPayoutPerSubmission}
                 </p>
               </div>
-              
+            </div>
+          )}
+          
+          {campaign.type === "challenge" && campaign.prizePool && (
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Prize Pool</h3>
+              <div className="bg-muted/50 rounded-md p-4 space-y-2">
+                {campaign.prizePool.places.map((place, idx) => (
+                  <div key={idx} className="flex justify-between items-center">
+                    <span className="font-medium">
+                      {place.position === 1 ? "1st" : 
+                       place.position === 2 ? "2nd" : 
+                       place.position === 3 ? "3rd" : 
+                       `${place.position}th`} Place
+                    </span>
+                    <span>${place.prize.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <div className="bg-muted/30 rounded-md p-4">
+            <h3 className="text-lg font-semibold mb-2">Campaign Status</h3>
+            <div className="mb-5">
+              <div className="flex justify-between mb-1 text-sm">
+                <span>{progressText}</span>
+                <span className={`text-xs py-1 px-2 rounded-full ${statusColor}`}>
+                  {status}
+                </span>
+              </div>
+              <Progress 
+                value={progress} 
+                className="h-3"
+              />
+            </div>
+            
+            {campaign.type === "payPerView" && (
               <div>
-                <h3 className="text-lg font-semibold mb-2">Platforms</h3>
-                <div className="flex flex-wrap gap-2">
-                  {campaign.platforms && campaign.platforms.map(platform => (
-                    <div key={platform} className="bg-secondary text-secondary-foreground text-xs px-3 py-1 rounded-full">
-                      {platform}
+                <div className="grid grid-cols-2 gap-2 mb-5">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Cost Per View</div>
+                    <div className="text-lg font-semibold">
+                      ${((stats.spent / stats.views) || 0).toFixed(4)}
                     </div>
-                  ))}
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Remaining Budget</div>
+                    <div className="text-lg font-semibold">
+                      ${(campaign.totalBudget - stats.spent).toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+                
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <Button variant="outline" className="w-full mb-2">Add Budget</Button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <DrawerHeader>
+                      <DrawerTitle>Add Budget to Campaign</DrawerTitle>
+                      <DrawerDescription>
+                        Increase the budget for "{campaign.title}"
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <div className="p-4 space-y-4">
+                      <Button className="w-full">Add $1,000 to Budget</Button>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              </div>
+            )}
+            
+            {campaign.type === "retainer" && (
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <div>
+                  <div className="text-sm text-muted-foreground">Days Remaining</div>
+                  <div className="text-lg font-semibold">
+                    {Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Approval Rate</div>
+                  <div className="text-lg font-semibold">
+                    92%
+                  </div>
                 </div>
               </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Guidelines</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h4 className="font-medium flex items-center mb-3 text-green-700">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-green-500 mr-2">✓</span>
-                      Do's
-                    </h4>
-                    {campaign.guidelines.dos && campaign.guidelines.dos.length > 0 ? (
-                      <ul className="space-y-2">
-                        {campaign.guidelines.dos.map((doItem, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-green-600 mr-2">•</span>
-                            <span className="text-gray-700">{doItem}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-muted-foreground">No specific do's provided.</p>
-                    )}
+            )}
+            
+            {campaign.type === "challenge" && (
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <div>
+                  <div className="text-sm text-muted-foreground">Submissions</div>
+                  <div className="text-lg font-semibold">
+                    {stats.submissions}
                   </div>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <h4 className="font-medium flex items-center mb-3 text-red-700">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-red-500 mr-2">✕</span>
-                      Don'ts
-                    </h4>
-                    {campaign.guidelines.donts && campaign.guidelines.donts.length > 0 ? (
-                      <ul className="space-y-2">
-                        {campaign.guidelines.donts.map((dontItem, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-red-600 mr-2">•</span>
-                            <span className="text-gray-700">{dontItem}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-muted-foreground">No specific don'ts provided.</p>
-                    )}
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Days Remaining</div>
+                  <div className="text-lg font-semibold">
+                    {Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))}
                   </div>
                 </div>
               </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Important Dates</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-start gap-2">
-                    <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <div>
-                      <div className="font-medium">End Date</div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(campaign.endDate).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {campaign.type === "retainer" && campaign.applicationDeadline && (
-                    <div className="flex items-start gap-2">
-                      <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <div className="font-medium">Application Deadline</div>
-                        <div className="text-sm text-muted-foreground">
-                          {new Date(campaign.applicationDeadline).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {campaign.type === "challenge" && campaign.submissionDeadline && (
-                    <div className="flex items-start gap-2">
-                      <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <div className="font-medium">Submission Deadline</div>
-                        <div className="text-sm text-muted-foreground">
-                          {new Date(campaign.submissionDeadline).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Campaign specific details based on type */}
-              {campaign.type === "retainer" && campaign.deliverables && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Deliverables</h3>
-                  <div className="bg-muted/50 rounded-md p-4">
-                    {campaign.deliverables.mode === "totalVideos" ? (
-                      <p>{campaign.deliverables.totalVideos} total videos</p>
-                    ) : (
-                      <p>
-                        {campaign.deliverables.videosPerDay} videos per day for {campaign.deliverables.durationDays} days
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {campaign.type === "payPerView" && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Payment Details</h3>
-                  <div className="bg-muted/50 rounded-md p-4">
-                    <p>
-                      <strong>Rate per 1,000 views:</strong> ${campaign.ratePerThousand}
-                    </p>
-                    <p className="mt-1">
-                      <strong>Maximum payout per submission:</strong> ${campaign.maxPayoutPerSubmission}
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {campaign.type === "challenge" && campaign.prizePool && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Prize Pool</h3>
-                  <div className="bg-muted/50 rounded-md p-4 space-y-2">
-                    {campaign.prizePool.places.map((place, idx) => (
-                      <div key={idx} className="flex justify-between items-center">
-                        <span className="font-medium">
-                          {place.position === 1 ? "1st" : 
-                           place.position === 2 ? "2nd" : 
-                           place.position === 3 ? "3rd" : 
-                           `${place.position}th`} Place
-                        </span>
-                        <span>${place.prize.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="md:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaign Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {renderMetrics()}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            )}
+            
+            {campaign.type === "challenge" && status === "Judging" && (
+              <Button variant="outline" className="w-full mt-2">View Submissions for Judging</Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Creators & Applications */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-4">Creators & Applications</h3>
       </div>
 
-      <Card>
+      <Card className="mb-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <CardHeader className="pb-0 border-b">
             <TabsList>
