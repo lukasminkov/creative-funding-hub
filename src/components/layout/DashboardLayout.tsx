@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { BarChart3, Compass, Home, Layers, MessageSquare, Settings, User, LogOut, Moon, Sun, Plus, ChevronLeft, ChevronRight } from "lucide-react";
@@ -43,7 +44,7 @@ const SidebarToggle = () => {
     state
   } = useSidebar();
   return <Button variant="ghost" size="icon" onClick={toggleSidebar} className={cn("h-8 w-8 z-50", state === "expanded" ? "absolute top-4 right-3" // Inside when expanded
-  : "fixed left-[calc(var(--sidebar-width-icon)+0.25rem)] top-4" // Moved closer to sidebar when collapsed
+  : "fixed left-[calc(var(--sidebar-width-icon)+0.25rem)] top-5" // Moved down to align with logo
   )}>
       {state === "expanded" ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
       <span className="sr-only">Toggle Sidebar</span>
