@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
+
 const menuItems = [{
   title: "Home",
   path: "/dashboard",
@@ -34,18 +36,20 @@ const menuItems = [{
   path: "/dashboard/settings",
   icon: Settings
 }];
+
 const SidebarToggle = () => {
   const {
     toggleSidebar,
     state
   } = useSidebar();
   return <Button variant="ghost" size="icon" onClick={toggleSidebar} className={cn("h-8 w-8 z-50", state === "expanded" ? "absolute top-4 right-3" // Inside when expanded
-  : "fixed left-[calc(var(--sidebar-width-icon)+0.5rem)] top-4" // Outside when collapsed
+  : "fixed left-[calc(var(--sidebar-width-icon)+0.25rem)] top-4" // Moved closer to sidebar when collapsed
   )}>
       {state === "expanded" ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>;
 };
+
 export default function DashboardLayout({
   children
 }: DashboardLayoutProps) {
@@ -58,12 +62,15 @@ export default function DashboardLayout({
   const {
     state
   } = useSidebar();
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
   if (!isMounted) {
     return null;
   }
+
   return <div className="flex h-screen w-full bg-background dark:bg-background">
       <Sidebar side="left" variant="sidebar" collapsible="icon" className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50">
         <SidebarHeader className="relative">
