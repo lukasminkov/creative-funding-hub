@@ -85,7 +85,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full bg-background dark:bg-background">
         <Sidebar variant="floating" collapsible="icon" className="border-r border-border/10">
           <SidebarHeader>
@@ -109,12 +109,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "transition-all duration-200 h-10 rounded-xl flex items-center justify-center",
+                        "transition-all duration-200 h-10 rounded-xl flex items-center",
                         isActive 
                           ? "bg-primary text-white font-medium" 
                           : "hover:bg-accent",
-                        // Make the button icon-centric when collapsed
-                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                        // Make the button icon-centric when collapsed, centered vertically
+                        "group-data-[collapsible=icon]:h-10",
+                        "group-data-[collapsible=icon]:w-10",
+                        "group-data-[collapsible=icon]:flex",
+                        "group-data-[collapsible=icon]:items-center",
+                        "group-data-[collapsible=icon]:justify-center"
                       )}
                     >
                       <Link to={item.path} className="w-full flex items-center">
@@ -122,7 +126,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           "h-5 w-5",
                           // Adjust the icon positioning for expanded/collapsed states
                           "group-data-[collapsible=icon]:mx-auto",
-                          "group-data-[state=expanded]:mr-3"
+                          "group-data-[state=expanded]:ml-3 group-data-[state=expanded]:mr-3"
                         )} />
                         <span className="group-data-[collapsible=icon]:sr-only">
                           {item.title}
@@ -139,14 +143,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 asChild
                 className={cn(
                   "w-full justify-start rounded-xl h-10 bg-primary hover:bg-primary/90 transition-all",
-                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                  "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10",
+                  "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:min-w-10",
+                  "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center",
+                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto"
                 )}
               >
-                <Link to="/dashboard/campaigns/create" className="flex items-center">
+                <Link to="/dashboard/campaigns/create" className="flex items-center w-full justify-center">
                   <Plus className={cn(
                     "h-5 w-5",
                     "group-data-[collapsible=icon]:mx-auto",
-                    "group-data-[state=expanded]:mr-2"
+                    "group-data-[state=expanded]:ml-0 group-data-[state=expanded]:mr-2"
                   )} />
                   <span className="group-data-[collapsible=icon]:sr-only">
                     Create Campaign
@@ -187,7 +194,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               size="sm" 
               className={cn(
                 "w-full justify-start rounded-xl",
-                "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-8",
+                "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:min-w-10",
+                "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center",
+                "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto"
               )}
             >
               <LogOut className={cn(
