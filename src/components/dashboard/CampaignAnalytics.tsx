@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Select, 
@@ -55,22 +54,18 @@ type DateRange = {
 
 type DateRangePreset = 'custom' | 'wtd' | 'mtd' | 'ytd' | 'lastMonth';
 
-// Mock data generator function
 const generateAnalyticsData = (campaignId?: string, dateRange?: DateRange) => {
-  // Generate 30 days of data by default or use the date range if provided
   const data: AnalyticsData[] = [];
   const now = new Date();
   const endDate = dateRange?.to || now;
-  const startDate = dateRange?.from || subDays(now, 29); // Default to last 30 days
+  const startDate = dateRange?.from || subDays(now, 29);
   
-  // Calculate number of days in the range
   const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
-  let viewsBase = campaignId ? 100 : 500; // Lower for individual campaigns
-  let cpmBase = campaignId ? 8 : 6; // Higher for individual campaigns
+  let viewsBase = campaignId ? 100 : 500;
+  let cpmBase = campaignId ? 8 : 6;
   let spentBase = viewsBase * cpmBase / 1000;
   
-  // Add some randomness based on campaign ID if present
   if (campaignId) {
     const campaignNum = parseInt(campaignId.replace(/\D/g, ''), 10) || 0;
     viewsBase += campaignNum * 20;
@@ -81,13 +76,12 @@ const generateAnalyticsData = (campaignId?: string, dateRange?: DateRange) => {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
     
-    // Add some daily variation
-    const variation = Math.sin(i * 0.3) * 0.4 + 1; // Oscillates between 0.6 and 1.4
+    const variation = Math.sin(i * 0.3) * 0.4 + 1;
     const dayOfWeek = date.getDay();
     const weekendMultiplier = (dayOfWeek === 0 || dayOfWeek === 6) ? 1.3 : 1;
     
     const views = Math.round(viewsBase * variation * weekendMultiplier);
-    const cpm = +(cpmBase * (1 + (Math.random() * 0.4 - 0.2))).toFixed(2); // CPM varies by ±20%
+    const cpm = +(cpmBase * (1 + (Math.random() * 0.4 - 0.2))).toFixed(2);
     const spent = +(views * cpm / 1000).toFixed(2);
     
     data.push({
@@ -97,35 +91,33 @@ const generateAnalyticsData = (campaignId?: string, dateRange?: DateRange) => {
       spent
     });
     
-    // Slight upward trend as we approach current day
     viewsBase *= 1.03;
-    if (i > daysDiff / 2) cpmBase *= 0.99; // CPM decreases slightly in recent days
+    if (i > daysDiff / 2) cpmBase *= 0.99;
   }
   
   return data;
 };
 
-// Helper function to get date range based on preset
 const getDateRangeFromPreset = (preset: DateRangePreset): DateRange => {
   const now = new Date();
   
   switch (preset) {
-    case 'wtd': // Week to date
+    case 'wtd':
       return {
         from: startOfWeek(now, { weekStartsOn: 1 }),
         to: now
       };
-    case 'mtd': // Month to date
+    case 'mtd':
       return {
         from: startOfMonth(now),
         to: now
       };
-    case 'ytd': // Year to date
+    case 'ytd':
       return {
         from: startOfYear(now),
         to: now
       };
-    case 'lastMonth': // Last month
+    case 'lastMonth':
       const lastMonth = subMonths(now, 1);
       return {
         from: startOfMonth(lastMonth),
@@ -133,7 +125,6 @@ const getDateRangeFromPreset = (preset: DateRangePreset): DateRange => {
       };
     case 'custom':
     default:
-      // Default to last 30 days
       return {
         from: subDays(now, 29),
         to: now
@@ -180,7 +171,6 @@ export default function CampaignAnalytics() {
   });
   
   useEffect(() => {
-    // Generate analytics data based on selection and date range
     setAnalyticsData(generateAnalyticsData(
       selectedCampaignId === "all" ? undefined : selectedCampaignId,
       dateRange
@@ -202,13 +192,10 @@ export default function CampaignAnalytics() {
     }
   };
   
-  // Calculate summary statistics
   const totalViews = analyticsData.reduce((sum, day) => sum + day.views, 0);
   const avgCPM = analyticsData.reduce((sum, day) => sum + day.cpm, 0) / analyticsData.length;
   const totalSpent = analyticsData.reduce((sum, day) => sum + day.spent, 0);
   
-  // Only include the most recent data points for the charts to avoid overcrowding
-  // For shorter date ranges, show all data; for longer ones, limit to most recent 14 days
   const maxDataPoints = dateRange.from && dateRange.to && 
     Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24)) > 14 
     ? 14 : analyticsData.length;
@@ -331,108 +318,86 @@ export default function CampaignAnalytics() {
       </div>
       
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-sm font-medium">Views Over Time</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-[200px] w-full">
-              <ChartContainer 
-                config={{
-                  views: { theme: { light: '#0ea5e9', dark: '#0ea5e9' } }
-                }}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => {
-                        const date = new Date(value);
-                        return `${date.getDate()}/${date.getMonth() + 1}`;
-                      }}
-                    />
-                    <YAxis />
-                    <ChartTooltip 
-                      content={({ active, payload }) => 
-                        active && payload?.length ? (
-                          <ChartTooltipContent 
-                            active={active}
-                            payload={payload}
-                            formatter={(value) => {
-                              if (typeof value === 'number') {
-                                return [`${value.toLocaleString()} views`, 'Views'];
-                              }
-                              return [`${value} views`, 'Views'];
-                            }}
-                          />
-                        ) : null
-                      } 
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="views" 
-                      stroke="#0ea5e9" 
-                      fillOpacity={1} 
-                      fill="url(#colorViews)" 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      return `${date.getDate()}/${date.getMonth() + 1}`;
+                    }}
+                    height={20}
+                  />
+                  <YAxis 
+                    width={40}
+                    tick={{ fontSize: 10 }}
+                  />
+                  <Tooltip
+                    formatter={(value: number | string) => {
+                      return typeof value === 'number' 
+                        ? `${value.toLocaleString()} views` 
+                        : value;
+                    }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="views" 
+                    stroke="#0ea5e9" 
+                    fillOpacity={1} 
+                    fill="url(#colorViews)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader>
             <CardTitle className="text-sm font-medium">Daily Spend</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-[200px] w-full">
-              <ChartContainer
-                config={{
-                  spent: { theme: { light: '#16a34a', dark: '#16a34a' } }
-                }}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => {
-                        const date = new Date(value);
-                        return `${date.getDate()}/${date.getMonth() + 1}`;
-                      }}
-                    />
-                    <YAxis />
-                    <ChartTooltip 
-                      content={({ active, payload }) => 
-                        active && payload?.length ? (
-                          <ChartTooltipContent 
-                            active={active}
-                            payload={payload}
-                            formatter={(value) => {
-                              if (typeof value === 'number') {
-                                return [`$${value.toFixed(2)}`, 'Spent'];
-                              }
-                              return [`$${value}`, 'Spent'];
-                            }}
-                          />
-                        ) : null
-                      } 
-                    />
-                    <Bar dataKey="spent" fill="#16a34a" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      return `${date.getDate()}/${date.getMonth() + 1}`;
+                    }}
+                    height={20}
+                  />
+                  <YAxis
+                    width={40}
+                    tick={{ fontSize: 10 }}
+                  />
+                  <Tooltip
+                    formatter={(value: number | string) => {
+                      return typeof value === 'number' 
+                        ? `$${value.toFixed(2)}` 
+                        : value;
+                    }}
+                  />
+                  <Bar dataKey="spent" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
