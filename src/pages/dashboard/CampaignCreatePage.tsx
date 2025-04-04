@@ -16,11 +16,11 @@ export default function CampaignCreatePage() {
       const formattedCampaign = {
         ...campaign,
         end_date: campaign.endDate.toISOString(),
-        application_deadline: campaign.applicationDeadline 
-          ? new Date(campaign.applicationDeadline).toISOString() 
+        application_deadline: campaign.type === 'retainer' && 'applicationDeadline' in campaign 
+          ? campaign.applicationDeadline.toISOString() 
           : null,
-        submission_deadline: campaign.type === 'challenge' && campaign.submissionDeadline 
-          ? new Date(campaign.submissionDeadline).toISOString() 
+        submission_deadline: campaign.type === 'challenge' && 'submissionDeadline' in campaign 
+          ? campaign.submissionDeadline.toISOString() 
           : null,
         guidelines: JSON.stringify(campaign.guidelines),
         requirements: campaign.requirements || [],
@@ -33,13 +33,13 @@ export default function CampaignCreatePage() {
         application_questions: campaign.applicationQuestions 
           ? JSON.stringify(campaign.applicationQuestions) 
           : null,
-        creator_tiers: campaign.type === 'retainer' && campaign.creatorTiers 
+        creator_tiers: campaign.type === 'retainer' && 'creatorTiers' in campaign 
           ? JSON.stringify(campaign.creatorTiers) 
           : null,
-        deliverables: campaign.type === 'retainer' && campaign.deliverables 
+        deliverables: campaign.type === 'retainer' && 'deliverables' in campaign 
           ? JSON.stringify(campaign.deliverables) 
           : null,
-        prize_pool: campaign.type === 'challenge' && campaign.prizePool 
+        prize_pool: campaign.type === 'challenge' && 'prizePool' in campaign 
           ? JSON.stringify(campaign.prizePool) 
           : null,
         tiktok_shop_commission: campaign.tikTokShopCommission 
@@ -73,8 +73,7 @@ export default function CampaignCreatePage() {
       const { data, error } = await supabase
         .from('campaigns')
         .insert([formattedCampaign])
-        .select()
-        .single();
+        .select();
       
       if (error) {
         console.error("Error creating campaign:", error);
@@ -83,7 +82,12 @@ export default function CampaignCreatePage() {
       }
       
       toast.success("Campaign created successfully!");
-      navigate(`/dashboard/campaigns/${data.id}`);
+      if (data && data.length > 0) {
+        navigate(`/dashboard/campaigns/${data[0].id}`);
+      } else {
+        // Fallback - go to campaigns list
+        navigate("/dashboard/campaigns");
+      }
     } catch (error) {
       console.error("Error creating campaign:", error);
       toast.error("Failed to create campaign: " + (error instanceof Error ? error.message : "Unknown error"));

@@ -16,6 +16,8 @@ export default function CampaignEditPage() {
   const { data: campaign, isLoading } = useQuery({
     queryKey: ['campaign-edit', id],
     queryFn: async () => {
+      if (!id) throw new Error("Campaign ID is required");
+      
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
@@ -24,6 +26,10 @@ export default function CampaignEditPage() {
       
       if (error) {
         console.error("Error fetching campaign:", error);
+        throw new Error("Campaign not found");
+      }
+      
+      if (!data) {
         throw new Error("Campaign not found");
       }
       
@@ -77,6 +83,8 @@ export default function CampaignEditPage() {
 
   const handleSubmitCampaign = async (updatedCampaign: Campaign) => {
     try {
+      if (!id) return;
+      
       // Format for database
       const formattedCampaign = {
         title: updatedCampaign.title,
@@ -97,13 +105,13 @@ export default function CampaignEditPage() {
         requirements: updatedCampaign.requirements || [],
         
         // Type-specific fields
-        application_deadline: updatedCampaign.type === 'retainer' && updatedCampaign.applicationDeadline
+        application_deadline: updatedCampaign.type === 'retainer' && 'applicationDeadline' in updatedCampaign && updatedCampaign.applicationDeadline
           ? new Date(updatedCampaign.applicationDeadline).toISOString()
           : null,
-        creator_tiers: updatedCampaign.type === 'retainer' && updatedCampaign.creatorTiers
+        creator_tiers: updatedCampaign.type === 'retainer' && 'creatorTiers' in updatedCampaign && updatedCampaign.creatorTiers
           ? JSON.stringify(updatedCampaign.creatorTiers)
           : null,
-        deliverables: updatedCampaign.type === 'retainer' && updatedCampaign.deliverables
+        deliverables: updatedCampaign.type === 'retainer' && 'deliverables' in updatedCampaign && updatedCampaign.deliverables
           ? JSON.stringify(updatedCampaign.deliverables)
           : null,
         
@@ -114,10 +122,10 @@ export default function CampaignEditPage() {
           ? updatedCampaign.maxPayoutPerSubmission
           : null,
         
-        submission_deadline: updatedCampaign.type === 'challenge' && updatedCampaign.submissionDeadline
+        submission_deadline: updatedCampaign.type === 'challenge' && 'submissionDeadline' in updatedCampaign && updatedCampaign.submissionDeadline
           ? new Date(updatedCampaign.submissionDeadline).toISOString()
           : null,
-        prize_pool: updatedCampaign.type === 'challenge' && updatedCampaign.prizePool
+        prize_pool: updatedCampaign.type === 'challenge' && 'prizePool' in updatedCampaign && updatedCampaign.prizePool
           ? JSON.stringify(updatedCampaign.prizePool)
           : null,
         

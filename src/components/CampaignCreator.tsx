@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
