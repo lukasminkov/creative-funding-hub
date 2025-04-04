@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Campaign } from "@/lib/campaign-types";
+import { Campaign, ContentType, Category, Currency, Platform, VisibilityType, CountryOption } from "@/lib/campaign-types";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 
@@ -47,9 +47,72 @@ export default function CampaignChatPage() {
         throw new Error("Campaign not found");
       }
       
-      generateMockMessagesForCampaign(data.id);
+      const baseCampaign = {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        type: data.type as "retainer" | "payPerView" | "challenge",
+        contentType: data.content_type as ContentType,
+        category: data.category as Category,
+        platforms: data.platforms as Platform[],
+        totalBudget: Number(data.total_budget),
+        currency: data.currency as Currency,
+        endDate: new Date(data.end_date),
+        bannerImage: data.banner_image,
+        trackingLink: data.tracking_link,
+        requestedTrackingLink: data.requested_tracking_link,
+        guidelines: data.guidelines ? JSON.parse(data.guidelines.toString()) : { dos: [], donts: [] },
+        visibility: data.visibility as VisibilityType,
+        countryAvailability: data.country_availability as CountryOption,
+        requirements: data.requirements || [],
+        brandId: data.brand_id,
+        brandName: data.brand_name
+      };
+
+      const addOptionalFields = (campaign: any) => {
+        if (data.brief) campaign.brief = JSON.parse(data.brief.toString());
+        if (data.instruction_video) campaign.instructionVideo = data.instruction_video;
+        if (data.example_videos) campaign.exampleVideos = JSON.parse(data.example_videos.toString());
+        if (data.tiktok_shop_commission) campaign.tikTokShopCommission = JSON.parse(data.tiktok_shop_commission.toString());
+        if (data.application_questions) campaign.applicationQuestions = JSON.parse(data.application_questions.toString());
+        if (data.restricted_access) campaign.restrictedAccess = JSON.parse(data.restricted_access.toString());
+        return campaign;
+      };
       
-      return data as Campaign;
+      let typedCampaign: Campaign;
+      
+      if (data.type === 'retainer') {
+        const retainerCampaign = {
+          ...baseCampaign,
+          type: 'retainer' as const,
+          applicationDeadline: data.application_deadline ? new Date(data.application_deadline) : new Date(),
+          creatorTiers: data.creator_tiers ? JSON.parse(data.creator_tiers.toString()) : [],
+          deliverables: data.deliverables ? JSON.parse(data.deliverables.toString()) : { mode: "videosPerDay" }
+        };
+        typedCampaign = addOptionalFields(retainerCampaign);
+      } 
+      else if (data.type === 'payPerView') {
+        const payPerViewCampaign = {
+          ...baseCampaign,
+          type: 'payPerView' as const,
+          ratePerThousand: Number(data.rate_per_thousand) || 0,
+          maxPayoutPerSubmission: Number(data.max_payout_per_submission) || 0
+        };
+        typedCampaign = addOptionalFields(payPerViewCampaign);
+      } 
+      else {
+        const challengeCampaign = {
+          ...baseCampaign,
+          type: 'challenge' as const,
+          submissionDeadline: data.submission_deadline ? new Date(data.submission_deadline) : new Date(),
+          prizePool: data.prize_pool ? JSON.parse(data.prize_pool.toString()) : { places: [] }
+        };
+        typedCampaign = addOptionalFields(challengeCampaign);
+      }
+      
+      generateMockMessagesForCampaign(typedCampaign.id || '');
+      
+      return typedCampaign;
     }
   });
 
