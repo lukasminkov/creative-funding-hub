@@ -28,8 +28,7 @@ import {
   SidebarMenuButton, 
   SidebarMenuItem, 
   SidebarProvider, 
-  SidebarRail,
-  useSidebar
+  SidebarRail
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -109,11 +108,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full overflow-hidden bg-background dark:bg-background">
+      <div className="flex h-screen w-full bg-background dark:bg-background">
         <Sidebar 
           side="left"
+          variant="sidebar"
           collapsible="icon" 
-          className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50 relative"
+          className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50"
         >
           <SidebarHeader className="relative">
             <div className="flex h-16 items-center gap-2 px-4">
@@ -232,7 +232,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Button>
             </div>
           </SidebarFooter>
-          <SidebarRail />
         </Sidebar>
         <div className="flex-1 flex flex-col overflow-auto">
           <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-6 backdrop-blur">
