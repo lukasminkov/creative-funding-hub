@@ -81,8 +81,10 @@ const SidebarToggle = () => {
       size="icon" 
       onClick={toggleSidebar}
       className={cn(
-        "h-8 w-8 absolute top-4 z-50",
-        state === "expanded" ? "right-3" : "right-4"
+        "h-8 w-8 z-50",
+        state === "expanded" 
+          ? "absolute top-4 right-3" // Inside when expanded
+          : "fixed left-[calc(var(--sidebar-width-icon)+0.5rem)] top-4" // Outside when collapsed
       )}
     >
       {state === "expanded" ? (
@@ -132,7 +134,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <span className="text-lg font-semibold">Payper</span>
             )}
           </div>
-          <SidebarToggle />
+          {state === "expanded" && <SidebarToggle />}
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu className="px-2 pt-4">
@@ -159,13 +161,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       "dark:hover:bg-zinc-800"
                     )}
                   >
-                    <Link to={item.path} className="w-full flex items-center justify-center">
+                    <Link 
+                      to={item.path} 
+                      className={cn(
+                        "w-full flex items-center",
+                        state === "collapsed" ? "justify-center" : "justify-start"
+                      )}
+                    >
                       <item.icon className={cn(
                         "h-7 w-7",
-                        "group-data-[collapsible=icon]:mx-auto",
-                        "group-data-[state=expanded]:ml-3 group-data-[state=expanded]:mr-3"
+                        state === "collapsed" ? "mx-auto" : "ml-3 mr-3"
                       )} />
-                      <span className="group-data-[collapsible=icon]:sr-only group-data-[state=expanded]:ml-2">
+                      <span className={cn(
+                        state === "collapsed" ? "sr-only" : "ml-2"
+                      )}>
                         {item.title}
                       </span>
                     </Link>
@@ -189,10 +198,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <Link to="/dashboard/campaigns/create" className="flex items-center w-full h-full justify-center">
                 <Plus className={cn(
                   "h-7 w-7",
-                  "group-data-[collapsible=icon]:mx-auto",
-                  "group-data-[state=expanded]:ml-0 group-data-[state=expanded]:mr-2"
+                  state === "collapsed" ? "mx-auto" : "ml-0 mr-2"
                 )} />
-                <span className="group-data-[collapsible=icon]:sr-only">
+                <span className={state === "collapsed" ? "sr-only" : ""}>
                   Create Campaign
                 </span>
               </Link>
@@ -240,6 +248,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </SidebarFooter>
       </Sidebar>
+      {state === "collapsed" && <SidebarToggle />}
       <div className="flex-1 flex flex-col overflow-auto">
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-6 backdrop-blur">
           <div className="flex w-full items-center justify-between">
