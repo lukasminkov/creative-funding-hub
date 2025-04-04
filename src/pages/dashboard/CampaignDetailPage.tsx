@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SocialIcon } from "@/components/icons/SocialIcons";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock creators data
 const mockCreators = [
@@ -146,16 +146,79 @@ export default function CampaignDetailPage() {
   const { data: campaign, isLoading } = useQuery({
     queryKey: ['campaign', id],
     queryFn: async () => {
-      // In a real app, this would be an API call
-      const storedCampaigns = localStorage.getItem("campaigns");
-      const campaigns = storedCampaigns ? JSON.parse(storedCampaigns) : [];
-      const campaign = campaigns.find((c: Campaign) => c.id === id);
+      // Fetch campaign from Supabase
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('id', id)
+        .single();
       
-      if (!campaign) {
+      if (error) {
+        console.error("Error fetching campaign:", error);
         throw new Error("Campaign not found");
       }
       
-      return campaign;
+      if (!data) {
+        throw new Error("Campaign not found");
+      }
+      
+      // Convert database snake_case to frontend camelCase
+      // and parse JSON fields
+      const formattedCampaign: Campaign = {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        type: data.type,
+        contentType: data.content_type,
+        category: data.category,
+        platforms: data.platforms,
+        requirements: data.requirements || [],
+        currency: data.currency,
+        totalBudget: Number(data.total_budget),
+        endDate: new Date(data.end_date),
+        countryAvailability: data.country_availability,
+        visibility: data.visibility,
+        bannerImage: data.banner_image,
+        instructionVideo: data.instruction_video,
+        brandId: data.brand_id,
+        brandName: data.brand_name,
+        trackingLink: data.tracking_link,
+        requestedTrackingLink: data.requested_tracking_link,
+        guidelines: data.guidelines ? JSON.parse(data.guidelines) : { dos: [], donts: [] },
+      };
+      
+      // Add campaign type specific properties
+      if (data.type === 'retainer') {
+        formattedCampaign.applicationDeadline = data.application_deadline ? new Date(data.application_deadline) : new Date();
+        formattedCampaign.creatorTiers = data.creator_tiers ? JSON.parse(data.creator_tiers) : [];
+        formattedCampaign.deliverables = data.deliverables ? JSON.parse(data.deliverables) : null;
+        formattedCampaign.applicationQuestions = data.application_questions ? JSON.parse(data.application_questions) : [];
+      } else if (data.type === 'challenge') {
+        formattedCampaign.submissionDeadline = data.submission_deadline ? new Date(data.submission_deadline) : new Date();
+        formattedCampaign.prizePool = data.prize_pool ? JSON.parse(data.prize_pool) : null;
+      } else if (data.type === 'payPerView') {
+        formattedCampaign.ratePerThousand = data.rate_per_thousand ? Number(data.rate_per_thousand) : 0;
+        formattedCampaign.maxPayoutPerSubmission = data.max_payout_per_submission ? Number(data.max_payout_per_submission) : 0;
+      }
+      
+      // Optional fields for all campaign types
+      if (data.example_videos) {
+        formattedCampaign.exampleVideos = JSON.parse(data.example_videos);
+      }
+      
+      if (data.restricted_access) {
+        formattedCampaign.restrictedAccess = JSON.parse(data.restricted_access);
+      }
+      
+      if (data.tiktok_shop_commission) {
+        formattedCampaign.tikTokShopCommission = JSON.parse(data.tiktok_shop_commission);
+      }
+      
+      if (data.brief) {
+        formattedCampaign.brief = JSON.parse(data.brief);
+      }
+      
+      return formattedCampaign;
     }
   });
 
