@@ -111,6 +111,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full overflow-hidden bg-background dark:bg-background">
         <Sidebar 
+          side="left"
           collapsible="icon" 
           className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50 relative"
         >
@@ -233,7 +234,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 flex flex-col overflow-auto">
           <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-6 backdrop-blur">
             <div className="flex w-full items-center justify-between">
               <h1 className="text-xl font-semibold">
