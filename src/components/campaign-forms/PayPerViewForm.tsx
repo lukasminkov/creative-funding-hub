@@ -80,10 +80,23 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
   );
 
   const handlePlatformSelect = (platform: Platform) => {
-    onChange({ ...campaign, platforms: [platform] });
+    const currentPlatforms = campaign.platforms || [];
+    let newPlatforms: Platform[];
+    
+    if (currentPlatforms.includes(platform)) {
+      newPlatforms = currentPlatforms.filter(p => p !== platform);
+    } else {
+      newPlatforms = [...currentPlatforms, platform];
+    }
+    
+    if (newPlatforms.length === 0) {
+      return;
+    }
+    
+    onChange({ ...campaign, platforms: newPlatforms });
   };
 
-  const isTikTokShop = campaign.platforms?.[0] === "TikTok Shop";
+  const isTikTokShop = campaign.platforms?.includes("TikTok Shop") || false;
 
   const handleGuidelinesChange = (newGuidelines: { dos: string[], donts: string[] }) => {
     setGuidelines(newGuidelines);
@@ -359,9 +372,9 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
         
         {!showCreatorInfoSection && (
           <PlatformSelector
-            selectedPlatform={campaign.platforms?.[0] || undefined}
+            selectedPlatforms={campaign.platforms || []}
             onChange={handlePlatformSelect}
-            singleSelection={true}
+            singleSelection={false}
           />
         )}
         

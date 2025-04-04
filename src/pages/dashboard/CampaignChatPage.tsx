@@ -6,139 +6,116 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Campaign } from "@/lib/campaign-types";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
-// Mock messages data for the campaign chat
-const mockMessages = [
-  {
-    id: 1,
-    sender: {
-      id: "brand-1",
-      name: "You",
-      avatar: "",
-      type: "brand"
-    },
-    content: "Hi team, welcome to the campaign chat! This is where we'll coordinate all activities for the campaign.",
-    timestamp: "2023-08-15T09:00:00Z"
-  },
-  {
-    id: 2,
-    sender: {
-      id: "creator-1",
-      name: "Sarah Johnson",
-      avatar: "https://i.pravatar.cc/150?u=sarah",
-      type: "creator"
-    },
-    content: "Thanks for the opportunity! I've already started brainstorming some ideas for the content. When would you like to see the first draft?",
-    timestamp: "2023-08-15T09:15:00Z"
-  },
-  {
-    id: 3,
-    sender: {
-      id: "brand-1",
-      name: "You",
-      avatar: "",
-      type: "brand"
-    },
-    content: "Great to hear, Sarah! Could you share a rough concept by the end of the week? We'd like to provide feedback early in the process.",
-    timestamp: "2023-08-15T09:20:00Z"
-  },
-  {
-    id: 4,
-    sender: {
-      id: "creator-2",
-      name: "Mike Peters",
-      avatar: "https://i.pravatar.cc/150?u=mike",
-      type: "creator"
-    },
-    content: "Just joined the campaign! Looking forward to collaborating with everyone. I've worked with similar products before and have some unique angles we could explore.",
-    timestamp: "2023-08-15T10:45:00Z"
-  },
-  {
-    id: 5,
-    sender: {
-      id: "creator-1",
-      name: "Sarah Johnson",
-      avatar: "https://i.pravatar.cc/150?u=sarah",
-      type: "creator"
-    },
-    content: "Absolutely! I'll work on that and share by Friday. Would you prefer to see storyboards or just a written concept?",
-    timestamp: "2023-08-15T10:50:00Z"
-  },
-  {
-    id: 6,
-    sender: {
-      id: "brand-1",
-      name: "You",
-      avatar: "",
-      type: "brand"
-    },
-    content: "Welcome, Mike! Excited to see your ideas too. Sarah, storyboards would be ideal if you can manage it, but a detailed written concept works too.",
-    timestamp: "2023-08-15T11:05:00Z"
-  },
-  {
-    id: 7,
-    sender: {
-      id: "creator-3",
-      name: "Jessica Williams",
-      avatar: "https://i.pravatar.cc/150?u=jessica",
-      type: "creator"
-    },
-    content: "Hello everyone! Just checking in - I received the product sample today and it looks great. I'm planning a shoot for Thursday if the weather permits.",
-    timestamp: "2023-08-16T14:30:00Z"
-  },
-  {
-    id: 8,
-    sender: {
-      id: "brand-1",
-      name: "You",
-      avatar: "",
-      type: "brand"
-    },
-    content: "That's fantastic, Jessica! Looking forward to seeing what you create. Let us know if you need any additional information about product features or key messaging points.",
-    timestamp: "2023-08-16T14:45:00Z"
-  }
-];
+interface ChatMessage {
+  id: number;
+  sender: {
+    id: string;
+    name: string;
+    avatar: string;
+    type: "brand" | "creator";
+  };
+  content: string;
+  timestamp: string;
+}
 
 export default function CampaignChatPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [inputMessage, setInputMessage] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   
-  // Fetch campaign details
   const { data: campaign, isLoading } = useQuery({
     queryKey: ['campaign-chat', id],
     queryFn: async () => {
-      // In a real app, this would be an API call
-      const storedCampaigns = localStorage.getItem("campaigns");
-      const campaigns = storedCampaigns ? JSON.parse(storedCampaigns) : [];
-      const campaign = campaigns.find((c: Campaign) => c.id === id);
+      if (!id) throw new Error("Campaign ID is required");
       
-      if (!campaign) {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching campaign:", error);
         throw new Error("Campaign not found");
       }
       
-      return campaign;
+      if (!data) {
+        throw new Error("Campaign not found");
+      }
+      
+      generateMockMessagesForCampaign(data.id);
+      
+      return data as Campaign;
     }
   });
 
-  // Format date for messages
+  const generateMockMessagesForCampaign = (campaignId: string) => {
+    const mockMessages: ChatMessage[] = [
+      {
+        id: 1,
+        sender: {
+          id: "brand-1",
+          name: "You",
+          avatar: "",
+          type: "brand"
+        },
+        content: `Hi team, welcome to the campaign chat for "${campaign?.title || 'this campaign'}"! This is where we'll coordinate all activities.`,
+        timestamp: "2023-08-15T09:00:00Z"
+      },
+      {
+        id: 2,
+        sender: {
+          id: "creator-1",
+          name: "Sarah Johnson",
+          avatar: "https://i.pravatar.cc/150?u=sarah",
+          type: "creator"
+        },
+        content: "Thanks for the opportunity! I've already started brainstorming some ideas for the content. When would you like to see the first draft?",
+        timestamp: "2023-08-15T09:15:00Z"
+      }
+    ];
+    
+    setMessages(mockMessages);
+  };
+
   const formatMessageDate = (timestamp: string) => {
     const date = new Date(timestamp);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     
-    // If the message is from today
     if (date.toDateString() === today.toDateString()) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
     
-    // If the message is from yesterday
     if (date.toDateString() === yesterday.toDateString()) {
       return `Yesterday, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     }
     
-    // Otherwise, show full date
     return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleSendMessage = () => {
+    if (!inputMessage.trim()) return;
+    
+    const newMessage: ChatMessage = {
+      id: messages.length + 1,
+      sender: {
+        id: "brand-1",
+        name: "You",
+        avatar: "",
+        type: "brand"
+      },
+      content: inputMessage,
+      timestamp: new Date().toISOString()
+    };
+    
+    setMessages([...messages, newMessage]);
+    setInputMessage("");
   };
 
   if (isLoading) {
@@ -218,7 +195,7 @@ export default function CampaignChatPage() {
         </div>
         
         <div className="h-[500px] p-4 overflow-y-auto flex flex-col space-y-4">
-          {mockMessages.map(message => {
+          {messages.map(message => {
             const isMyMessage = message.sender.type === "brand";
             
             return (
@@ -263,8 +240,15 @@ export default function CampaignChatPage() {
             <Input 
               placeholder="Type a message..." 
               className="flex-1"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSendMessage();
+                }
+              }}
             />
-            <Button>Send</Button>
+            <Button onClick={handleSendMessage}>Send</Button>
           </div>
         </div>
       </div>
