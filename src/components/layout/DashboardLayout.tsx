@@ -159,13 +159,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       "dark:hover:bg-zinc-800"
                     )}
                   >
-                    <Link to={item.path} className="w-full flex items-center">
+                    <Link to={item.path} className="w-full flex items-center justify-center">
                       <item.icon className={cn(
-                        "h-7 w-7", // Increased from h-6 w-6
+                        "h-7 w-7",
                         "group-data-[collapsible=icon]:mx-auto",
                         "group-data-[state=expanded]:ml-3 group-data-[state=expanded]:mr-3"
                       )} />
-                      <span className="group-data-[collapsible=icon]:sr-only">
+                      <span className="group-data-[collapsible=icon]:sr-only group-data-[state=expanded]:ml-2">
                         {item.title}
                       </span>
                     </Link>
@@ -188,7 +188,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             >
               <Link to="/dashboard/campaigns/create" className="flex items-center w-full h-full justify-center">
                 <Plus className={cn(
-                  "h-7 w-7", // Increased from h-6 w-6
+                  "h-7 w-7",
                   "group-data-[collapsible=icon]:mx-auto",
                   "group-data-[state=expanded]:ml-0 group-data-[state=expanded]:mr-2"
                 )} />
