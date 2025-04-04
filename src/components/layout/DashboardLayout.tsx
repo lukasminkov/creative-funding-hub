@@ -153,6 +153,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       isActive 
                         ? "bg-primary text-white font-medium" 
                         : "hover:bg-accent",
+                      state === "collapsed" ? "justify-center" : "", // Center when collapsed
                       "group-data-[collapsible=icon]:h-10",
                       "group-data-[collapsible=icon]:w-10",
                       "group-data-[collapsible=icon]:flex",
@@ -191,7 +192,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 "w-full justify-start rounded-md h-10 bg-primary hover:bg-primary/90 transition-all",
                 "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10",
                 "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mx-auto",
-                "group-data-[state=expanded]:flex group-data-[state=expanded]:justify-start",
+                state === "collapsed" ? "flex justify-center" : "flex justify-start",
                 "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center",
               )}
             >
@@ -211,7 +212,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center justify-between w-full px-2">
             <div className={cn(
               "flex items-center gap-3",
-              "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full"
+              state === "collapsed" ? "justify-center w-full" : ""
             )}>
               <Avatar className="h-9 w-9 border-2 border-primary/20">
                 <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
@@ -223,7 +224,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             </div>
           </div>
-          <div className="flex w-full justify-between px-2">
+          <div className={cn(
+            "flex w-full px-2",
+            state === "collapsed" ? "justify-center" : "justify-between"
+          )}>
             <Button
               variant="ghost"
               size="icon"
@@ -233,18 +237,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className={cn(
-                "rounded-md h-8 w-8",
-                "flex items-center justify-center",
-                "dark:hover:bg-zinc-800"
-              )}
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="sr-only">Log out</span>
-            </Button>
+            {state === "expanded" && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={cn(
+                  "rounded-md h-8 w-8",
+                  "flex items-center justify-center",
+                  "dark:hover:bg-zinc-800"
+                )}
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Log out</span>
+              </Button>
+            )}
           </div>
         </SidebarFooter>
       </Sidebar>
