@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, MessageSquare } from "lucide-react";
@@ -9,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign } from "@/lib/campaign-types";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
 
 export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -202,6 +202,9 @@ export default function CampaignsPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Analytics Dashboard */}
+      <CampaignAnalytics />
 
       <div className="flex flex-col md:flex-row md:justify-between gap-4 items-start md:items-center mb-6">
         <div className="relative w-full md:w-64">
