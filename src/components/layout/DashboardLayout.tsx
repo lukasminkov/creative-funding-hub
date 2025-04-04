@@ -103,21 +103,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
                 
                 return (
-                  <SidebarMenuItem key={item.title} className="mb-1">
+                  <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton 
                       tooltip={item.title}
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "transition-all duration-200 h-12 rounded-xl",
+                        "transition-all duration-200 h-10 rounded-xl flex items-center justify-center",
                         isActive 
                           ? "bg-primary text-white font-medium" 
-                          : "hover:bg-accent"
+                          : "hover:bg-accent",
+                        // Make the button icon-centric when collapsed
+                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                       )}
                     >
-                      <Link to={item.path}>
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.title}</span>
+                      <Link to={item.path} className="w-full flex items-center">
+                        <item.icon className={cn(
+                          "h-5 w-5",
+                          // Adjust the icon positioning for expanded/collapsed states
+                          "group-data-[collapsible=icon]:mx-auto",
+                          "group-data-[state=expanded]:mr-3"
+                        )} />
+                        <span className="group-data-[collapsible=icon]:sr-only">
+                          {item.title}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -128,23 +137,35 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="px-4 mt-8">
               <Button 
                 asChild
-                className="w-full justify-start rounded-xl h-12 bg-primary hover:bg-primary/90 transition-all"
+                className={cn(
+                  "w-full justify-start rounded-xl h-10 bg-primary hover:bg-primary/90 transition-all",
+                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                )}
               >
-                <Link to="/dashboard/campaigns/create">
-                  <Plus className="h-5 w-5 mr-2" />
-                  <span>Create Campaign</span>
+                <Link to="/dashboard/campaigns/create" className="flex items-center">
+                  <Plus className={cn(
+                    "h-5 w-5",
+                    "group-data-[collapsible=icon]:mx-auto",
+                    "group-data-[state=expanded]:mr-2"
+                  )} />
+                  <span className="group-data-[collapsible=icon]:sr-only">
+                    Create Campaign
+                  </span>
                 </Link>
               </Button>
             </div>
           </SidebarContent>
           <SidebarFooter className="p-4 space-y-4 border-t border-border/10 mt-auto">
             <div className="flex items-center justify-between w-full px-2">
-              <div className="flex items-center gap-3">
+              <div className={cn(
+                "flex items-center gap-3",
+                "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full"
+              )}>
                 <Avatar className="h-9 w-9 border-2 border-primary/20">
                   <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
                   <AvatarFallback>AH</AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col">
+                <div className="flex flex-col group-data-[collapsible=icon]:hidden">
                   <span className="text-sm font-medium">ad hoc gaming GmbH</span>
                   <span className="text-xs text-muted-foreground">Business</span>
                 </div>
@@ -153,14 +174,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="ml-auto h-8 w-8 rounded-full"
+                className={cn(
+                  "ml-auto h-8 w-8 rounded-full",
+                  "group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:bottom-20 group-data-[collapsible=icon]:left-1/2 group-data-[collapsible=icon]:transform group-data-[collapsible=icon]:-translate-x-1/2"
+                )}
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
             </div>
-            <Button variant="outline" size="sm" className="w-full justify-start rounded-xl">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "w-full justify-start rounded-xl",
+                "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+              )}
+            >
+              <LogOut className={cn(
+                "h-4 w-4",
+                "group-data-[collapsible=icon]:mx-auto",
+                "group-data-[state=expanded]:mr-2"
+              )} />
+              <span className="group-data-[collapsible=icon]:sr-only">
+                Log out
+              </span>
             </Button>
           </SidebarFooter>
           <SidebarRail />
