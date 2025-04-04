@@ -215,7 +215,12 @@ export default function CampaignAnalytics() {
                         <ChartTooltipContent 
                           active={active}
                           payload={payload}
-                          formatter={(value) => [`${value.toLocaleString()} views`, 'Views']}
+                          formatter={(value) => {
+                            if (typeof value === 'number') {
+                              return [`${value.toLocaleString()} views`, 'Views'];
+                            }
+                            return [`${value} views`, 'Views'];
+                          }}
                         />
                       ) : null
                     } 
@@ -261,7 +266,12 @@ export default function CampaignAnalytics() {
                         <ChartTooltipContent 
                           active={active}
                           payload={payload}
-                          formatter={(value) => [`$${value.toFixed(2)}`, 'Spent']}
+                          formatter={(value) => {
+                            if (typeof value === 'number') {
+                              return [`$${value.toFixed(2)}`, 'Spent'];
+                            }
+                            return [`$${value}`, 'Spent'];
+                          }}
                         />
                       ) : null
                     } 
