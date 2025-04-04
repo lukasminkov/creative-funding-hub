@@ -16,6 +16,8 @@ export default function CampaignCreatePage() {
       const formattedCampaign = {
         ...campaign,
         end_date: campaign.endDate.toISOString(),
+        
+        // Fix the property names to match database columns (snake_case)
         application_deadline: campaign.type === 'retainer' && 'applicationDeadline' in campaign 
           ? campaign.applicationDeadline.toISOString() 
           : null,
@@ -68,6 +70,30 @@ export default function CampaignCreatePage() {
           ? campaign.maxPayoutPerSubmission 
           : null
       };
+      
+      // Remove the camelCase properties that don't exist in the database table
+      delete (formattedCampaign as any).endDate;
+      delete (formattedCampaign as any).applicationDeadline;
+      delete (formattedCampaign as any).submissionDeadline;
+      delete (formattedCampaign as any).contentType;
+      delete (formattedCampaign as any).totalBudget;
+      delete (formattedCampaign as any).countryAvailability;
+      delete (formattedCampaign as any).trackingLink;
+      delete (formattedCampaign as any).requestedTrackingLink;
+      delete (formattedCampaign as any).bannerImage;
+      delete (formattedCampaign as any).instructionVideo;
+      delete (formattedCampaign as any).brandId;
+      delete (formattedCampaign as any).brandName;
+      delete (formattedCampaign as any).exampleVideos;
+      delete (formattedCampaign as any).restrictedAccess;
+      delete (formattedCampaign as any).applicationQuestions;
+      delete (formattedCampaign as any).creatorTiers;
+      delete (formattedCampaign as any).deliverables;
+      delete (formattedCampaign as any).prizePool;
+      delete (formattedCampaign as any).tikTokShopCommission;
+      delete (formattedCampaign as any).brief;
+      delete (formattedCampaign as any).ratePerThousand;
+      delete (formattedCampaign as any).maxPayoutPerSubmission;
       
       // Insert into Supabase
       const { data, error } = await supabase
