@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
@@ -99,6 +100,15 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
     } else if (campaign.type === "challenge") {
       if (!campaign.submissionDeadline) {
         toast.error("Please set a submission deadline");
+        return false;
+      }
+    } else if (campaign.type === "payPerView") {
+      if (!campaign.ratePerThousand || campaign.ratePerThousand <= 0) {
+        toast.error("Please enter a valid rate per 1000 views");
+        return false;
+      }
+      if (!campaign.maxPayoutPerSubmission || campaign.maxPayoutPerSubmission <= 0) {
+        toast.error("Please enter a valid max payout per submission");
         return false;
       }
     }

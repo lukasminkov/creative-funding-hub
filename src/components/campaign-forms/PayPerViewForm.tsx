@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, Platform, ContentType, Category, Currency, TikTokShopCommission, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -44,7 +43,6 @@ interface PayPerViewFormProps {
 }
 
 const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: PayPerViewFormProps) => {
-  // Update the useState initializers to ensure we're using the proper campaign type
   const [ratePerThousand, setRatePerThousand] = useState<number>(
     campaign.type === "payPerView" && "ratePerThousand" in campaign 
       ? campaign.ratePerThousand 
@@ -193,7 +191,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
     });
   };
 
-  // Add country selector handler
   const handleCountryChange = (country: CountryOption) => {
     onChange({
       ...campaign,
@@ -201,7 +198,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
     });
   };
 
-  // Add requirements change handler
   const handleRequirementsChange = (requirements: string[]) => {
     onChange({
       ...campaign,
@@ -324,7 +320,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
               </div>
             </div>
             
-            {/* Add end date selector */}
             <div className="space-y-2">
               <Label htmlFor="endDate">
                 End Date <span className="text-destructive">*</span>
@@ -371,7 +366,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
         )}
         
         {!showCreatorInfoSection && (
-          /* Add country selector after platforms */
           <CountrySelector 
             selectedCountry={campaign.countryAvailability || "worldwide"}
             onChange={handleCountryChange}
@@ -382,7 +376,7 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ratePerThousand">
-                Rate per 1000 Views
+                Rate per 1000 Views <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="ratePerThousand"
@@ -391,12 +385,13 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
                 placeholder="Enter rate"
                 value={ratePerThousand}
                 onChange={(e) => handleRatePerThousandChange(Number(e.target.value))}
+                required
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="maxPayout">
-                Max Payout per Submission
+                Max Payout per Submission <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="maxPayout"
@@ -405,12 +400,12 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
                 placeholder="Enter max payout"
                 value={maxPayoutPerSubmission}
                 onChange={(e) => handleMaxPayoutChange(Number(e.target.value))}
+                required
               />
             </div>
           </div>
         )}
         
-        {/* Add RequirementsList in the General Information section */}
         {!showCreatorInfoSection && (
           <RequirementsList
             requirements={campaign.requirements || []}
@@ -418,7 +413,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           />
         )}
         
-        {/* Only show guidelines list in the creator info section */}
         {showCreatorInfoSection && (
           <GuidelinesList
             dos={guidelines.dos}
@@ -427,7 +421,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           />
         )}
         
-        {/* Creator info section */}
         {showCreatorInfoSection && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -483,7 +476,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           </div>
         )}
         
-        {/* TikTok Shop Commission */}
         {isTikTokShop && showCreatorInfoSection && (
           <div className="pt-4 border-t border-border/60">
             <h3 className="text-lg font-medium mb-4">TikTok Shop Commission</h3>
@@ -524,7 +516,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           </div>
         )}
         
-        {/* Example Videos */}
         {showCreatorInfoSection && (
           <div className="pt-4 border-t border-border/60">
             <ExampleVideos
@@ -535,7 +526,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           </div>
         )}
         
-        {/* Brief Uploader */}
         {showCreatorInfoSection && (
           <BriefUploader 
             briefType={brief.type}
@@ -544,7 +534,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection = false }: 
           />
         )}
         
-        {/* Instruction Video Uploader */}
         {showCreatorInfoSection && (
           <InstructionVideoUploader
             videoFile={instructionVideo}

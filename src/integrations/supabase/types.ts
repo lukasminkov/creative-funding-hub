@@ -9,7 +9,114 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      campaigns: {
+        Row: {
+          application_deadline: string | null
+          application_questions: Json | null
+          banner_image: string | null
+          brand_id: string | null
+          brand_name: string | null
+          brief: Json | null
+          category: string
+          content_type: string
+          country_availability: string
+          created_at: string | null
+          creator_tiers: Json | null
+          currency: string
+          deliverables: Json | null
+          description: string | null
+          end_date: string
+          example_videos: Json | null
+          guidelines: Json
+          id: string
+          instruction_video: string | null
+          max_payout_per_submission: number | null
+          platforms: string[]
+          prize_pool: Json | null
+          rate_per_thousand: number | null
+          requested_tracking_link: boolean | null
+          requirements: string[] | null
+          restricted_access: Json | null
+          submission_deadline: string | null
+          tiktok_shop_commission: Json | null
+          title: string
+          total_budget: number
+          tracking_link: string | null
+          type: string
+          visibility: string
+        }
+        Insert: {
+          application_deadline?: string | null
+          application_questions?: Json | null
+          banner_image?: string | null
+          brand_id?: string | null
+          brand_name?: string | null
+          brief?: Json | null
+          category: string
+          content_type: string
+          country_availability: string
+          created_at?: string | null
+          creator_tiers?: Json | null
+          currency: string
+          deliverables?: Json | null
+          description?: string | null
+          end_date: string
+          example_videos?: Json | null
+          guidelines: Json
+          id?: string
+          instruction_video?: string | null
+          max_payout_per_submission?: number | null
+          platforms: string[]
+          prize_pool?: Json | null
+          rate_per_thousand?: number | null
+          requested_tracking_link?: boolean | null
+          requirements?: string[] | null
+          restricted_access?: Json | null
+          submission_deadline?: string | null
+          tiktok_shop_commission?: Json | null
+          title: string
+          total_budget: number
+          tracking_link?: string | null
+          type: string
+          visibility: string
+        }
+        Update: {
+          application_deadline?: string | null
+          application_questions?: Json | null
+          banner_image?: string | null
+          brand_id?: string | null
+          brand_name?: string | null
+          brief?: Json | null
+          category?: string
+          content_type?: string
+          country_availability?: string
+          created_at?: string | null
+          creator_tiers?: Json | null
+          currency?: string
+          deliverables?: Json | null
+          description?: string | null
+          end_date?: string
+          example_videos?: Json | null
+          guidelines?: Json
+          id?: string
+          instruction_video?: string | null
+          max_payout_per_submission?: number | null
+          platforms?: string[]
+          prize_pool?: Json | null
+          rate_per_thousand?: number | null
+          requested_tracking_link?: boolean | null
+          requirements?: string[] | null
+          restricted_access?: Json | null
+          submission_deadline?: string | null
+          tiktok_shop_commission?: Json | null
+          title?: string
+          total_budget?: number
+          tracking_link?: string | null
+          type?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

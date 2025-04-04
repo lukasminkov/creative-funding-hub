@@ -5,30 +5,89 @@ import { Button } from "@/components/ui/button";
 import CampaignCreator from "@/components/CampaignCreator";
 import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function CampaignCreatePage() {
   const navigate = useNavigate();
 
-  const handleSubmitCampaign = (campaign: Campaign) => {
-    // Convert File objects to URLs for storage and display
-    const preparedCampaign = {
-      ...campaign,
-      id: crypto.randomUUID(),
-    };
-    
-    // Create an object URL if we have a video file
-    if (campaign.instructionVideoFile) {
-      preparedCampaign.instructionVideo = URL.createObjectURL(campaign.instructionVideoFile);
+  const handleSubmitCampaign = async (campaign: Campaign) => {
+    try {
+      // Format dates properly for database
+      const formattedCampaign = {
+        ...campaign,
+        end_date: campaign.endDate.toISOString(),
+        application_deadline: campaign.applicationDeadline 
+          ? new Date(campaign.applicationDeadline).toISOString() 
+          : null,
+        submission_deadline: campaign.type === 'challenge' && campaign.submissionDeadline 
+          ? new Date(campaign.submissionDeadline).toISOString() 
+          : null,
+        guidelines: JSON.stringify(campaign.guidelines),
+        requirements: campaign.requirements || [],
+        example_videos: campaign.exampleVideos 
+          ? JSON.stringify(campaign.exampleVideos) 
+          : null,
+        restricted_access: campaign.restrictedAccess 
+          ? JSON.stringify(campaign.restrictedAccess) 
+          : null,
+        application_questions: campaign.applicationQuestions 
+          ? JSON.stringify(campaign.applicationQuestions) 
+          : null,
+        creator_tiers: campaign.type === 'retainer' && campaign.creatorTiers 
+          ? JSON.stringify(campaign.creatorTiers) 
+          : null,
+        deliverables: campaign.type === 'retainer' && campaign.deliverables 
+          ? JSON.stringify(campaign.deliverables) 
+          : null,
+        prize_pool: campaign.type === 'challenge' && campaign.prizePool 
+          ? JSON.stringify(campaign.prizePool) 
+          : null,
+        tiktok_shop_commission: campaign.tikTokShopCommission 
+          ? JSON.stringify(campaign.tikTokShopCommission) 
+          : null,
+        brief: campaign.brief 
+          ? JSON.stringify(campaign.brief) 
+          : null,
+        
+        // Snake case fields for database
+        content_type: campaign.contentType,
+        total_budget: campaign.totalBudget,
+        country_availability: campaign.countryAvailability,
+        tracking_link: campaign.trackingLink,
+        requested_tracking_link: campaign.requestedTrackingLink,
+        banner_image: campaign.bannerImage,
+        instruction_video: campaign.instructionVideo,
+        brand_id: campaign.brandId,
+        brand_name: campaign.brandName,
+        
+        // Pay per view specific fields
+        rate_per_thousand: campaign.type === 'payPerView' && 'ratePerThousand' in campaign 
+          ? campaign.ratePerThousand 
+          : null,
+        max_payout_per_submission: campaign.type === 'payPerView' && 'maxPayoutPerSubmission' in campaign 
+          ? campaign.maxPayoutPerSubmission 
+          : null
+      };
+      
+      // Insert into Supabase
+      const { data, error } = await supabase
+        .from('campaigns')
+        .insert([formattedCampaign])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error("Error creating campaign:", error);
+        toast.error("Failed to create campaign: " + error.message);
+        return;
+      }
+      
+      toast.success("Campaign created successfully!");
+      navigate(`/dashboard/campaigns/${data.id}`);
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      toast.error("Failed to create campaign: " + (error instanceof Error ? error.message : "Unknown error"));
     }
-    
-    // Store in localStorage
-    const storedCampaigns = localStorage.getItem("campaigns") || "[]";
-    const campaigns = JSON.parse(storedCampaigns);
-    campaigns.push(preparedCampaign);
-    localStorage.setItem("campaigns", JSON.stringify(campaigns));
-    
-    toast.success("Campaign created successfully!");
-    navigate(`/dashboard/campaigns/${preparedCampaign.id}`);
   };
 
   const handleCancelCreation = () => {
