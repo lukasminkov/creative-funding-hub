@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -80,7 +79,10 @@ const SidebarToggle = () => {
       variant="ghost" 
       size="icon" 
       onClick={toggleSidebar}
-      className="h-8 w-8 absolute right-3 top-4 z-50"
+      className={cn(
+        "h-8 w-8 absolute top-4 z-50",
+        state === "expanded" ? "right-3" : "right-1"
+      )}
     >
       {state === "expanded" ? (
         <ChevronLeft className="h-5 w-5" />
