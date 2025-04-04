@@ -109,7 +109,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="flex min-h-screen w-full bg-background dark:bg-background">
+      <div className="flex h-screen w-full bg-background dark:bg-background">
         <Sidebar 
           variant="floating" 
           collapsible="icon" 
@@ -153,7 +153,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     >
                       <Link to={item.path} className="w-full flex items-center">
                         <item.icon className={cn(
-                          "h-5 w-5", // Slightly larger icons
+                          "h-6 w-6", // Larger icons
                           // Adjust the icon positioning for expanded/collapsed states
                           "group-data-[collapsible=icon]:mx-auto",
                           "group-data-[state=expanded]:ml-3 group-data-[state=expanded]:mr-3"
@@ -175,7 +175,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   "w-full justify-start rounded-md h-10 bg-primary hover:bg-primary/90 transition-all",
                   "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10",
                   "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mx-auto",
-                  "group-data-[state=expanded]:flex group-data-[state=expanded]:justify-start"
+                  "group-data-[state=expanded]:flex group-data-[state=expanded]:justify-start",
+                  "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center",
                 )}
               >
                 <Link to="/dashboard/campaigns/create" className="flex items-center w-full h-full justify-center">
