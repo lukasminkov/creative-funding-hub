@@ -3,97 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CampaignCreator from "@/components/CampaignCreator";
-import { Campaign, ContentType, Category, Currency, VisibilityType, CountryOption, Platform } from "@/lib/campaign-types";
+import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { convertCampaignToDatabase } from "@/lib/campaign-utils";
 
 export default function CampaignCreatePage() {
   const navigate = useNavigate();
 
   const handleSubmitCampaign = async (campaign: Campaign) => {
     try {
-      // Format dates properly for database
-      const formattedCampaign = {
-        ...campaign,
-        end_date: campaign.endDate.toISOString(),
-        
-        // Fix the property names to match database columns (snake_case)
-        application_deadline: campaign.type === 'retainer' && 'applicationDeadline' in campaign 
-          ? campaign.applicationDeadline.toISOString() 
-          : null,
-        submission_deadline: campaign.type === 'challenge' && 'submissionDeadline' in campaign 
-          ? campaign.submissionDeadline.toISOString() 
-          : null,
-        guidelines: JSON.stringify(campaign.guidelines),
-        requirements: campaign.requirements || [],
-        example_videos: campaign.exampleVideos 
-          ? JSON.stringify(campaign.exampleVideos) 
-          : null,
-        restricted_access: campaign.restrictedAccess 
-          ? JSON.stringify(campaign.restrictedAccess) 
-          : null,
-        application_questions: campaign.applicationQuestions 
-          ? JSON.stringify(campaign.applicationQuestions) 
-          : null,
-        creator_tiers: campaign.type === 'retainer' && 'creatorTiers' in campaign 
-          ? JSON.stringify(campaign.creatorTiers) 
-          : null,
-        deliverables: campaign.type === 'retainer' && 'deliverables' in campaign 
-          ? JSON.stringify(campaign.deliverables) 
-          : null,
-        prize_pool: campaign.type === 'challenge' && 'prizePool' in campaign 
-          ? JSON.stringify(campaign.prizePool) 
-          : null,
-        tiktok_shop_commission: campaign.tikTokShopCommission 
-          ? JSON.stringify(campaign.tikTokShopCommission) 
-          : null,
-        brief: campaign.brief 
-          ? JSON.stringify(campaign.brief) 
-          : null,
-        
-        // Snake case fields for database
-        content_type: campaign.contentType,
-        total_budget: campaign.totalBudget,
-        country_availability: campaign.countryAvailability,
-        tracking_link: campaign.trackingLink,
-        requested_tracking_link: campaign.requestedTrackingLink,
-        banner_image: campaign.bannerImage,
-        instruction_video: campaign.instructionVideo,
-        brand_id: campaign.brandId,
-        brand_name: campaign.brandName,
-        
-        // Pay per view specific fields
-        rate_per_thousand: campaign.type === 'payPerView' && 'ratePerThousand' in campaign 
-          ? campaign.ratePerThousand 
-          : null,
-        max_payout_per_submission: campaign.type === 'payPerView' && 'maxPayoutPerSubmission' in campaign 
-          ? campaign.maxPayoutPerSubmission 
-          : null
-      };
-      
-      // Remove the camelCase properties that don't exist in the database table
-      delete (formattedCampaign as any).endDate;
-      delete (formattedCampaign as any).applicationDeadline;
-      delete (formattedCampaign as any).submissionDeadline;
-      delete (formattedCampaign as any).contentType;
-      delete (formattedCampaign as any).totalBudget;
-      delete (formattedCampaign as any).countryAvailability;
-      delete (formattedCampaign as any).trackingLink;
-      delete (formattedCampaign as any).requestedTrackingLink;
-      delete (formattedCampaign as any).bannerImage;
-      delete (formattedCampaign as any).instructionVideo;
-      delete (formattedCampaign as any).brandId;
-      delete (formattedCampaign as any).brandName;
-      delete (formattedCampaign as any).exampleVideos;
-      delete (formattedCampaign as any).restrictedAccess;
-      delete (formattedCampaign as any).applicationQuestions;
-      delete (formattedCampaign as any).creatorTiers;
-      delete (formattedCampaign as any).deliverables;
-      delete (formattedCampaign as any).prizePool;
-      delete (formattedCampaign as any).tikTokShopCommission;
-      delete (formattedCampaign as any).brief;
-      delete (formattedCampaign as any).ratePerThousand;
-      delete (formattedCampaign as any).maxPayoutPerSubmission;
+      // Format campaign for database using utility
+      const formattedCampaign = convertCampaignToDatabase(campaign);
       
       // Insert into Supabase
       const { data, error } = await supabase
