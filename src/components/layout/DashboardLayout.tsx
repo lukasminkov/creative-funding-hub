@@ -82,7 +82,7 @@ const SidebarToggle = () => {
       onClick={toggleSidebar}
       className={cn(
         "h-8 w-8 absolute top-4 z-50",
-        state === "expanded" ? "right-3" : "right-2"
+        state === "expanded" ? "right-3" : "right-4"
       )}
     >
       {state === "expanded" ? (
@@ -161,7 +161,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   >
                     <Link to={item.path} className="w-full flex items-center">
                       <item.icon className={cn(
-                        "h-6 w-6", // Increased from h-5 w-5
+                        "h-7 w-7", // Increased from h-6 w-6
                         "group-data-[collapsible=icon]:mx-auto",
                         "group-data-[state=expanded]:ml-3 group-data-[state=expanded]:mr-3"
                       )} />
@@ -188,7 +188,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             >
               <Link to="/dashboard/campaigns/create" className="flex items-center w-full h-full justify-center">
                 <Plus className={cn(
-                  "h-6 w-6", // Increased from h-5 w-5
+                  "h-7 w-7", // Increased from h-6 w-6
                   "group-data-[collapsible=icon]:mx-auto",
                   "group-data-[state=expanded]:ml-0 group-data-[state=expanded]:mr-2"
                 )} />
