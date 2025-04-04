@@ -153,7 +153,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       isActive 
                         ? "bg-primary text-white font-medium" 
                         : "hover:bg-accent",
-                      state === "collapsed" ? "justify-center" : "", // Center when collapsed
                       "group-data-[collapsible=icon]:h-10",
                       "group-data-[collapsible=icon]:w-10",
                       "group-data-[collapsible=icon]:flex",
@@ -189,14 +188,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <Button 
               asChild
               className={cn(
-                "w-full justify-start rounded-md h-10 bg-primary hover:bg-primary/90 transition-all",
+                "w-full rounded-md h-10 bg-primary hover:bg-primary/90 transition-all",
                 "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10",
                 "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mx-auto",
                 state === "collapsed" ? "flex justify-center" : "flex justify-start",
                 "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center",
               )}
             >
-              <Link to="/dashboard/campaigns/create" className="flex items-center w-full h-full justify-center">
+              <Link to="/dashboard/campaigns/create" className={cn(
+                "flex items-center w-full h-full",
+                state === "collapsed" ? "justify-center" : "justify-center lg:justify-start"
+              )}>
                 <Plus className={cn(
                   "h-7 w-7",
                   state === "collapsed" ? "mx-auto" : "ml-0 mr-2"
