@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, MessageSquare } from "lucide-react";
@@ -9,6 +10,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Campaign } from "@/lib/campaign-types";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
+import { supabase } from "@/integrations/supabase/client";
+import { convertDatabaseCampaign } from "@/lib/campaign-utils";
+import { toast } from "sonner";
 
 export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,10 +20,24 @@ export default function CampaignsPage() {
   
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ['campaigns'],
-    queryFn: () => {
-      // In a real app, this would be an API call
-      const storedCampaigns = localStorage.getItem("campaigns");
-      return storedCampaigns ? JSON.parse(storedCampaigns) : [];
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('campaigns')
+          .select('*');
+        
+        if (error) {
+          console.error("Error fetching campaigns:", error);
+          toast.error("Failed to fetch campaigns: " + error.message);
+          return [];
+        }
+        
+        return data.map(campaign => convertDatabaseCampaign(campaign));
+      } catch (error) {
+        console.error("Error in campaign fetch:", error);
+        toast.error("An error occurred while fetching campaigns");
+        return [];
+      }
     }
   });
 
