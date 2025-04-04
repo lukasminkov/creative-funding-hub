@@ -11,7 +11,8 @@ import {
   User, 
   LogOut,
   Moon,
-  Sun
+  Sun,
+  Plus
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -85,8 +86,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-900">
-        <Sidebar variant="floating" collapsible="icon">
+      <div className="flex min-h-screen w-full bg-background dark:bg-background">
+        <Sidebar variant="floating" collapsible="icon" className="border-r border-border/10 bg-sidebar dark:bg-sidebar">
           <SidebarHeader>
             <div className="flex h-16 items-center gap-2 px-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -97,10 +98,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {menuItems.filter(item => item.title !== "Analytics").map((item) => {
+                  {menuItems.map((item) => {
                     const isActive = location.pathname === item.path || 
                       (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
                     
@@ -110,9 +110,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           tooltip={item.title}
                           asChild
                           isActive={isActive}
+                          className={cn(
+                            "transition-all duration-200",
+                            isActive ? "bg-primary/10 text-primary font-medium" : "hover:bg-primary/5"
+                          )}
                         >
                           <Link to={item.path}>
                             <item.icon className={cn(
+                              "h-5 w-5 transition-colors",
                               isActive && "text-primary"
                             )} />
                             <span>{item.title}</span>
@@ -124,8 +129,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+            
+            <SidebarGroup className="mt-4">
+              <SidebarGroupLabel>Create New</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      asChild
+                      className="bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                    >
+                      <Link to="/dashboard/campaigns/create">
+                        <Plus className="h-5 w-5" />
+                        <span>Create Campaign</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </SidebarContent>
-          <SidebarFooter className="p-4 space-y-4">
+          <SidebarFooter className="p-4 space-y-4 border-t border-border/10 mt-auto">
             <div className="flex items-center justify-between w-full px-2">
               <div className="flex items-center gap-3">
                 <Avatar className="h-9 w-9">
@@ -141,7 +165,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="ml-auto"
+                className="ml-auto h-8 w-8"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>

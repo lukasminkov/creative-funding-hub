@@ -27,7 +27,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light" storageKey="creator-crm-theme">
       <TooltipProvider>
-        <div className="min-h-screen transition-colors">
+        <div className="min-h-screen transition-colors bg-background text-foreground">
           <Toaster />
           <Sonner />
           <BrowserRouter>
