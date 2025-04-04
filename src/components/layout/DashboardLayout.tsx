@@ -87,7 +87,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full bg-background dark:bg-background">
-        <Sidebar variant="floating" collapsible="icon" className="border-r border-border/10">
+        <Sidebar 
+          variant="floating" 
+          collapsible="icon" 
+          className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50"
+        >
           <SidebarHeader>
             <div className="flex h-16 items-center gap-2 px-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -109,7 +113,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       asChild
                       isActive={isActive}
                       className={cn(
-                        "transition-all duration-200 h-10 rounded-xl flex items-center",
+                        "transition-all duration-200 h-10 rounded-md flex items-center",
                         isActive 
                           ? "bg-primary text-white font-medium" 
                           : "hover:bg-accent",
@@ -118,7 +122,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         "group-data-[collapsible=icon]:w-10",
                         "group-data-[collapsible=icon]:flex",
                         "group-data-[collapsible=icon]:items-center",
-                        "group-data-[collapsible=icon]:justify-center"
+                        "group-data-[collapsible=icon]:justify-center",
+                        // Darker background in dark mode
+                        "dark:hover:bg-zinc-800"
                       )}
                     >
                       <Link to={item.path} className="w-full flex items-center">
@@ -138,11 +144,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               })}
             </SidebarMenu>
             
-            <div className="px-4 mt-8">
+            <div className="px-2 mt-auto mb-4">
               <Button 
                 asChild
                 className={cn(
-                  "w-full justify-start rounded-xl h-10 bg-primary hover:bg-primary/90 transition-all",
+                  "w-full justify-start rounded-md h-10 bg-primary hover:bg-primary/90 transition-all",
                   "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10",
                   "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:min-w-10",
                   "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center",
@@ -162,7 +168,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Button>
             </div>
           </SidebarContent>
-          <SidebarFooter className="p-4 space-y-4 border-t border-border/10 mt-auto">
+          <SidebarFooter className="p-2 space-y-4 border-t border-border/10 mt-auto">
             <div className="flex items-center justify-between w-full px-2">
               <div className={cn(
                 "flex items-center gap-3",
@@ -190,14 +196,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Button>
             </div>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               className={cn(
-                "w-full justify-start rounded-xl",
+                "w-full justify-start rounded-md",
                 "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-8",
                 "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:min-w-10",
                 "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center",
-                "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto"
+                "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto",
+                "dark:hover:bg-zinc-800"
               )}
             >
               <LogOut className={cn(
