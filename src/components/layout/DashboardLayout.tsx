@@ -12,7 +12,9 @@ import {
   LogOut,
   Moon,
   Sun,
-  Plus
+  Plus,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { 
   Sidebar, 
@@ -27,7 +29,7 @@ import {
   SidebarMenuItem, 
   SidebarProvider, 
   SidebarRail,
-  SidebarTrigger
+  useSidebar
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -71,6 +73,27 @@ const menuItems = [
   },
 ];
 
+// Creating a custom sidebar toggle component to place inside the sidebar
+const SidebarToggle = () => {
+  const { toggleSidebar, state } = useSidebar();
+  
+  return (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={toggleSidebar}
+      className="h-8 w-8 absolute right-3 top-4 z-50"
+    >
+      {state === "expanded" ? (
+        <ChevronLeft className="h-5 w-5" />
+      ) : (
+        <ChevronRight className="h-5 w-5" />
+      )}
+      <span className="sr-only">Toggle Sidebar</span>
+    </Button>
+  );
+};
+
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
   const location = useLocation();
@@ -90,15 +113,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Sidebar 
           variant="floating" 
           collapsible="icon" 
-          className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50"
+          className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50 relative"
         >
-          <SidebarHeader>
+          <SidebarHeader className="relative">
             <div className="flex h-16 items-center gap-2 px-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <BarChart3 className="h-5 w-5" />
+              <div className="flex h-10 w-10 min-w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <BarChart3 className="h-6 w-6" />
               </div>
               <span className="text-lg font-semibold">CreatorCRM</span>
             </div>
+            <SidebarToggle />
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu className="px-2 pt-4">
@@ -129,7 +153,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     >
                       <Link to={item.path} className="w-full flex items-center">
                         <item.icon className={cn(
-                          "h-5 w-5",
+                          "h-5 w-5", // Slightly larger icons
                           // Adjust the icon positioning for expanded/collapsed states
                           "group-data-[collapsible=icon]:mx-auto",
                           "group-data-[state=expanded]:ml-3 group-data-[state=expanded]:mr-3"
@@ -150,12 +174,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   "w-full justify-start rounded-md h-10 bg-primary hover:bg-primary/90 transition-all",
                   "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10",
-                  "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:min-w-10",
-                  "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center",
-                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto"
+                  "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mx-auto",
+                  "group-data-[state=expanded]:flex group-data-[state=expanded]:justify-start"
                 )}
               >
-                <Link to="/dashboard/campaigns/create" className="flex items-center w-full justify-center">
+                <Link to="/dashboard/campaigns/create" className="flex items-center w-full h-full justify-center">
                   <Plus className={cn(
                     "h-5 w-5",
                     "group-data-[collapsible=icon]:mx-auto",
@@ -168,7 +191,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </Button>
             </div>
           </SidebarContent>
-          <SidebarFooter className="p-2 space-y-4 border-t border-border/10 mt-auto">
+          <SidebarFooter className="p-2 space-y-2 border-t border-border/10 mt-auto">
             <div className="flex items-center justify-between w-full px-2">
               <div className={cn(
                 "flex items-center gap-3",
@@ -183,45 +206,35 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <span className="text-xs text-muted-foreground">Business</span>
                 </div>
               </div>
+            </div>
+            <div className="flex w-full justify-between px-2">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className={cn(
-                  "ml-auto h-8 w-8 rounded-full",
-                  "group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:bottom-20 group-data-[collapsible=icon]:left-1/2 group-data-[collapsible=icon]:transform group-data-[collapsible=icon]:-translate-x-1/2"
-                )}
+                className="h-8 w-8 rounded-full"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={cn(
+                  "rounded-md h-8 w-8",
+                  "flex items-center justify-center",
+                  "dark:hover:bg-zinc-800"
+                )}
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="sr-only">Log out</span>
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className={cn(
-                "w-full justify-start rounded-md",
-                "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-8",
-                "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:min-w-10",
-                "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center",
-                "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto",
-                "dark:hover:bg-zinc-800"
-              )}
-            >
-              <LogOut className={cn(
-                "h-4 w-4",
-                "group-data-[collapsible=icon]:mx-auto",
-                "group-data-[state=expanded]:mr-2"
-              )} />
-              <span className="group-data-[collapsible=icon]:sr-only">
-                Log out
-              </span>
-            </Button>
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
         <div className="flex-1 overflow-auto bg-background">
           <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-6 backdrop-blur">
-            <SidebarTrigger />
             <div className="flex w-full items-center justify-between">
               <h1 className="text-xl font-semibold">
                 {menuItems.find(item => item.path === location.pathname || 
