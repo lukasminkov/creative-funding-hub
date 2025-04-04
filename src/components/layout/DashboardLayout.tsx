@@ -40,14 +40,14 @@ interface DashboardLayoutProps {
 
 const menuItems = [
   {
-    title: "Explore",
-    path: "/dashboard/explore",
-    icon: Compass,
-  },
-  {
     title: "Home",
     path: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "Explore",
+    path: "/dashboard/explore",
+    icon: Compass,
   },
   {
     title: "Campaigns",
@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background dark:bg-background">
-        <Sidebar variant="floating" collapsible="icon" className="border-r border-border/10 bg-sidebar dark:bg-sidebar">
+        <Sidebar variant="floating" collapsible="icon" className="border-r border-border/10">
           <SidebarHeader>
             <div className="flex h-16 items-center gap-2 px-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -97,62 +97,50 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {menuItems.map((item) => {
-                    const isActive = location.pathname === item.path || 
-                      (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
-                    
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton 
-                          tooltip={item.title}
-                          asChild
-                          isActive={isActive}
-                          className={cn(
-                            "transition-all duration-200",
-                            isActive ? "bg-primary/10 text-primary font-medium" : "hover:bg-primary/5"
-                          )}
-                        >
-                          <Link to={item.path}>
-                            <item.icon className={cn(
-                              "h-5 w-5 transition-colors",
-                              isActive && "text-primary"
-                            )} />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-            
-            <SidebarGroup className="mt-4">
-              <SidebarGroupLabel>Create New</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
+            <SidebarMenu className="px-2 pt-4">
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path || 
+                  (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
+                
+                return (
+                  <SidebarMenuItem key={item.title} className="mb-1">
                     <SidebarMenuButton 
+                      tooltip={item.title}
                       asChild
-                      className="bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                      isActive={isActive}
+                      className={cn(
+                        "transition-all duration-200 h-12 rounded-xl",
+                        isActive 
+                          ? "bg-primary text-white font-medium" 
+                          : "hover:bg-accent"
+                      )}
                     >
-                      <Link to="/dashboard/campaigns/create">
-                        <Plus className="h-5 w-5" />
-                        <span>Create Campaign</span>
+                      <Link to={item.path}>
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+                );
+              })}
+            </SidebarMenu>
+            
+            <div className="px-4 mt-8">
+              <Button 
+                asChild
+                className="w-full justify-start rounded-xl h-12 bg-primary hover:bg-primary/90 transition-all"
+              >
+                <Link to="/dashboard/campaigns/create">
+                  <Plus className="h-5 w-5 mr-2" />
+                  <span>Create Campaign</span>
+                </Link>
+              </Button>
+            </div>
           </SidebarContent>
           <SidebarFooter className="p-4 space-y-4 border-t border-border/10 mt-auto">
             <div className="flex items-center justify-between w-full px-2">
               <div className="flex items-center gap-3">
-                <Avatar className="h-9 w-9">
+                <Avatar className="h-9 w-9 border-2 border-primary/20">
                   <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
                   <AvatarFallback>AH</AvatarFallback>
                 </Avatar>
@@ -165,12 +153,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="ml-auto h-8 w-8"
+                className="ml-auto h-8 w-8 rounded-full"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
             </div>
-            <Button variant="outline" size="sm" className="w-full justify-start">
+            <Button variant="outline" size="sm" className="w-full justify-start rounded-xl">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </Button>
