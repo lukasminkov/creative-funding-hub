@@ -1,7 +1,7 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Campaign, ContentType, Category, Currency, Platform, VisibilityType, CountryOption } from "@/lib/campaign-types";
+import { Campaign, ContentType, Category, Currency, Platform, VisibilityType, CountryOption, RetainerCampaign, PayPerViewCampaign, ChallengeCampaign } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -33,9 +33,8 @@ export default function CampaignEditPage() {
         throw new Error("Campaign not found");
       }
       
-      // Convert snake_case to camelCase for frontend
-      // Use type assertions to ensure TypeScript knows the correct types
-      const camelCaseCampaign: Partial<Campaign> = {
+      // Base campaign properties shared across all types
+      const baseCampaign = {
         id: data.id,
         title: data.title,
         description: data.description,
@@ -49,36 +48,59 @@ export default function CampaignEditPage() {
         bannerImage: data.banner_image,
         trackingLink: data.tracking_link,
         requestedTrackingLink: data.requested_tracking_link,
-        guidelines: data.guidelines ? JSON.parse(data.guidelines) : { dos: [], donts: [] },
+        guidelines: data.guidelines ? JSON.parse(data.guidelines.toString()) : { dos: [], donts: [] },
         visibility: data.visibility as VisibilityType,
         countryAvailability: data.country_availability as CountryOption,
         requirements: data.requirements || [],
         brandId: data.brand_id,
         brandName: data.brand_name
       };
+
+      // Add optional fields with proper type handling
+      const addOptionalFields = (campaign: any) => {
+        if (data.brief) campaign.brief = JSON.parse(data.brief.toString());
+        if (data.instruction_video) campaign.instructionVideo = data.instruction_video;
+        if (data.example_videos) campaign.exampleVideos = JSON.parse(data.example_videos.toString());
+        if (data.tiktok_shop_commission) campaign.tikTokShopCommission = JSON.parse(data.tiktok_shop_commission.toString());
+        if (data.application_questions) campaign.applicationQuestions = JSON.parse(data.application_questions.toString());
+        if (data.restricted_access) campaign.restrictedAccess = JSON.parse(data.restricted_access.toString());
+        return campaign;
+      };
       
-      // Add type-specific fields with type checking
+      // Create the appropriate campaign type based on data.type
+      let typedCampaign: Campaign;
+      
       if (data.type === 'retainer') {
-        camelCaseCampaign.applicationDeadline = data.application_deadline ? new Date(data.application_deadline) : undefined;
-        camelCaseCampaign.creatorTiers = data.creator_tiers ? JSON.parse(data.creator_tiers) : undefined;
-        camelCaseCampaign.deliverables = data.deliverables ? JSON.parse(data.deliverables) : undefined;
-      } else if (data.type === 'payPerView') {
-        camelCaseCampaign.ratePerThousand = data.rate_per_thousand;
-        camelCaseCampaign.maxPayoutPerSubmission = data.max_payout_per_submission;
-      } else if (data.type === 'challenge') {
-        camelCaseCampaign.submissionDeadline = data.submission_deadline ? new Date(data.submission_deadline) : undefined;
-        camelCaseCampaign.prizePool = data.prize_pool ? JSON.parse(data.prize_pool) : undefined;
+        const retainerCampaign: RetainerCampaign = {
+          ...baseCampaign,
+          type: 'retainer',
+          applicationDeadline: data.application_deadline ? new Date(data.application_deadline) : new Date(),
+          creatorTiers: data.creator_tiers ? JSON.parse(data.creator_tiers.toString()) : [],
+          deliverables: data.deliverables ? JSON.parse(data.deliverables.toString()) : { mode: "videosPerDay" }
+        };
+        typedCampaign = addOptionalFields(retainerCampaign);
+      } 
+      else if (data.type === 'payPerView') {
+        const payPerViewCampaign: PayPerViewCampaign = {
+          ...baseCampaign,
+          type: 'payPerView',
+          ratePerThousand: data.rate_per_thousand || 0,
+          maxPayoutPerSubmission: data.max_payout_per_submission || 0
+        };
+        typedCampaign = addOptionalFields(payPerViewCampaign);
+      } 
+      else {
+        // Challenge campaign
+        const challengeCampaign: ChallengeCampaign = {
+          ...baseCampaign,
+          type: 'challenge',
+          submissionDeadline: data.submission_deadline ? new Date(data.submission_deadline) : new Date(),
+          prizePool: data.prize_pool ? JSON.parse(data.prize_pool.toString()) : { places: [] }
+        };
+        typedCampaign = addOptionalFields(challengeCampaign);
       }
       
-      // Add optional fields if they exist
-      if (data.brief) camelCaseCampaign.brief = JSON.parse(data.brief);
-      if (data.instruction_video) camelCaseCampaign.instructionVideo = data.instruction_video;
-      if (data.example_videos) camelCaseCampaign.exampleVideos = JSON.parse(data.example_videos);
-      if (data.tiktok_shop_commission) camelCaseCampaign.tikTokShopCommission = JSON.parse(data.tiktok_shop_commission);
-      if (data.application_questions) camelCaseCampaign.applicationQuestions = JSON.parse(data.application_questions);
-      if (data.restricted_access) camelCaseCampaign.restrictedAccess = JSON.parse(data.restricted_access);
-      
-      return camelCaseCampaign as Campaign;
+      return typedCampaign;
     }
   });
 
