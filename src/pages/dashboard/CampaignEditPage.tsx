@@ -1,7 +1,7 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Campaign } from "@/lib/campaign-types";
+import { Campaign, ContentType, Category, Currency, Platform, VisibilityType, CountryOption } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -34,29 +34,30 @@ export default function CampaignEditPage() {
       }
       
       // Convert snake_case to camelCase for frontend
+      // Use type assertions to ensure TypeScript knows the correct types
       const camelCaseCampaign: Partial<Campaign> = {
         id: data.id,
         title: data.title,
         description: data.description,
-        type: data.type,
-        contentType: data.content_type,
-        category: data.category,
-        platforms: data.platforms,
+        type: data.type as "retainer" | "payPerView" | "challenge",
+        contentType: data.content_type as ContentType,
+        category: data.category as Category,
+        platforms: data.platforms as Platform[],
         totalBudget: data.total_budget,
-        currency: data.currency,
+        currency: data.currency as Currency,
         endDate: new Date(data.end_date),
         bannerImage: data.banner_image,
         trackingLink: data.tracking_link,
         requestedTrackingLink: data.requested_tracking_link,
         guidelines: data.guidelines ? JSON.parse(data.guidelines) : { dos: [], donts: [] },
-        visibility: data.visibility,
-        countryAvailability: data.country_availability,
+        visibility: data.visibility as VisibilityType,
+        countryAvailability: data.country_availability as CountryOption,
         requirements: data.requirements || [],
         brandId: data.brand_id,
         brandName: data.brand_name
       };
       
-      // Add type-specific fields
+      // Add type-specific fields with type checking
       if (data.type === 'retainer') {
         camelCaseCampaign.applicationDeadline = data.application_deadline ? new Date(data.application_deadline) : undefined;
         camelCaseCampaign.creatorTiers = data.creator_tiers ? JSON.parse(data.creator_tiers) : undefined;

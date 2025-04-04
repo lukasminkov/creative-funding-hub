@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CampaignCreator from "@/components/CampaignCreator";
-import { Campaign } from "@/lib/campaign-types";
+import { Campaign, ContentType, Category, Currency, VisibilityType, CountryOption, Platform } from "@/lib/campaign-types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
