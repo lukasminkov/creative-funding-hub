@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -73,7 +72,6 @@ const menuItems = [
   },
 ];
 
-// Creating a custom sidebar toggle component to place inside the sidebar
 const SidebarToggle = () => {
   const { toggleSidebar, state } = useSidebar();
   
@@ -98,6 +96,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
+  const { state } = useSidebar();
 
   useEffect(() => {
     setIsMounted(true);
@@ -117,11 +116,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50"
         >
           <SidebarHeader className="relative">
-            <div className="flex h-16 items-center gap-2 px-4">
-              <div className="flex h-10 w-10 min-w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <div className={cn(
+              "flex h-16 items-center px-4",
+              state === "expanded" ? "justify-start gap-2" : "justify-center"
+            )}>
+              <div className={cn(
+                "flex h-10 w-10 min-w-10 items-center justify-center rounded-md bg-primary text-primary-foreground",
+                state === "collapsed" && "mx-auto"
+              )}>
                 <BarChart3 className="h-6 w-6" />
               </div>
-              <span className="text-lg font-semibold">CreatorCRM</span>
+              {state === "expanded" && (
+                <span className="text-lg font-semibold">Payper</span>
+              )}
             </div>
             <SidebarToggle />
           </SidebarHeader>
@@ -142,20 +149,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         isActive 
                           ? "bg-primary text-white font-medium" 
                           : "hover:bg-accent",
-                        // Make the button icon-centric when collapsed, centered vertically
                         "group-data-[collapsible=icon]:h-10",
                         "group-data-[collapsible=icon]:w-10",
                         "group-data-[collapsible=icon]:flex",
                         "group-data-[collapsible=icon]:items-center",
                         "group-data-[collapsible=icon]:justify-center",
-                        // Darker background in dark mode
                         "dark:hover:bg-zinc-800"
                       )}
                     >
                       <Link to={item.path} className="w-full flex items-center">
                         <item.icon className={cn(
-                          "h-6 w-6", // Larger icons
-                          // Adjust the icon positioning for expanded/collapsed states
+                          "h-6 w-6",
                           "group-data-[collapsible=icon]:mx-auto",
                           "group-data-[state=expanded]:ml-3 group-data-[state=expanded]:mr-3"
                         )} />
