@@ -1,10 +1,55 @@
+
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
-import { Edit2, Trash2 } from "lucide-react";
+import { 
+  Edit2, 
+  Trash2, 
+  ArrowLeft, 
+  ChevronRight, 
+  MessageSquare 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent, 
+  CardFooter 
+} from "@/components/ui/card";
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableHead, 
+  TableRow, 
+  TableCell 
+} from "@/components/ui/table";
+import { 
+  Tabs, 
+  TabsList, 
+  TabsTrigger, 
+  TabsContent 
+} from "@/components/ui/tabs";
+import { 
+  Drawer, 
+  DrawerTrigger, 
+  DrawerContent, 
+  DrawerHeader, 
+  DrawerTitle, 
+  DrawerDescription, 
+  DrawerFooter 
+} from "@/components/ui/drawer";
+import { 
+  Avatar, 
+  AvatarImage, 
+  AvatarFallback 
+} from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { SocialIcon } from "@/components/icons/SocialIcons";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 
 // Mock creators data
@@ -126,6 +171,7 @@ export default function CampaignDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("active-creators");
   
   const { data: campaign, isLoading, refetch } = useQuery({
     queryKey: ['campaign', id],
