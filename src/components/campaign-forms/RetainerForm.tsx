@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Campaign, RetainerCampaign, Platform, PLATFORMS } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -45,9 +44,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { DatePicker } from "@/components/ui/date-picker";
+import PlatformSelector from "@/components/PlatformSelector";
 
 interface RetainerFormProps {
-  campaign: Partial<RetainerCampaign>; // Changed from Campaign to RetainerCampaign for more specific type
+  campaign: Partial<RetainerCampaign>;
   onChange: (updatedCampaign: Partial<RetainerCampaign>) => void;
   showCreatorInfoSection: boolean;
   disableBudgetEdit?: boolean;
@@ -64,11 +65,13 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
     }
   };
 
-  const handlePlatformToggle = (platform: Platform) => {
-    const currentPlatforms = campaign.platforms || [];
-    const updatedPlatforms = currentPlatforms.includes(platform)
-      ? currentPlatforms.filter(p => p !== platform)
-      : [...currentPlatforms, platform];
+  const handlePlatformToggle = (platform: string) => {
+    const platformValue = platform as Platform;
+    const currentPlatforms = [...(campaign.platforms || [])];
+    
+    const updatedPlatforms = currentPlatforms.includes(platformValue)
+      ? currentPlatforms.filter(p => p !== platformValue)
+      : [...currentPlatforms, platformValue];
     
     onChange({ platforms: updatedPlatforms });
   };
@@ -118,17 +121,44 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Campaign Title</Label>
+              <Label htmlFor="title">
+                Campaign Title <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="title"
                 value={campaign.title || ''}
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="Enter campaign title"
+                required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contentType">Content Type</Label>
+              <Label htmlFor="totalBudget">
+                Total Budget <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="totalBudget"
+                type="number"
+                min="0"
+                value={campaign.totalBudget || ""}
+                onChange={(e) => onChange({ totalBudget: Number(e.target.value) })}
+                placeholder="Campaign budget"
+                disabled={disableBudgetEdit}
+                className={disableBudgetEdit ? "bg-muted cursor-not-allowed" : ""}
+                required
+              />
+              {disableBudgetEdit && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Budget can only be increased using the "Add Budget" button
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contentType">
+                Content Type <span className="text-destructive">*</span>
+              </Label>
               <Select
                 value={campaign.contentType}
                 onValueChange={(value) => handleInputChange('contentType', value)}
@@ -147,7 +177,9 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">
+                Category <span className="text-destructive">*</span>
+              </Label>
               <Select
                 value={campaign.category}
                 onValueChange={(value) => handleInputChange('category', value)}
@@ -166,26 +198,9 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="totalBudget">Total Budget</Label>
-              <Input
-                id="totalBudget"
-                type="number"
-                min="0"
-                value={campaign.totalBudget || ""}
-                onChange={(e) => onChange({ totalBudget: Number(e.target.value) })}
-                placeholder="Campaign budget"
-                disabled={disableBudgetEdit}
-                className={disableBudgetEdit ? "bg-muted cursor-not-allowed" : ""}
-              />
-              {disableBudgetEdit && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Budget can only be increased using the "Add Budget" button
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
+              <Label htmlFor="currency">
+                Currency <span className="text-destructive">*</span>
+              </Label>
               <Select
                 value={campaign.currency}
                 onValueChange={(value) => handleInputChange('currency', value)}
@@ -204,7 +219,9 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="countryAvailability">Country Availability</Label>
+              <Label htmlFor="countryAvailability">
+                Country Availability <span className="text-destructive">*</span>
+              </Label>
               <Select
                 value={campaign.countryAvailability}
                 onValueChange={(value) => handleInputChange('countryAvailability', value)}
@@ -223,87 +240,54 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !campaign.endDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {campaign.endDate ? format(campaign.endDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={campaign.endDate}
-                    onSelect={(date) => handleDateChange('endDate', date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="endDate">
+                End Date <span className="text-destructive">*</span>
+              </Label>
+              <DatePicker
+                id="endDate"
+                date={campaign.endDate ? new Date(campaign.endDate) : undefined}
+                onSelect={(date) => handleDateChange('endDate', date)}
+                placeholder="Select end date"
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="applicationDeadline">Application Deadline</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !campaign.applicationDeadline && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {campaign.applicationDeadline ? format(campaign.applicationDeadline, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={campaign.applicationDeadline}
-                    onSelect={(date) => handleDateChange('applicationDeadline', date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="applicationDeadline">
+                Application Deadline <span className="text-destructive">*</span>
+              </Label>
+              <DatePicker
+                id="applicationDeadline"
+                date={campaign.applicationDeadline ? new Date(campaign.applicationDeadline) : undefined}
+                onSelect={(date) => handleDateChange('applicationDeadline', date)}
+                placeholder="Select deadline"
+              />
+            </div>
+
+            <div className="space-y-2 col-span-2">
+              <Label>
+                Platforms <span className="text-destructive">*</span>
+              </Label>
+              <PlatformSelector
+                selectedPlatforms={campaign.platforms || []}
+                onChange={handlePlatformToggle}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Select platforms where creators will post content
+              </p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Platforms</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {PLATFORMS.map((platform) => (
-                <div key={platform} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`platform-${platform}`}
-                    checked={(campaign.platforms || []).includes(platform)}
-                    onCheckedChange={() => handlePlatformToggle(platform)}
-                  />
-                  <label
-                    htmlFor={`platform-${platform}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {platform}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Campaign Description</Label>
+            <Label htmlFor="description">
+              Campaign Description <span className="text-destructive">*</span>
+            </Label>
             <Textarea
               id="description"
               value={campaign.description || ''}
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Describe your campaign"
               className="min-h-[100px]"
+              required
             />
           </div>
 
