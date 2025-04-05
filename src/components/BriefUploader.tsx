@@ -6,31 +6,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Brief } from "@/lib/campaign-types";
 
 interface BriefUploaderProps {
-  briefType?: 'link' | 'file';
-  briefValue?: string;
-  onBriefChange: (type: 'link' | 'file', value: string) => void;
+  brief?: Brief;
+  onChange: (brief: Brief) => void;
 }
 
-const BriefUploader = ({ briefType = 'link', briefValue = '', onBriefChange }: BriefUploaderProps) => {
-  const [activeTab, setActiveTab] = useState<'link' | 'file'>(briefType);
-  const [linkValue, setLinkValue] = useState(briefType === 'link' ? briefValue : '');
-  const [fileName, setFileName] = useState(briefType === 'file' ? briefValue : '');
+const BriefUploader = ({ brief, onChange }: BriefUploaderProps) => {
+  const [activeTab, setActiveTab] = useState<'link' | 'file'>(brief?.type || 'link');
+  const [linkValue, setLinkValue] = useState(brief?.type === 'link' ? brief.value : '');
+  const [fileName, setFileName] = useState(brief?.type === 'file' ? brief.value : '');
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as 'link' | 'file');
     // Clear values when switching tabs
-    if (value === 'link' && briefType === 'file') {
-      onBriefChange('link', linkValue || '');
-    } else if (value === 'file' && briefType === 'link') {
-      onBriefChange('file', fileName || '');
+    if (value === 'link' && brief?.type === 'file') {
+      onChange({ type: 'link', value: linkValue || '' });
+    } else if (value === 'file' && brief?.type === 'link') {
+      onChange({ type: 'file', value: fileName || '' });
     }
   };
 
   const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLinkValue(e.target.value);
-    onBriefChange('link', e.target.value);
+    onChange({ type: 'link', value: e.target.value });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,14 +39,14 @@ const BriefUploader = ({ briefType = 'link', briefValue = '', onBriefChange }: B
       // In a real app, you would upload the file to storage and get a URL
       // For demo purposes, we'll just store the file name
       setFileName(file.name);
-      onBriefChange('file', file.name);
+      onChange({ type: 'file', value: file.name });
       toast.success("Brief file uploaded successfully");
     }
   };
 
   const clearFile = () => {
     setFileName('');
-    onBriefChange('file', '');
+    onChange({ type: 'file', value: '' });
   };
 
   return (

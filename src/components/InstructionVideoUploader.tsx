@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface InstructionVideoUploaderProps {
-  videoFile?: File | null;
-  onVideoChange: (file: File | null) => void;
+  value?: string;
+  onChange: (url: string) => void;
+  file?: File | null;
+  onFileChange: (file: File | null) => void;
 }
 
-const InstructionVideoUploader = ({ videoFile, onVideoChange }: InstructionVideoUploaderProps) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+const InstructionVideoUploader = ({ value, onChange, file, onFileChange }: InstructionVideoUploaderProps) => {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(value || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +28,8 @@ const InstructionVideoUploader = ({ videoFile, onVideoChange }: InstructionVideo
       // Create a preview URL for the video
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
-      onVideoChange(file);
+      onChange(objectUrl);
+      onFileChange(file);
     }
   };
 
@@ -36,7 +39,8 @@ const InstructionVideoUploader = ({ videoFile, onVideoChange }: InstructionVideo
 
   const clearVideo = () => {
     setPreviewUrl(null);
-    onVideoChange(null);
+    onChange("");
+    onFileChange(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

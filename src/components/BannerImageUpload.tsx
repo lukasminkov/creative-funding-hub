@@ -6,12 +6,12 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface BannerImageUploadProps {
-  onImageSelect: (imageUrl: string) => void;
-  currentImage?: string;
+  value?: string;
+  onChange: (imageUrl: string) => void;
 }
 
-const BannerImageUpload = ({ onImageSelect, currentImage }: BannerImageUploadProps) => {
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(currentImage);
+const BannerImageUpload = ({ value, onChange }: BannerImageUploadProps) => {
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(value);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -25,14 +25,14 @@ const BannerImageUpload = ({ onImageSelect, currentImage }: BannerImageUploadPro
     reader.onload = () => {
       const result = reader.result as string;
       setPreviewUrl(result);
-      onImageSelect(result);
+      onChange(result);
     };
     reader.readAsDataURL(file);
   };
 
   const clearImage = () => {
     setPreviewUrl(undefined);
-    onImageSelect("");
+    onChange("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -58,15 +58,13 @@ const BannerImageUpload = ({ onImageSelect, currentImage }: BannerImageUploadPro
     reader.onload = () => {
       const result = reader.result as string;
       setPreviewUrl(result);
-      onImageSelect(result);
+      onChange(result);
     };
     reader.readAsDataURL(file);
   };
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium">Banner Image</Label>
-      
       {previewUrl ? (
         <div className="relative rounded-lg overflow-hidden">
           <img 
