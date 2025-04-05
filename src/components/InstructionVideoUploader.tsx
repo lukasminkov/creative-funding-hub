@@ -10,9 +10,16 @@ interface InstructionVideoUploaderProps {
   onChange: (url: string) => void;
   file?: File | null;
   onFileChange: (file: File | null) => void;
+  showLabel?: boolean;
 }
 
-const InstructionVideoUploader = ({ value, onChange, file, onFileChange }: InstructionVideoUploaderProps) => {
+const InstructionVideoUploader = ({ 
+  value, 
+  onChange, 
+  file, 
+  onFileChange,
+  showLabel = false
+}: InstructionVideoUploaderProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(value || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,7 +68,7 @@ const InstructionVideoUploader = ({ value, onChange, file, onFileChange }: Instr
 
   return (
     <div className="space-y-4">
-      <Label>Instruction Video</Label>
+      {showLabel && <Label>Instruction Video</Label>}
       <div className="space-y-2">
         <input
           ref={fileInputRef}

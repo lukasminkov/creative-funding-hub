@@ -11,13 +11,15 @@ interface GuidelinesListProps {
   donts: string[];
   onChange: (guidelines: { dos: string[]; donts: string[] }) => void;
   maxItems?: number;
+  showLabel?: boolean;
 }
 
 const GuidelinesList = ({ 
   dos, 
   donts, 
   onChange, 
-  maxItems = 5 
+  maxItems = 5,
+  showLabel = true
 }: GuidelinesListProps) => {
   const [activeTab, setActiveTab] = useState<"dos" | "donts">("dos");
   const [newDo, setNewDo] = useState("");
@@ -60,12 +62,13 @@ const GuidelinesList = ({
 
   return (
     <div className="space-y-3">
-      <div>
-        <Label>Guidelines</Label>
-        <p className="text-sm text-muted-foreground mt-1">
-          Add Do's and Don'ts for creators (up to {maxItems} each)
-        </p>
-      </div>
+      {showLabel && (
+        <div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Add Do's and Don'ts for creators (up to {maxItems} each)
+          </p>
+        </div>
+      )}
 
       <Tabs 
         value={activeTab} 
