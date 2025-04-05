@@ -92,8 +92,8 @@ export default function CampaignFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col overflow-hidden p-0">
-        <DialogHeader className="p-6 border-b">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0 flex flex-col">
+        <DialogHeader className="p-6 border-b shrink-0">
           <DialogTitle>{isEditing ? "Edit Campaign" : "New Campaign"}</DialogTitle>
           <DialogDescription>
             {isEditing 
