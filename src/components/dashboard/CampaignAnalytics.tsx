@@ -26,7 +26,6 @@ import {
   ChartTooltipContent 
 } from "@/components/ui/chart";
 import { Campaign } from "@/lib/campaign-types";
-import { useQuery } from "@tanstack/react-query";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, subDays, startOfWeek, startOfMonth, startOfYear, endOfMonth, subMonths } from "date-fns";
@@ -53,6 +52,10 @@ type DateRange = {
 };
 
 type DateRangePreset = 'custom' | 'wtd' | 'mtd' | 'ytd' | 'lastMonth';
+
+interface CampaignAnalyticsProps {
+  campaigns: Campaign[];
+}
 
 const generateAnalyticsData = (campaignId?: string, dateRange?: DateRange) => {
   const data: AnalyticsData[] = [];
@@ -155,20 +158,12 @@ const StatCard = ({ title, value, description, icon, trend, trendValue }: StatCa
   </Card>
 );
 
-export default function CampaignAnalytics() {
+export default function CampaignAnalytics({ campaigns = [] }: CampaignAnalyticsProps) {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("all");
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
   const [selectedDatePreset, setSelectedDatePreset] = useState<DateRangePreset>('mtd');
   const [dateRange, setDateRange] = useState<DateRange>(getDateRangeFromPreset('mtd'));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  
-  const { data: campaigns = [] } = useQuery({
-    queryKey: ['campaigns'],
-    queryFn: () => {
-      const storedCampaigns = localStorage.getItem("campaigns");
-      return storedCampaigns ? JSON.parse(storedCampaigns) : [];
-    }
-  });
   
   useEffect(() => {
     setAnalyticsData(generateAnalyticsData(
@@ -214,7 +209,7 @@ export default function CampaignAnalytics() {
             <SelectContent>
               <SelectItem value="all">All Campaigns</SelectItem>
               {campaigns.map((campaign: Campaign) => (
-                <SelectItem key={campaign.id} value={campaign.id}>
+                <SelectItem key={campaign.id} value={campaign.id || ""}>
                   {campaign.title}
                 </SelectItem>
               ))}

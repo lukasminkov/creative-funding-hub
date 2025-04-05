@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, MessageSquare } from "lucide-react";
@@ -22,6 +21,7 @@ export default function CampaignsPage() {
     queryKey: ['campaigns'],
     queryFn: async () => {
       try {
+        console.log("Fetching campaigns from Supabase");
         const { data, error } = await supabase
           .from('campaigns')
           .select('*');
@@ -32,7 +32,10 @@ export default function CampaignsPage() {
           return [];
         }
         
-        return data.map(campaign => convertDatabaseCampaign(campaign));
+        console.log("Received campaigns data:", data);
+        const convertedData = data.map(campaign => convertDatabaseCampaign(campaign));
+        console.log("Converted campaigns:", convertedData);
+        return convertedData;
       } catch (error) {
         console.error("Error in campaign fetch:", error);
         toast.error("An error occurred while fetching campaigns");
@@ -41,7 +44,6 @@ export default function CampaignsPage() {
     }
   });
 
-  // Filter campaigns based on search and type
   const filteredCampaigns = campaigns.filter((campaign: Campaign) => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === "all" || campaign.type === activeTab;
@@ -75,7 +77,6 @@ export default function CampaignsPage() {
     return "Ongoing";
   }
 
-  // Helper function to render the campaign card based on type
   const renderCampaignCard = (campaign: Campaign) => {
     const status = getCampaignStatus(campaign);
     let progress = 0;
@@ -94,27 +95,24 @@ export default function CampaignsPage() {
 
     switch(campaign.type) {
       case "payPerView":
-        // Simulate 30% of budget spent for active campaigns
         progress = status === "Ended" ? 100 : 30;
         progressText = `$${(campaign.totalBudget * (progress/100)).toFixed(2)}/$${campaign.totalBudget} spent`;
         break;
         
       case "retainer":
-        // Simulate 40% of deliverables submitted
         const totalVideos = campaign.deliverables?.totalVideos || 10;
         progress = status === "Ended" ? 100 : (status === "Application Phase" ? 0 : 40);
         progressText = `${Math.round(totalVideos * (progress/100))}/${totalVideos} deliverables`;
         break;
         
       case "challenge":
-        // Calculate progress based on time remaining
         const now = new Date();
         if (status === "Ended" || status === "Judging") {
           progress = 100;
           progressText = "100% complete";
         } else {
           const deadline = new Date(campaign.submissionDeadline);
-          const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000); // Assume started 2 weeks ago
+          const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
           const total = deadline.getTime() - startDate.getTime();
           const elapsed = now.getTime() - startDate.getTime();
           progress = Math.min(100, Math.floor((elapsed / total) * 100));
@@ -221,8 +219,7 @@ export default function CampaignsPage() {
         </Link>
       </div>
 
-      {/* Analytics Dashboard */}
-      <CampaignAnalytics />
+      <CampaignAnalytics campaigns={campaigns} />
 
       <div className="flex flex-col md:flex-row md:justify-between gap-4 items-start md:items-center mb-6">
         <div className="relative w-full md:w-64">
