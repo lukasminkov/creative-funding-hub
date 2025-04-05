@@ -23,13 +23,19 @@ interface CampaignPaymentModalProps {
 }
 
 const CampaignPaymentModal = ({ campaign, open, onClose, onPaymentComplete }: CampaignPaymentModalProps) => {
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "bank">("card");
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "savedCard" | "bank">("card");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [saveCard, setSaveCard] = useState(false);
+  const [savedCards, setSavedCards] = useState<Array<{id: string, last4: string, brand: string}>>([
+    {id: "card_1", last4: "4242", brand: "Visa"},
+    {id: "card_2", last4: "5555", brand: "Mastercard"}
+  ]);
+  const [selectedCard, setSelectedCard] = useState<string>(savedCards[0]?.id || "");
   
   // Calculate fees
   const campaignBudget = campaign.totalBudget;
   const marketplaceFee = campaignBudget * 0.02; // 2% marketplace fee
-  const cardFee = paymentMethod === "card" ? campaignBudget * 0.029 + 0.30 : 0; // 2.9% + $0.30 for card payments
+  const cardFee = (paymentMethod === "card" || paymentMethod === "savedCard") ? campaignBudget * 0.029 + 0.30 : 0; // 2.9% + $0.30 for card payments
   const totalAmount = campaignBudget + marketplaceFee + cardFee;
   
   const handlePayment = () => {
@@ -38,6 +44,7 @@ const CampaignPaymentModal = ({ campaign, open, onClose, onPaymentComplete }: Ca
     // Simulate payment processing
     setTimeout(() => {
       setIsProcessing(false);
+      // If saveCard is true, we would add the card to the user's saved cards
       onPaymentComplete();
     }, 2000);
   };
@@ -64,7 +71,7 @@ const CampaignPaymentModal = ({ campaign, open, onClose, onPaymentComplete }: Ca
                   <span>Marketplace Fee (2%)</span>
                   <span>{formatCurrency(marketplaceFee, campaign.currency)}</span>
                 </li>
-                {paymentMethod === "card" && (
+                {(paymentMethod === "card" || paymentMethod === "savedCard") && (
                   <li className="flex justify-between">
                     <span>Card Processing Fee</span>
                     <span>{formatCurrency(cardFee, campaign.currency)}</span>
@@ -80,19 +87,55 @@ const CampaignPaymentModal = ({ campaign, open, onClose, onPaymentComplete }: Ca
           
           <div className="space-y-3">
             <h3 className="text-sm font-medium">Payment Method</h3>
-            <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "card" | "bank")}>
+            <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as any)}>
+              {savedCards.length > 0 && (
+                <div className="mb-3">
+                  <div className="flex items-center space-x-2 border border-border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setPaymentMethod("savedCard")}>
+                    <RadioGroupItem value="savedCard" id="savedCard" />
+                    <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <Label htmlFor="savedCard" className="cursor-pointer flex-grow">Saved Cards</Label>
+                  </div>
+                  
+                  {paymentMethod === "savedCard" && (
+                    <div className="mt-2 pl-7">
+                      <RadioGroup value={selectedCard} onValueChange={setSelectedCard} className="space-y-2">
+                        {savedCards.map(card => (
+                          <div key={card.id} className="flex items-center space-x-2 border border-border/60 rounded-lg p-2 cursor-pointer hover:bg-accent/30 transition-colors">
+                            <RadioGroupItem value={card.id} id={card.id} />
+                            <Label htmlFor={card.id} className="cursor-pointer flex-grow">
+                              {card.brand} •••• {card.last4}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="flex items-center space-x-2 border border-border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setPaymentMethod("card")}>
                 <RadioGroupItem value="card" id="card" />
                 <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
                 <Label htmlFor="card" className="cursor-pointer flex-grow">Credit/Debit Card</Label>
-                <span className="text-sm text-muted-foreground">{formatCurrency(campaignBudget + marketplaceFee + cardFee, campaign.currency)}</span>
               </div>
+              
+              {paymentMethod === "card" && (
+                <div className="pl-7 pt-2 flex items-center">
+                  <input 
+                    type="checkbox" 
+                    id="saveCard" 
+                    className="mr-2 h-4 w-4 rounded border-gray-300 focus:ring-primary"
+                    checked={saveCard}
+                    onChange={(e) => setSaveCard(e.target.checked)}
+                  />
+                  <Label htmlFor="saveCard" className="text-sm">Save this card for future payments</Label>
+                </div>
+              )}
               
               <div className="flex items-center space-x-2 border border-border rounded-lg p-3 cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => setPaymentMethod("bank")}>
                 <RadioGroupItem value="bank" id="bank" />
                 <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
                 <Label htmlFor="bank" className="cursor-pointer flex-grow">Bank Transfer</Label>
-                <span className="text-sm text-muted-foreground">{formatCurrency(campaignBudget + marketplaceFee, campaign.currency)}</span>
               </div>
             </RadioGroup>
             {paymentMethod === "bank" && (

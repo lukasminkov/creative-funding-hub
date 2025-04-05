@@ -1,745 +1,631 @@
-import { useState } from "react";
-import { Campaign, CONTENT_TYPES, CATEGORIES, CURRENCIES, Platform, ContentType, Category, Currency, DeliverableMode, DELIVERABLE_MODES, TikTokShopCommission, ExampleVideo, CountryOption } from "@/lib/campaign-types";
+import React from "react";
+import { Campaign } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { 
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
 import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue 
+  SelectValue
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
+  CONTENT_TYPES, 
+  CATEGORIES, 
+  PLATFORMS, 
+  CURRENCIES,
+  COUNTRY_OPTIONS,
+  getCountryLabel
+} from "@/lib/campaign-types";
+import { CalendarIcon, Plus, Trash2, Upload } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
   Popover,
   PopoverContent,
-  PopoverTrigger 
+  PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, ExternalLink, Plus, Trash, X } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip";
-import { Switch } from "@/components/ui/switch";
-import BannerImageUpload from "../BannerImageUpload";
-import PlatformSelector from "../PlatformSelector";
-import GuidelinesList from "../GuidelinesList";
-import BriefUploader from "../BriefUploader";
-import InstructionVideoUploader from "../InstructionVideoUploader";
-import ExampleVideos from "../ExampleVideos";
-import CountrySelector from "../CountrySelector";
-import RequirementsList from "../RequirementsList";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 interface RetainerFormProps {
   campaign: Partial<Campaign>;
-  onChange: (campaign: Partial<Campaign>) => void;
-  showCreatorInfoSection?: boolean;
+  onChange: (updatedCampaign: Partial<Campaign>) => void;
+  showCreatorInfoSection: boolean;
+  disableBudgetEdit?: boolean;
 }
 
-const RetainerForm = ({ campaign, onChange, showCreatorInfoSection = false }: RetainerFormProps) => {
-  const [creatorTiers, setCreatorTiers] = useState<{ name: string; price: number }[]>(
-    campaign.type === "retainer" && campaign.creatorTiers ? campaign.creatorTiers : [{ name: "Standard", price: 0 }]
-  );
-  
-  const [deliverableMode, setDeliverableMode] = useState<DeliverableMode>(
-    campaign.type === "retainer" && campaign.deliverables?.mode 
-      ? campaign.deliverables.mode 
-      : "videosPerDay"
-  );
-  
-  const [videosPerDay, setVideosPerDay] = useState<number>(
-    campaign.type === "retainer" && campaign.deliverables?.videosPerDay 
-      ? campaign.deliverables.videosPerDay 
-      : 1
-  );
-  
-  const [durationDays, setDurationDays] = useState<number>(
-    campaign.type === "retainer" && campaign.deliverables?.durationDays 
-      ? campaign.deliverables.durationDays 
-      : 30
-  );
-  
-  const [totalVideos, setTotalVideos] = useState<number>(
-    campaign.type === "retainer" && campaign.deliverables?.totalVideos 
-      ? campaign.deliverables.totalVideos 
-      : 30
-  );
-  
-  const [trackingLink, setTrackingLink] = useState(campaign.trackingLink || "");
-  const [requestTrackingLink, setRequestTrackingLink] = useState(campaign.requestedTrackingLink || false);
-
-  const [brief, setBrief] = useState({
-    type: campaign.brief?.type || 'link',
-    value: campaign.brief?.value || ''
-  });
-
-  const [instructionVideo, setInstructionVideo] = useState<File | null>(campaign.instructionVideoFile || null);
-
-  const [exampleVideos, setExampleVideos] = useState<ExampleVideo[]>(campaign.exampleVideos || []);
-
-  const [tikTokShopCommission, setTikTokShopCommission] = useState<TikTokShopCommission>(
-    campaign.tikTokShopCommission || {
-      openCollabCommission: 0,
-      increasedCommission: 0
-    }
-  );
-
-  const handlePlatformSelect = (platform: Platform) => {
-    onChange({ ...campaign, platforms: [platform] });
+const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudgetEdit = false }: RetainerFormProps) => {
+  const handleInputChange = (field: string, value: any) => {
+    onChange({ [field]: value });
   };
 
-  const isTikTokShop = campaign.platforms?.includes("TikTok Shop");
-
-  const handleGuidelinesChange = (newGuidelines: { dos: string[], donts: string[] }) => {
-    onChange({
-      ...campaign,
-      guidelines: newGuidelines
-    });
-  };
-
-  const handleRequirementsChange = (requirements: string[]) => {
-    onChange({
-      ...campaign,
-      requirements
-    });
-  };
-
-  const handleAddTier = () => {
-    const updatedTiers = [...creatorTiers, { name: `Tier ${creatorTiers.length + 1}`, price: 0 }];
-    setCreatorTiers(updatedTiers);
-    
-    onChange({
-      ...campaign,
-      type: "retainer",
-      creatorTiers: updatedTiers
-    });
-  };
-
-  const handleRemoveTier = (index: number) => {
-    if (creatorTiers.length > 1) {
-      const updatedTiers = creatorTiers.filter((_, i) => i !== index);
-      setCreatorTiers(updatedTiers);
-      
-      onChange({
-        ...campaign,
-        type: "retainer",
-        creatorTiers: updatedTiers
-      });
+  const handleDateChange = (field: string, date: Date | undefined) => {
+    if (date) {
+      onChange({ [field]: date });
     }
   };
 
-  const handleTierChange = (index: number, field: 'name' | 'price', value: string | number) => {
-    const updatedTiers = [...creatorTiers];
-    updatedTiers[index] = { 
-      ...updatedTiers[index], 
-      [field]: field === 'price' ? Number(value) : value 
-    };
+  const handlePlatformToggle = (platform: string) => {
+    const currentPlatforms = campaign.platforms || [];
+    const updatedPlatforms = currentPlatforms.includes(platform)
+      ? currentPlatforms.filter(p => p !== platform)
+      : [...currentPlatforms, platform];
     
-    setCreatorTiers(updatedTiers);
-    
-    onChange({
-      ...campaign,
-      type: "retainer",
-      creatorTiers: updatedTiers
-    });
+    onChange({ platforms: updatedPlatforms });
   };
 
-  const handleDeliverableModeChange = (mode: DeliverableMode) => {
-    setDeliverableMode(mode);
-    
-    if (mode === "videosPerDay") {
-      onChange({
-        ...campaign,
-        type: "retainer",
-        deliverables: {
-          mode: mode,
-          videosPerDay,
-          durationDays
-        }
-      });
-    } else {
-      onChange({
-        ...campaign,
-        type: "retainer",
-        deliverables: {
-          mode: mode,
-          totalVideos
-        }
-      });
-    }
+  const handleGuidelineChange = (type: 'dos' | 'donts', index: number, value: string) => {
+    const guidelines = { ...(campaign.guidelines || { dos: [], donts: [] }) };
+    guidelines[type][index] = value;
+    onChange({ guidelines });
   };
 
-  const handleVideosPerDayChange = (value: number) => {
-    setVideosPerDay(value);
-    
-    onChange({
-      ...campaign,
-      type: "retainer",
-      deliverables: {
-        mode: deliverableMode,
-        videosPerDay: value,
-        durationDays
-      }
-    });
+  const addGuideline = (type: 'dos' | 'donts') => {
+    const guidelines = { ...(campaign.guidelines || { dos: [], donts: [] }) };
+    guidelines[type] = [...guidelines[type], ''];
+    onChange({ guidelines });
   };
 
-  const handleDurationDaysChange = (value: number) => {
-    setDurationDays(value);
-    
-    onChange({
-      ...campaign,
-      type: "retainer",
-      deliverables: {
-        mode: deliverableMode,
-        videosPerDay,
-        durationDays: value
-      }
-    });
+  const removeGuideline = (type: 'dos' | 'donts', index: number) => {
+    const guidelines = { ...(campaign.guidelines || { dos: [], donts: [] }) };
+    guidelines[type] = guidelines[type].filter((_, i) => i !== index);
+    onChange({ guidelines });
   };
 
-  const handleTotalVideosChange = (value: number) => {
-    setTotalVideos(value);
-    
-    onChange({
-      ...campaign,
-      type: "retainer",
-      deliverables: {
-        mode: deliverableMode,
-        totalVideos: value
-      }
-    });
+  const handleCreatorTierChange = (index: number, field: string, value: any) => {
+    const tiers = [...(campaign.creatorTiers || [])];
+    tiers[index] = { ...tiers[index], [field]: value };
+    onChange({ creatorTiers: tiers });
   };
 
-  const handleTrackingLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const link = e.target.value;
-    setTrackingLink(link);
-    
-    if (link) {
-      setRequestTrackingLink(false);
-      onChange({
-        ...campaign,
-        trackingLink: link,
-        requestedTrackingLink: false
-      });
-    } else {
-      onChange({
-        ...campaign,
-        trackingLink: "",
-        requestedTrackingLink: requestTrackingLink
-      });
-    }
+  const addCreatorTier = () => {
+    const tiers = [...(campaign.creatorTiers || []), { name: '', price: 0 }];
+    onChange({ creatorTiers: tiers });
   };
 
-  const handleRequestTrackingLinkChange = (checked: boolean) => {
-    setRequestTrackingLink(checked);
-    
-    if (checked) {
-      setTrackingLink("");
-      onChange({
-        ...campaign,
-        trackingLink: "",
-        requestedTrackingLink: true
-      });
-    } else {
-      onChange({
-        ...campaign,
-        requestedTrackingLink: false
-      });
-    }
+  const removeCreatorTier = (index: number) => {
+    const tiers = (campaign.creatorTiers || []).filter((_, i) => i !== index);
+    onChange({ creatorTiers: tiers });
   };
 
-  const handleBannerImageSelect = (imageUrl: string) => {
-    onChange({
-      ...campaign,
-      bannerImage: imageUrl
-    });
-  };
-
-  const handleTikTokShopCommissionChange = (field: keyof TikTokShopCommission, value: number) => {
-    const newCommission = { ...tikTokShopCommission, [field]: value };
-    setTikTokShopCommission(newCommission);
-    onChange({
-      ...campaign,
-      tikTokShopCommission: newCommission
-    });
-  };
-
-  const handleBriefChange = (type: 'link' | 'file', value: string) => {
-    onChange({
-      ...campaign,
-      brief: { type, value }
-    });
-  };
-
-  const handleVideoChange = (file: File | null) => {
-    onChange({
-      ...campaign,
-      instructionVideoFile: file
-    });
-  };
-
-  const handleExampleVideosChange = (videos: ExampleVideo[]) => {
-    onChange({
-      ...campaign,
-      exampleVideos: videos
-    });
-  };
-
-  const handleCountryChange = (country: CountryOption) => {
-    onChange({
-      ...campaign,
-      countryAvailability: country
-    });
+  const handleDeliverablesChange = (field: string, value: any) => {
+    const deliverables = { ...(campaign.deliverables || { mode: 'totalVideos', totalVideos: 10 }) };
+    onChange({ deliverables: { ...deliverables, [field]: value } });
   };
 
   return (
     <div className="space-y-6">
-      <div className="space-y-6">
-        {!showCreatorInfoSection && (
-          <BannerImageUpload 
-            onImageSelect={handleBannerImageSelect}
-            currentImage={campaign.bannerImage}
-          />
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="grid gap-4">
+      {!showCreatorInfoSection && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="title">
-                Campaign Title <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="title">Campaign Title</Label>
               <Input
                 id="title"
+                value={campaign.title || ''}
+                onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="Enter campaign title"
-                value={campaign.title || ""}
-                onChange={(e) => onChange({ ...campaign, title: e.target.value })}
-                className="placeholder-animate"
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="description">Campaign Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Enter campaign description"
-                rows={3}
-                value={campaign.description || ""}
-                onChange={(e) => onChange({ ...campaign, description: e.target.value })}
-                className="placeholder-animate"
-              />
-            </div>
-          </div>
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="contentType">
-                Content Type <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="contentType">Content Type</Label>
               <Select
-                value={campaign.contentType || ""}
-                onValueChange={(value) => onChange({ ...campaign, contentType: value as ContentType })}
+                value={campaign.contentType}
+                onValueChange={(value) => handleInputChange('contentType', value)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose type" />
+                <SelectTrigger id="contentType">
+                  <SelectValue placeholder="Select content type" />
                 </SelectTrigger>
-                <SelectContent className="bg-card">
+                <SelectContent>
                   {CONTENT_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="category">
-                Category <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="category">Category</Label>
               <Select
-                value={campaign.category || ""}
-                onValueChange={(value) => onChange({ ...campaign, category: value as Category })}
+                value={campaign.category}
+                onValueChange={(value) => handleInputChange('category', value)}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose category" />
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent className="bg-card">
+                <SelectContent>
                   {CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="budget">
-                  Total Budget <span className="text-destructive">*</span>
-                </Label>
-              </div>
-              <div className="flex">
-                <Input
-                  id="budget"
-                  type="number"
-                  min={0}
-                  placeholder="Enter budget"
-                  value={campaign.totalBudget || ""}
-                  onChange={(e) => onChange({ ...campaign, totalBudget: Number(e.target.value) })}
-                  className="rounded-r-none"
-                />
-                <Select
-                  value={campaign.currency || "USD"}
-                  onValueChange={(value) => onChange({ ...campaign, currency: value as Currency })}
-                >
-                  <SelectTrigger className="w-24 rounded-l-none border-l-0">
-                    <SelectValue placeholder="USD" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card">
-                    {CURRENCIES.map((currency) => (
-                      <SelectItem key={currency} value={currency}>{currency}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Label htmlFor="totalBudget">Total Budget</Label>
+              <Input
+                id="totalBudget"
+                type="number"
+                min="0"
+                value={campaign.totalBudget || ""}
+                onChange={(e) => onChange({ totalBudget: Number(e.target.value) })}
+                placeholder="Campaign budget"
+                disabled={disableBudgetEdit}
+                className={disableBudgetEdit ? "bg-muted cursor-not-allowed" : ""}
+              />
+              {disableBudgetEdit && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Budget can only be increased using the "Add Budget" button
+                </p>
+              )}
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="applicationDeadline">
-                Application Deadline <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="currency">Currency</Label>
+              <Select
+                value={campaign.currency}
+                onValueChange={(value) => handleInputChange('currency', value)}
+              >
+                <SelectTrigger id="currency">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((currency) => (
+                    <SelectItem key={currency} value={currency}>
+                      {currency}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="countryAvailability">Country Availability</Label>
+              <Select
+                value={campaign.countryAvailability}
+                onValueChange={(value) => handleInputChange('countryAvailability', value)}
+              >
+                <SelectTrigger id="countryAvailability">
+                  <SelectValue placeholder="Select availability" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUNTRY_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {getCountryLabel(option)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left font-normal"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !campaign.endDate && "text-muted-foreground"
+                    )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {campaign.type === "retainer" && campaign.applicationDeadline ? (
-                      format(campaign.applicationDeadline, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
+                    {campaign.endDate ? format(campaign.endDate, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={campaign.type === "retainer" ? campaign.applicationDeadline : undefined}
-                    onSelect={(date) => onChange({ 
-                      ...campaign, 
-                      type: "retainer",
-                      applicationDeadline: date as Date 
-                    })}
-                    initialFocus
-                    disabled={(date) => date < new Date()}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="endDate">
-                End Date <span className="text-destructive">*</span>
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {campaign.endDate ? (
-                      format(campaign.endDate, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card" align="start">
+                <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={campaign.endDate}
-                    onSelect={(date) => onChange({ ...campaign, endDate: date as Date })}
+                    onSelect={(date) => handleDateChange('endDate', date)}
                     initialFocus
-                    disabled={(date) => date < new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="applicationDeadline">Application Deadline</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !campaign.applicationDeadline && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {campaign.applicationDeadline ? format(campaign.applicationDeadline, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={campaign.applicationDeadline}
+                    onSelect={(date) => handleDateChange('applicationDeadline', date)}
+                    initialFocus
                   />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
-        )}
-        
-        {!showCreatorInfoSection && (
-          <PlatformSelector
-            selectedPlatforms={campaign.platforms || []}
-            onChange={handlePlatformSelect}
-          />
-        )}
-        
-        {!showCreatorInfoSection && (
-          <CountrySelector 
-            selectedCountry={campaign.countryAvailability || "worldwide"}
-            onChange={handleCountryChange}
-          />
-        )}
-        
-        {/* Requirements moved to general information section */}
-        {!showCreatorInfoSection && (
-          <RequirementsList
-            requirements={campaign.requirements || []}
-            onChange={handleRequirementsChange}
-          />
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Creator Tiers</Label>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAddTier}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Tier
-              </Button>
-            </div>
-            
-            <div className="space-y-3">
-              {creatorTiers.map((tier, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input
-                    placeholder="Tier name"
-                    value={tier.name}
-                    onChange={(e) => handleTierChange(index, 'name', e.target.value)}
-                    className="flex-grow"
+
+          <div className="space-y-2">
+            <Label>Platforms</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {PLATFORMS.map((platform) => (
+                <div key={platform} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`platform-${platform}`}
+                    checked={(campaign.platforms || []).includes(platform)}
+                    onCheckedChange={() => handlePlatformToggle(platform)}
                   />
-                  <div className="flex w-36">
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="Price"
-                      value={tier.price}
-                      onChange={(e) => handleTierChange(index, 'price', e.target.value)}
-                      className="rounded-r-none"
-                    />
-                    <div className="flex h-10 w-10 items-center justify-center rounded-r-md border border-l-0 border-input bg-muted text-muted-foreground">
-                      {campaign.currency || "USD"}
-                    </div>
-                  </div>
-                  {creatorTiers.length > 1 && (
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleRemoveTier(index)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <label
+                    htmlFor={`platform-${platform}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {platform}
+                  </label>
                 </div>
               ))}
             </div>
           </div>
-        )}
-        
-        {!showCreatorInfoSection && (
-          <div className="space-y-4">
-            <div>
-              <Label>Deliverables</Label>
-              <div className="flex mt-2 space-x-2">
-                {DELIVERABLE_MODES.map((mode) => (
-                  <Button
-                    key={mode}
-                    type="button"
-                    variant={deliverableMode === mode ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleDeliverableModeChange(mode)}
-                    className="flex-1"
-                  >
-                    {mode === "videosPerDay" ? "Videos Per Day" : "Total Videos"}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            
-            {deliverableMode === "videosPerDay" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="videosPerDay">Videos Per Day</Label>
-                  <Input
-                    id="videosPerDay"
-                    type="number"
-                    min={1}
-                    value={videosPerDay}
-                    onChange={(e) => handleVideosPerDayChange(Number(e.target.value))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="durationDays">Duration (Days)</Label>
-                  <Input
-                    id="durationDays"
-                    type="number"
-                    min={1}
-                    value={durationDays}
-                    onChange={(e) => handleDurationDaysChange(Number(e.target.value))}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="totalVideos">Total Videos</Label>
-                <Input
-                  id="totalVideos"
-                  type="number"
-                  min={1}
-                  value={totalVideos}
-                  onChange={(e) => handleTotalVideosChange(Number(e.target.value))}
-                />
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Guidelines list moved to Creator Information section */}
-        {showCreatorInfoSection && (
-          <GuidelinesList
-            dos={campaign.guidelines?.dos || []}
-            donts={campaign.guidelines?.donts || []}
-            onChange={handleGuidelinesChange}
-          />
-        )}
-        
-        {/* Creator info section */}
-        {showCreatorInfoSection && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>{isTikTokShop ? "TAP Link" : "Tracking Link"}</Label>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex">
-                  <div className="flex-grow relative">
-                    <Input
-                      type="url"
-                      placeholder={isTikTokShop ? "Enter TAP link" : "Enter tracking link"}
-                      value={trackingLink}
-                      onChange={handleTrackingLinkChange}
-                      disabled={requestTrackingLink}
-                      className={requestTrackingLink ? "bg-muted text-muted-foreground" : ""}
-                    />
-                    {trackingLink && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <a
-                              href={trackingLink.startsWith('http') ? trackingLink : `https://${trackingLink}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Open link</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="request-tracking"
-                    checked={requestTrackingLink}
-                    onCheckedChange={handleRequestTrackingLinkChange}
-                  />
-                  <Label htmlFor="request-tracking" className="text-sm cursor-pointer">
-                    {isTikTokShop ? "I don't have a TAP link, please provide one" : "I don't have a tracking link, please provide one"}
-                  </Label>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* TikTok Shop Commission */}
-        {isTikTokShop && showCreatorInfoSection && (
-          <div className="pt-4 border-t border-border/60">
-            <h3 className="text-lg font-medium mb-4">TikTok Shop Commission</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="openCollabCommission">Open Collab Commission %</Label>
-                <Input
-                  id="openCollabCommission"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={tikTokShopCommission.openCollabCommission}
-                  onChange={(e) => handleTikTokShopCommissionChange("openCollabCommission", Number(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="increasedCommission">Increased Commission %</Label>
-                <Input
-                  id="increasedCommission"
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={tikTokShopCommission.increasedCommission}
-                  onChange={(e) => handleTikTokShopCommissionChange("increasedCommission", Number(e.target.value))}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Example Videos */}
-        {showCreatorInfoSection && (
-          <div className="pt-4 border-t border-border/60">
-            <ExampleVideos
-              exampleVideos={campaign.exampleVideos || []}
-              selectedPlatforms={campaign.platforms || []}
-              onChange={handleExampleVideosChange}
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Campaign Description</Label>
+            <Textarea
+              id="description"
+              value={campaign.description || ''}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="Describe your campaign"
+              className="min-h-[100px]"
             />
           </div>
-        )}
-        
-        {/* Brief Uploader */}
-        {showCreatorInfoSection && (
-          <BriefUploader 
-            briefType={brief.type}
-            briefValue={brief.value}
-            onBriefChange={handleBriefChange}
-          />
-        )}
-        
-        {/* Instruction Video Uploader */}
-        {showCreatorInfoSection && (
-          <InstructionVideoUploader
-            videoFile={instructionVideo}
-            onVideoChange={handleVideoChange}
-          />
-        )}
-      </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bannerImage">Banner Image</Label>
+            <div className="flex items-center gap-4">
+              {campaign.bannerImage ? (
+                <div className="relative w-full h-40 bg-muted rounded-md overflow-hidden">
+                  <img
+                    src={campaign.bannerImage}
+                    alt="Banner"
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => handleInputChange('bannerImage', '')}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-full">
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-md p-8 text-center">
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Drag and drop or click to upload
+                    </p>
+                    <Input
+                      id="bannerImage"
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // In a real app, you'd upload this to a server
+                          // For now, we'll create a local URL
+                          const url = URL.createObjectURL(file);
+                          handleInputChange('bannerImage', url);
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => document.getElementById('bannerImage')?.click()}
+                    >
+                      Select Image
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreatorInfoSection && (
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Creator Tiers</h3>
+            <p className="text-sm text-muted-foreground">
+              Define different tiers for creators based on their audience size or quality
+            </p>
+
+            {(campaign.creatorTiers || []).map((tier, index) => (
+              <div key={index} className="flex items-center gap-4">
+                <Input
+                  placeholder="Tier name (e.g. Micro, Macro)"
+                  value={tier.name}
+                  onChange={(e) => handleCreatorTierChange(index, 'name', e.target.value)}
+                  className="flex-1"
+                />
+                <div className="flex items-center">
+                  <span className="mr-2">$</span>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Price"
+                    value={tier.price}
+                    onChange={(e) => handleCreatorTierChange(index, 'price', Number(e.target.value))}
+                    className="w-24"
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeCreatorTier(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addCreatorTier}
+              className="mt-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Tier
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Deliverables</h3>
+            <p className="text-sm text-muted-foreground">
+              Define what creators need to deliver for this campaign
+            </p>
+
+            <RadioGroup
+              value={campaign.deliverables?.mode || 'totalVideos'}
+              onValueChange={(value) => handleDeliverablesChange('mode', value)}
+              className="space-y-4"
+            >
+              <div className="flex items-start space-x-2">
+                <RadioGroupItem value="totalVideos" id="totalVideos" className="mt-1" />
+                <div className="grid gap-1.5">
+                  <Label htmlFor="totalVideos" className="font-medium">Total Videos</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      value={campaign.deliverables?.totalVideos || 10}
+                      onChange={(e) => handleDeliverablesChange('totalVideos', Number(e.target.value))}
+                      className="w-20"
+                      disabled={campaign.deliverables?.mode !== 'totalVideos'}
+                    />
+                    <span className="text-sm text-muted-foreground">videos in total</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-2">
+                <RadioGroupItem value="videosPerDay" id="videosPerDay" className="mt-1" />
+                <div className="grid gap-1.5">
+                  <Label htmlFor="videosPerDay" className="font-medium">Videos Per Day</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      value={campaign.deliverables?.videosPerDay || 1}
+                      onChange={(e) => handleDeliverablesChange('videosPerDay', Number(e.target.value))}
+                      className="w-20"
+                      disabled={campaign.deliverables?.mode !== 'videosPerDay'}
+                    />
+                    <span className="text-sm text-muted-foreground">videos per day for</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={campaign.deliverables?.durationDays || 30}
+                      onChange={(e) => handleDeliverablesChange('durationDays', Number(e.target.value))}
+                      className="w-20"
+                      disabled={campaign.deliverables?.mode !== 'videosPerDay'}
+                    />
+                    <span className="text-sm text-muted-foreground">days</span>
+                  </div>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Content Guidelines</h3>
+            <p className="text-sm text-muted-foreground">
+              Provide clear guidelines for creators to follow
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-2">Do's</h4>
+                {(campaign.guidelines?.dos || []).map((item, index) => (
+                  <div key={index} className="flex items-center gap-2 mb-2">
+                    <Input
+                      value={item}
+                      onChange={(e) => handleGuidelineChange('dos', index, e.target.value)}
+                      placeholder="Add a guideline"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeGuideline('dos', index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addGuideline('dos')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Do
+                </Button>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium mb-2">Don'ts</h4>
+                {(campaign.guidelines?.donts || []).map((item, index) => (
+                  <div key={index} className="flex items-center gap-2 mb-2">
+                    <Input
+                      value={item}
+                      onChange={(e) => handleGuidelineChange('donts', index, e.target.value)}
+                      placeholder="Add a guideline"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeGuideline('donts', index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addGuideline('donts')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Don't
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium">Tracking Link</h3>
+                <p className="text-sm text-muted-foreground">
+                  Provide a tracking link for creators to use
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="requestedTrackingLink"
+                  checked={campaign.requestedTrackingLink}
+                  onCheckedChange={(checked) => handleInputChange('requestedTrackingLink', checked)}
+                />
+                <Label htmlFor="requestedTrackingLink">Required</Label>
+              </div>
+            </div>
+
+            <Input
+              placeholder="Enter tracking link"
+              value={campaign.trackingLink || ''}
+              onChange={(e) => handleInputChange('trackingLink', e.target.value)}
+              disabled={!campaign.requestedTrackingLink}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Example Videos</h3>
+            <p className="text-sm text-muted-foreground">
+              Provide examples of the type of content you're looking for
+            </p>
+
+            {(campaign.exampleVideos || []).map((video, index) => (
+              <div key={index} className="flex items-center gap-2 mb-2">
+                <Select
+                  value={video.platform}
+                  onValueChange={(value) => {
+                    const updatedVideos = [...(campaign.exampleVideos || [])];
+                    updatedVideos[index] = { ...video, platform: value as Platform };
+                    handleInputChange('exampleVideos', updatedVideos);
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORMS.map((platform) => (
+                      <SelectItem key={platform} value={platform}>
+                        {platform}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={video.url}
+                  onChange={(e) => {
+                    const updatedVideos = [...(campaign.exampleVideos || [])];
+                    updatedVideos[index] = { ...video, url: e.target.value };
+                    handleInputChange('exampleVideos', updatedVideos);
+                  }}
+                  placeholder="Video URL"
+                  className="flex-1"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const updatedVideos = (campaign.exampleVideos || []).filter((_, i) => i !== index);
+                    handleInputChange('exampleVideos', updatedVideos);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const updatedVideos = [
+                  ...(campaign.exampleVideos || []),
+                  { platform: PLATFORMS[0], url: '' }
+                ];
+                handleInputChange('exampleVideos', updatedVideos);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Example
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

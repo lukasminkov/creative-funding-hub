@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
@@ -17,9 +18,10 @@ interface CampaignCreatorProps {
   onSubmit: (campaign: Campaign) => void;
   campaign?: Campaign;
   isEditing?: boolean;
+  disableBudgetEdit?: boolean;
 }
 
-const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEditing = false }: CampaignCreatorProps) => {
+const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEditing = false, disableBudgetEdit = false }: CampaignCreatorProps) => {
   const [campaignType, setCampaignType] = useState<"retainer" | "payPerView" | "challenge">(
     initialCampaign?.type || "retainer"
   );
@@ -44,7 +46,13 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
-    setCampaign({ ...campaign, ...updatedCampaign });
+    // If budget editing is disabled and we're in edit mode, preserve the original budget
+    if (disableBudgetEdit && isEditing && 'totalBudget' in updatedCampaign) {
+      const { totalBudget, ...rest } = updatedCampaign;
+      setCampaign({ ...campaign, ...rest });
+    } else {
+      setCampaign({ ...campaign, ...updatedCampaign });
+    }
   };
 
   const handleVisibilityChange = (
@@ -213,6 +221,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                       campaign={campaign}
                       onChange={handleCampaignChange}
                       showCreatorInfoSection={false}
+                      disableBudgetEdit={disableBudgetEdit && isEditing}
                     />
                     
                     <VisibilitySelector
@@ -262,6 +271,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                       campaign={campaign}
                       onChange={handleCampaignChange}
                       showCreatorInfoSection={false}
+                      disableBudgetEdit={disableBudgetEdit && isEditing}
                     />
                     
                     <VisibilitySelector
@@ -311,6 +321,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                       campaign={campaign}
                       onChange={handleCampaignChange}
                       showCreatorInfoSection={false}
+                      disableBudgetEdit={disableBudgetEdit && isEditing}
                     />
                     
                     <VisibilitySelector
