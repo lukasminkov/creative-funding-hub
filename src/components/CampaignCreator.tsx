@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -56,7 +55,6 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
-    // If budget editing is disabled and we're in edit mode, preserve the original budget
     if (disableBudgetEdit && isEditing && 'totalBudget' in updatedCampaign) {
       const { totalBudget, ...rest } = updatedCampaign;
       setCampaign({ ...campaign, ...rest });
@@ -235,7 +233,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">General Information</h3>
                       <p className="text-sm text-muted-foreground">
-                        This information will be visible on the explore page
+                        This will be displayed to all users before they apply or join your campaign
                       </p>
                     </div>
                     
@@ -285,7 +283,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">General Information</h3>
                       <p className="text-sm text-muted-foreground">
-                        This information will be visible on the explore page
+                        This will be displayed to all users before they apply or join your campaign
                       </p>
                     </div>
                     
@@ -335,7 +333,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
                       <h3 className="text-lg font-medium mb-1">General Information</h3>
                       <p className="text-sm text-muted-foreground">
-                        This information will be visible on the explore page
+                        This will be displayed to all users before they apply or join your campaign
                       </p>
                     </div>
                     
