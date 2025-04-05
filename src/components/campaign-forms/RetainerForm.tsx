@@ -342,10 +342,10 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
           </FormItem>
 
           <FormItem className="space-y-2">
-            <Label>Content Brief</Label>
             <BriefUploader
               brief={campaign.brief}
               onChange={(brief) => onChange({ brief })}
+              label="Campaign Brief"
             />
           </FormItem>
 
@@ -399,11 +399,11 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
           </Card>
 
           <FormItem className="space-y-2">
-            <Label>Example Videos</Label>
             <ExampleVideos
               exampleVideos={campaign.exampleVideos || []}
               selectedPlatforms={campaign.platforms || []}
               onChange={(exampleVideos) => onChange({ exampleVideos })}
+              showLabel={true}
             />
           </FormItem>
         </div>

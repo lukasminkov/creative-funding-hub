@@ -184,10 +184,10 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
           </FormItem>
 
           <FormItem className="space-y-2">
-            <Label>Content Brief</Label>
             <BriefUploader
               brief={campaign.brief}
               onChange={(brief) => onChange({ brief })}
+              label="Campaign Brief"
             />
           </FormItem>
 
@@ -241,11 +241,11 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
           </Card>
 
           <FormItem className="space-y-2">
-            <Label>Example Videos</Label>
             <ExampleVideos
               exampleVideos={campaign.exampleVideos || []}
               selectedPlatforms={campaign.platforms || []}
               onChange={(exampleVideos) => onChange({ exampleVideos })}
+              showLabel={true}
             />
           </FormItem>
         </div>

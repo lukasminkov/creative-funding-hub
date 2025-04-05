@@ -199,7 +199,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
         className="bg-card border border-border rounded-lg overflow-hidden shadow-sm"
       >
         <div className="p-6 border-b border-border/60">
-          <h2 className="text-2xl font-medium">{isEditing ? "Edit Campaign" : "Create New Campaign"}</h2>
+          <h2 className="text-2xl font-medium">{isEditing ? "Edit Campaign" : "New Campaign"}</h2>
           <p className="text-muted-foreground">Set up rewards for creator content</p>
         </div>
         
@@ -388,7 +388,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
           </div>
           <Button onClick={handleLaunchCampaign}>
             <Rocket className="h-4 w-4 mr-2" />
-            {isEditing ? "Update Campaign" : "Launch Campaign"}
+            {isEditing ? "Update Campaign" : "Create Campaign"}
           </Button>
         </div>
       </motion.div>

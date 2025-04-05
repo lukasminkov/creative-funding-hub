@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import CampaignCreator from "@/components/CampaignCreator";
 import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
@@ -95,7 +94,7 @@ export default function CampaignFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl h-[90vh] flex flex-col overflow-hidden p-0">
         <DialogHeader className="p-6 border-b">
-          <DialogTitle>{isEditing ? "Edit Campaign" : "Create Campaign"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Campaign" : "New Campaign"}</DialogTitle>
           <DialogDescription>
             {isEditing 
               ? "Update your campaign details and settings" 
