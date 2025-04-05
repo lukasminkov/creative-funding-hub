@@ -187,9 +187,9 @@
 
 /* Progress indicator */
 .progress-bar {
-  @apply h-2 bg-secondary rounded-full overflow-hidden transition-all duration-500;
+  @apply h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden transition-all duration-500;
 }
 
 .progress-fill {
-  @apply h-full bg-primary rounded-full transition-all duration-500 ease-out;
+  @apply h-full bg-green-500 rounded-full transition-all duration-500 ease-out;
 }

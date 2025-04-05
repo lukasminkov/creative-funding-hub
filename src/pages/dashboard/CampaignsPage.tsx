@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign } from "@/lib/campaign-types";
@@ -86,7 +85,7 @@ export default function CampaignsPage() {
         </Button>
       </div>
 
-      {/* Analytics Dashboard - Restored */}
+      {/* Analytics Dashboard */}
       {campaigns && campaigns.length > 0 && (
         <CampaignAnalytics campaigns={campaigns} />
       )}
@@ -131,10 +130,7 @@ export default function CampaignsPage() {
                         <span className="text-muted-foreground">{progressText}</span>
                         <span className="font-medium">{status}</span>
                       </div>
-                      <Progress 
-                        value={progress} 
-                        className={`h-2 ${campaign.type === 'payPerView' ? 'bg-green-100' : ''}`}
-                      />
+                      <Progress value={progress} className="h-2" />
                     </div>
                     
                     {/* Platforms */}
