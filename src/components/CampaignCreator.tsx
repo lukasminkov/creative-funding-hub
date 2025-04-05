@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Campaign, 
   RetainerCampaign, 
@@ -184,6 +185,122 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
     onSubmit(campaign as Campaign);
   };
 
+  // Use a different content for each campaign type tab to avoid key conflicts
+  const renderCampaignForm = (type: "retainer" | "payPerView" | "challenge") => {
+    const generalInfoSection = (
+      <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
+        <h3 className="text-lg font-medium mb-1">General Information</h3>
+        <p className="text-sm text-muted-foreground">
+          This will be displayed to all users before they apply or join your campaign
+        </p>
+      </div>
+    );
+
+    const creatorInfoSection = (
+      <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
+        <h3 className="text-lg font-medium mb-1">Creator Information</h3>
+        <p className="text-sm text-muted-foreground">
+          This information will only be visible to creators who have joined or been accepted
+        </p>
+      </div>
+    );
+
+    if (type === "retainer") {
+      return (
+        <div className="space-y-8">
+          <div className="space-y-6">
+            {generalInfoSection}
+            <RetainerForm
+              campaign={campaign as Partial<RetainerCampaign>}
+              onChange={handleRetainerCampaignChange}
+              showCreatorInfoSection={false}
+              disableBudgetEdit={disableBudgetEdit && isEditing}
+            />
+            <VisibilitySelector
+              visibility={campaign.visibility || "public"}
+              applicationQuestions={campaign.applicationQuestions}
+              restrictedAccess={campaign.restrictedAccess}
+              onChange={handleVisibilityChange}
+            />
+          </div>
+          
+          <Separator className="my-4 bg-muted" />
+          
+          <div className="space-y-6">
+            {creatorInfoSection}
+            <RetainerForm
+              campaign={campaign as Partial<RetainerCampaign>}
+              onChange={handleRetainerCampaignChange}
+              showCreatorInfoSection={true}
+            />
+          </div>
+        </div>
+      );
+    } else if (type === "payPerView") {
+      return (
+        <div className="space-y-8">
+          <div className="space-y-6">
+            {generalInfoSection}
+            <PayPerViewForm
+              campaign={campaign as Partial<PayPerViewCampaign>}
+              onChange={handlePayPerViewCampaignChange}
+              showCreatorInfoSection={false}
+              disableBudgetEdit={disableBudgetEdit && isEditing}
+            />
+            <VisibilitySelector
+              visibility={campaign.visibility || "public"}
+              applicationQuestions={campaign.applicationQuestions}
+              restrictedAccess={campaign.restrictedAccess}
+              onChange={handleVisibilityChange}
+            />
+          </div>
+          
+          <Separator className="my-4 bg-muted" />
+          
+          <div className="space-y-6">
+            {creatorInfoSection}
+            <PayPerViewForm
+              campaign={campaign as Partial<PayPerViewCampaign>}
+              onChange={handlePayPerViewCampaignChange}
+              showCreatorInfoSection={true}
+            />
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="space-y-8">
+          <div className="space-y-6">
+            {generalInfoSection}
+            <ChallengeForm
+              campaign={campaign as Partial<ChallengeCampaign>}
+              onChange={handleChallengeCampaignChange}
+              showCreatorInfoSection={false}
+              disableBudgetEdit={disableBudgetEdit && isEditing}
+            />
+            <VisibilitySelector
+              visibility={campaign.visibility || "public"}
+              applicationQuestions={campaign.applicationQuestions}
+              restrictedAccess={campaign.restrictedAccess}
+              onChange={handleVisibilityChange}
+            />
+          </div>
+          
+          <Separator className="my-4 bg-muted" />
+          
+          <div className="space-y-6">
+            {creatorInfoSection}
+            <ChallengeForm
+              campaign={campaign as Partial<ChallengeCampaign>}
+              onChange={handleChallengeCampaignChange}
+              showCreatorInfoSection={true}
+            />
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -215,157 +332,41 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
               <TabsTrigger value="challenge">Challenge</TabsTrigger>
             </TabsList>
             
-            <AnimatePresence mode="wait">
-              <TabsContent value="retainer" className="mt-0">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-8"
-                >
-                  <div className="space-y-6">
-                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-                      <h3 className="text-lg font-medium mb-1">General Information</h3>
-                      <p className="text-sm text-muted-foreground">
-                        This will be displayed to all users before they apply or join your campaign
-                      </p>
-                    </div>
-                    
-                    <RetainerForm
-                      campaign={campaign as Partial<RetainerCampaign>}
-                      onChange={handleRetainerCampaignChange}
-                      showCreatorInfoSection={false}
-                      disableBudgetEdit={disableBudgetEdit && isEditing}
-                    />
-                    
-                    <VisibilitySelector
-                      visibility={campaign.visibility || "public"}
-                      applicationQuestions={campaign.applicationQuestions}
-                      restrictedAccess={campaign.restrictedAccess}
-                      onChange={handleVisibilityChange}
-                    />
-                  </div>
-                  
-                  <Separator className="my-4 bg-muted" />
-                  
-                  <div className="space-y-6">
-                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-                      <h3 className="text-lg font-medium mb-1">Creator Information</h3>
-                      <p className="text-sm text-muted-foreground">
-                        This information will only be visible to creators who have joined or been accepted
-                      </p>
-                    </div>
-                    
-                    <RetainerForm
-                      campaign={campaign as Partial<RetainerCampaign>}
-                      onChange={handleRetainerCampaignChange}
-                      showCreatorInfoSection={true}
-                    />
-                  </div>
-                </motion.div>
-              </TabsContent>
-              
-              <TabsContent value="payPerView" className="mt-0">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-8"
-                >
-                  <div className="space-y-6">
-                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-                      <h3 className="text-lg font-medium mb-1">General Information</h3>
-                      <p className="text-sm text-muted-foreground">
-                        This will be displayed to all users before they apply or join your campaign
-                      </p>
-                    </div>
-                    
-                    <PayPerViewForm
-                      campaign={campaign as Partial<PayPerViewCampaign>}
-                      onChange={handlePayPerViewCampaignChange}
-                      showCreatorInfoSection={false}
-                      disableBudgetEdit={disableBudgetEdit && isEditing}
-                    />
-                    
-                    <VisibilitySelector
-                      visibility={campaign.visibility || "public"}
-                      applicationQuestions={campaign.applicationQuestions}
-                      restrictedAccess={campaign.restrictedAccess}
-                      onChange={handleVisibilityChange}
-                    />
-                  </div>
-                  
-                  <Separator className="my-4 bg-muted" />
-                  
-                  <div className="space-y-6">
-                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-                      <h3 className="text-lg font-medium mb-1">Creator Information</h3>
-                      <p className="text-sm text-muted-foreground">
-                        This information will only be visible to creators who have joined or been accepted
-                      </p>
-                    </div>
-                    
-                    <PayPerViewForm
-                      campaign={campaign as Partial<PayPerViewCampaign>}
-                      onChange={handlePayPerViewCampaignChange}
-                      showCreatorInfoSection={true}
-                    />
-                  </div>
-                </motion.div>
-              </TabsContent>
-              
-              <TabsContent value="challenge" className="mt-0">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-8"
-                >
-                  <div className="space-y-6">
-                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-                      <h3 className="text-lg font-medium mb-1">General Information</h3>
-                      <p className="text-sm text-muted-foreground">
-                        This will be displayed to all users before they apply or join your campaign
-                      </p>
-                    </div>
-                    
-                    <ChallengeForm
-                      campaign={campaign as Partial<ChallengeCampaign>}
-                      onChange={handleChallengeCampaignChange}
-                      showCreatorInfoSection={false}
-                      disableBudgetEdit={disableBudgetEdit && isEditing}
-                    />
-                    
-                    <VisibilitySelector
-                      visibility={campaign.visibility || "public"}
-                      applicationQuestions={campaign.applicationQuestions}
-                      restrictedAccess={campaign.restrictedAccess}
-                      onChange={handleVisibilityChange}
-                    />
-                  </div>
-                  
-                  <Separator className="my-4 bg-muted" />
-                  
-                  <div className="space-y-6">
-                    <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-                      <h3 className="text-lg font-medium mb-1">Creator Information</h3>
-                      <p className="text-sm text-muted-foreground">
-                        This information will only be visible to creators who have joined or been accepted
-                      </p>
-                    </div>
-                    
-                    <ChallengeForm
-                      campaign={campaign as Partial<ChallengeCampaign>}
-                      onChange={handleChallengeCampaignChange}
-                      showCreatorInfoSection={true}
-                    />
-                  </div>
-                </motion.div>
-              </TabsContent>
-            </AnimatePresence>
+            <TabsContent value="retainer" className="mt-0">
+              <motion.div
+                key="retainer-content"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {renderCampaignForm("retainer")}
+              </motion.div>
+            </TabsContent>
+            
+            <TabsContent value="payPerView" className="mt-0">
+              <motion.div
+                key="payPerView-content"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {renderCampaignForm("payPerView")}
+              </motion.div>
+            </TabsContent>
+            
+            <TabsContent value="challenge" className="mt-0">
+              <motion.div
+                key="challenge-content"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {renderCampaignForm("challenge")}
+              </motion.div>
+            </TabsContent>
           </Tabs>
         </div>
         
