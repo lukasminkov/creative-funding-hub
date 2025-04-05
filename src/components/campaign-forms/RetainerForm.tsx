@@ -1,5 +1,6 @@
+
 import React from "react";
-import { Campaign } from "@/lib/campaign-types";
+import { Campaign, RetainerCampaign, Platform, PLATFORMS } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
@@ -26,7 +27,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
   CONTENT_TYPES, 
   CATEGORIES, 
-  PLATFORMS, 
   CURRENCIES,
   COUNTRY_OPTIONS,
   getCountryLabel
@@ -47,24 +47,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 interface RetainerFormProps {
-  campaign: Partial<Campaign>;
-  onChange: (updatedCampaign: Partial<Campaign>) => void;
+  campaign: Partial<RetainerCampaign>; // Changed from Campaign to RetainerCampaign for more specific type
+  onChange: (updatedCampaign: Partial<RetainerCampaign>) => void;
   showCreatorInfoSection: boolean;
   disableBudgetEdit?: boolean;
 }
 
 const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudgetEdit = false }: RetainerFormProps) => {
   const handleInputChange = (field: string, value: any) => {
-    onChange({ [field]: value });
+    onChange({ [field]: value } as Partial<RetainerCampaign>);
   };
 
   const handleDateChange = (field: string, date: Date | undefined) => {
     if (date) {
-      onChange({ [field]: date });
+      onChange({ [field]: date } as Partial<RetainerCampaign>);
     }
   };
 
-  const handlePlatformToggle = (platform: string) => {
+  const handlePlatformToggle = (platform: Platform) => {
     const currentPlatforms = campaign.platforms || [];
     const updatedPlatforms = currentPlatforms.includes(platform)
       ? currentPlatforms.filter(p => p !== platform)

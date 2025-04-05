@@ -1,7 +1,17 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Campaign, CONTENT_TYPES, CATEGORIES, ApplicationQuestion, RestrictedAccess, COUNTRY_OPTIONS } from "@/lib/campaign-types";
+import { 
+  Campaign, 
+  RetainerCampaign, 
+  PayPerViewCampaign, 
+  ChallengeCampaign, 
+  CONTENT_TYPES, 
+  CATEGORIES, 
+  ApplicationQuestion, 
+  RestrictedAccess, 
+  COUNTRY_OPTIONS 
+} from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -53,6 +63,18 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
     } else {
       setCampaign({ ...campaign, ...updatedCampaign });
     }
+  };
+
+  const handleRetainerCampaignChange = (updatedCampaign: Partial<RetainerCampaign>) => {
+    handleCampaignChange(updatedCampaign as Partial<Campaign>);
+  };
+
+  const handlePayPerViewCampaignChange = (updatedCampaign: Partial<PayPerViewCampaign>) => {
+    handleCampaignChange(updatedCampaign as Partial<Campaign>);
+  };
+
+  const handleChallengeCampaignChange = (updatedCampaign: Partial<ChallengeCampaign>) => {
+    handleCampaignChange(updatedCampaign as Partial<Campaign>);
   };
 
   const handleVisibilityChange = (
@@ -218,8 +240,8 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     </div>
                     
                     <RetainerForm
-                      campaign={campaign}
-                      onChange={handleCampaignChange}
+                      campaign={campaign as Partial<RetainerCampaign>}
+                      onChange={handleRetainerCampaignChange}
                       showCreatorInfoSection={false}
                       disableBudgetEdit={disableBudgetEdit && isEditing}
                     />
@@ -243,8 +265,8 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     </div>
                     
                     <RetainerForm
-                      campaign={campaign}
-                      onChange={handleCampaignChange}
+                      campaign={campaign as Partial<RetainerCampaign>}
+                      onChange={handleRetainerCampaignChange}
                       showCreatorInfoSection={true}
                     />
                   </div>
@@ -268,8 +290,8 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     </div>
                     
                     <PayPerViewForm
-                      campaign={campaign}
-                      onChange={handleCampaignChange}
+                      campaign={campaign as Partial<PayPerViewCampaign>}
+                      onChange={handlePayPerViewCampaignChange}
                       showCreatorInfoSection={false}
                       disableBudgetEdit={disableBudgetEdit && isEditing}
                     />
@@ -293,8 +315,8 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     </div>
                     
                     <PayPerViewForm
-                      campaign={campaign}
-                      onChange={handleCampaignChange}
+                      campaign={campaign as Partial<PayPerViewCampaign>}
+                      onChange={handlePayPerViewCampaignChange}
                       showCreatorInfoSection={true}
                     />
                   </div>
@@ -318,8 +340,8 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     </div>
                     
                     <ChallengeForm
-                      campaign={campaign}
-                      onChange={handleCampaignChange}
+                      campaign={campaign as Partial<ChallengeCampaign>}
+                      onChange={handleChallengeCampaignChange}
                       showCreatorInfoSection={false}
                       disableBudgetEdit={disableBudgetEdit && isEditing}
                     />
@@ -343,8 +365,8 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
                     </div>
                     
                     <ChallengeForm
-                      campaign={campaign}
-                      onChange={handleCampaignChange}
+                      campaign={campaign as Partial<ChallengeCampaign>}
+                      onChange={handleChallengeCampaignChange}
                       showCreatorInfoSection={true}
                     />
                   </div>

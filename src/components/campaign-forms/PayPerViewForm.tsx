@@ -1,11 +1,11 @@
 import React from "react";
-import { Campaign } from "@/lib/campaign-types";
+import { Campaign, PayPerViewCampaign, Platform, PLATFORMS } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface PayPerViewFormProps {
-  campaign: Partial<Campaign>;
-  onChange: (updatedCampaign: Partial<Campaign>) => void;
+  campaign: Partial<PayPerViewCampaign>;
+  onChange: (updatedCampaign: Partial<PayPerViewCampaign>) => void;
   showCreatorInfoSection: boolean;
   disableBudgetEdit?: boolean;
 }
