@@ -151,6 +151,7 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
             <PlatformSelector
               selectedPlatforms={campaign.platforms || []}
               onChange={handlePlatformChange}
+              showLabel={false}
             />
             <p className="text-xs text-muted-foreground mt-1">
               Select platforms where creators will post content
