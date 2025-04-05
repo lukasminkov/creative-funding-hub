@@ -3,15 +3,20 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
-import { Edit2, Trash2, ArrowLeft, ChevronRight, MessageSquare } from "lucide-react";
+import { Edit2, Trash2, ArrowLeft, ChevronRight, MessageSquare, Filter, X, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { SocialIcon } from "@/components/icons/SocialIcons";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 
 // Mock creators data
@@ -116,12 +121,17 @@ const mockSubmissions = [{
   status: "pending"
 }];
 export default function CampaignDetailPage() {
-  const {
-    id
-  } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("active-creators");
+  
+  // Filter states for submissions
+  const [creatorFilter, setCreatorFilter] = useState<string>("");
+  const [platformFilter, setPlatformFilter] = useState<string>("");
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
   const {
     data: campaign,
     isLoading,
@@ -143,6 +153,50 @@ export default function CampaignDetailPage() {
       return convertDatabaseCampaign(data);
     }
   });
+  
+  // Get unique creators and platforms for filter options
+  const uniqueCreators = Array.from(new Set(mockSubmissions.map(sub => sub.creator)));
+  const uniquePlatforms = Array.from(new Set(mockSubmissions.map(sub => sub.platform)));
+  
+  // Apply filters to submissions
+  const filteredSubmissions = mockSubmissions.filter(submission => {
+    // Creator filter
+    if (creatorFilter && submission.creator !== creatorFilter) {
+      return false;
+    }
+    
+    // Platform filter
+    if (platformFilter && submission.platform !== platformFilter) {
+      return false;
+    }
+    
+    // Date filter
+    if (dateFilter) {
+      const submissionDate = new Date(submission.date);
+      const filterDate = new Date(dateFilter);
+      
+      if (
+        submissionDate.getFullYear() !== filterDate.getFullYear() ||
+        submissionDate.getMonth() !== filterDate.getMonth() ||
+        submissionDate.getDate() !== filterDate.getDate()
+      ) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+  
+  // Check if any filters are active
+  const hasActiveFilters = creatorFilter || platformFilter || dateFilter;
+  
+  // Function to clear all filters
+  const clearFilters = () => {
+    setCreatorFilter("");
+    setPlatformFilter("");
+    setDateFilter(undefined);
+  };
+
   if (isLoading) {
     return <div className="container py-8">
         <div className="mb-6 animate-pulse">
@@ -151,6 +205,7 @@ export default function CampaignDetailPage() {
         </div>
       </div>;
   }
+  
   if (!campaign) {
     return <div className="container py-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Campaign not found</h2>
@@ -160,6 +215,7 @@ export default function CampaignDetailPage() {
         </Button>
       </div>;
   }
+  
   const now = new Date();
   const endDate = new Date(campaign.endDate);
   let status = "Active";
@@ -332,11 +388,95 @@ export default function CampaignDetailPage() {
       </div>
       
       <Card className="mb-8">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle>Submissions</CardTitle>
+          <div className="flex items-center gap-2">
+            <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={hasActiveFilters ? "border-primary text-primary" : ""}
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary">
+                      {(creatorFilter ? 1 : 0) + (platformFilter ? 1 : 0) + (dateFilter ? 1 : 0)}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4 p-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Filter Submissions</h4>
+                    {hasActiveFilters && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2">
+                        <X className="h-4 w-4 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-1">
+                      <User className="h-4 w-4" />
+                      Creator
+                    </label>
+                    <Select value={creatorFilter} onValueChange={setCreatorFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select creator" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Creators</SelectItem>
+                        {uniqueCreators.map(creator => (
+                          <SelectItem key={creator} value={creator}>{creator}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Platform</label>
+                    <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Platforms</SelectItem>
+                        {uniquePlatforms.map(platform => (
+                          <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      Post Date
+                    </label>
+                    <DatePicker 
+                      date={dateFilter} 
+                      onSelect={setDateFilter} 
+                      placeholder="Select date"
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
+                <X className="h-4 w-4 mr-1" />
+                Clear filters
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          {mockSubmissions.length > 0 ? <div className="overflow-x-auto">
+          {filteredSubmissions.length > 0 ? <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -350,7 +490,7 @@ export default function CampaignDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockSubmissions.map(submission => <TableRow key={submission.id}>
+                  {filteredSubmissions.map(submission => <TableRow key={submission.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
@@ -386,7 +526,9 @@ export default function CampaignDetailPage() {
                 </TableBody>
               </Table>
             </div> : <div className="text-center py-6">
-              <p className="text-muted-foreground mb-4">No submissions yet</p>
+              <p className="text-muted-foreground mb-4">
+                {mockSubmissions.length === 0 ? "No submissions yet" : "No results match your filters"}
+              </p>
               <Button variant="outline">Remind Creators</Button>
             </div>}
         </CardContent>
