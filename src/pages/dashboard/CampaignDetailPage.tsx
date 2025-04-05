@@ -120,6 +120,7 @@ const mockSubmissions = [{
   date: "2023-09-15",
   status: "pending"
 }];
+
 export default function CampaignDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -429,7 +430,7 @@ export default function CampaignDetailPage() {
                         <SelectValue placeholder="Select creator" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Creators</SelectItem>
+                        <SelectItem value="all">All Creators</SelectItem>
                         {uniqueCreators.map(creator => (
                           <SelectItem key={creator} value={creator}>{creator}</SelectItem>
                         ))}
@@ -444,7 +445,7 @@ export default function CampaignDetailPage() {
                         <SelectValue placeholder="Select platform" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Platforms</SelectItem>
+                        <SelectItem value="all">All Platforms</SelectItem>
                         {uniquePlatforms.map(platform => (
                           <SelectItem key={platform} value={platform}>{platform}</SelectItem>
                         ))}
