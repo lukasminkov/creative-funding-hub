@@ -1,4 +1,3 @@
-
 import React from "react";
 import { RetainerCampaign, Platform, DeliverableMode, DELIVERABLE_MODES, CreatorTier, Brief } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -170,6 +169,7 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
             <PlatformSelector
               selectedPlatforms={campaign.platforms || []}
               onChange={handlePlatformChange}
+              showLabel={false}
             />
             <p className="text-xs text-muted-foreground mt-1">
               Select platforms where creators will post content

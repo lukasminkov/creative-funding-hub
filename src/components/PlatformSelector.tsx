@@ -9,13 +9,15 @@ interface PlatformSelectorProps {
   selectedPlatforms?: string[];
   onChange: (platform: string) => void;
   singleSelection?: boolean;
+  showLabel?: boolean;
 }
 
 const PlatformSelector = ({
   selectedPlatform,
   selectedPlatforms = [],
   onChange,
-  singleSelection = false
+  singleSelection = false,
+  showLabel = true
 }: PlatformSelectorProps) => {
   const isSelected = (platform: string) => {
     if (singleSelection) {
@@ -84,11 +86,11 @@ const PlatformSelector = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      {showLabel && (
         <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
           Platforms {singleSelection ? "(select one)" : "(select multiple)"}
         </label>
-      </div>
+      )}
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
         {PLATFORMS.map((platform) => (
           <div
