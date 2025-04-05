@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -32,7 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Campaign, formatCurrency } from "@/lib/campaign-types";
+import { Campaign, formatCurrency, StatusType, STATUS_OPTIONS } from "@/lib/campaign-types";
 import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
@@ -71,7 +70,16 @@ export default function CampaignsPage() {
         // For development, try to get from localStorage first
         const storedCampaigns = localStorage.getItem("campaigns");
         if (storedCampaigns) {
-          setCampaigns(JSON.parse(storedCampaigns));
+          const parsedCampaigns = JSON.parse(storedCampaigns);
+          // Ensure all campaigns have a status and createdAt
+          const enhancedCampaigns = parsedCampaigns.map((campaign: Campaign) => ({
+            ...campaign,
+            status: campaign.status || 'active',
+            createdAt: campaign.createdAt || new Date().toISOString()
+          }));
+          setCampaigns(enhancedCampaigns);
+          // Update localStorage with enhanced campaigns
+          localStorage.setItem("campaigns", JSON.stringify(enhancedCampaigns));
           setIsLoading(false);
           return;
         }
@@ -89,10 +97,16 @@ export default function CampaignsPage() {
         
         if (data) {
           const formattedCampaigns = data.map(convertDatabaseCampaign);
-          setCampaigns(formattedCampaigns);
+          // Ensure all campaigns have a status and createdAt
+          const enhancedCampaigns = formattedCampaigns.map((campaign: Campaign) => ({
+            ...campaign,
+            status: campaign.status || 'active',
+            createdAt: campaign.createdAt || new Date().toISOString()
+          }));
+          setCampaigns(enhancedCampaigns);
           
           // Save to localStorage for development
-          localStorage.setItem("campaigns", JSON.stringify(formattedCampaigns));
+          localStorage.setItem("campaigns", JSON.stringify(enhancedCampaigns));
         }
       } catch (error) {
         console.error("Error loading campaigns:", error);
@@ -167,9 +181,9 @@ export default function CampaignsPage() {
     return matchesSearch && matchesStatus && matchesType;
   });
   
-  const getCampaignStatus = (campaign: Campaign): string => {
-    // This is a simplified version, in reality you'd have more complex logic
-    return campaign.status || "active";
+  const getCampaignStatus = (campaign: Campaign): StatusType => {
+    // Return the campaign status or default to 'active'
+    return (campaign.status || 'active') as StatusType;
   };
   
   return (
@@ -227,10 +241,11 @@ export default function CampaignsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="paused">Paused</SelectItem>
+              {STATUS_OPTIONS.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           

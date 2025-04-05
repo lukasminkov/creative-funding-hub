@@ -1,6 +1,6 @@
 
 import React from "react";
-import { ChallengeCampaign, Platform, PLATFORMS } from "@/lib/campaign-types";
+import { ChallengeCampaign, Platform } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import PlatformSelector from "@/components/PlatformSelector";

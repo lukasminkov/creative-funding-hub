@@ -8,6 +8,7 @@ export const VISIBILITY_TYPES = ["public", "applicationOnly", "restricted"] as c
 export const QUESTION_TYPES = ["text", "image", "number", "link"] as const;
 export const COUNTRY_OPTIONS = ["worldwide", "usa", "mexico", "canada", "dach"] as const;
 export const OFFER_OPTIONS = ["MediaLabs Creator", "MediaLabs Campus", "Brez Clipping", "GROWTH Clippers", "Freezertarps Clipping", "Banks Interns"] as const;
+export const STATUS_OPTIONS = ["active", "draft", "completed", "paused"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
 export type Category = typeof CATEGORIES[number];
@@ -18,6 +19,7 @@ export type VisibilityType = typeof VISIBILITY_TYPES[number];
 export type QuestionType = typeof QUESTION_TYPES[number];
 export type CountryOption = typeof COUNTRY_OPTIONS[number];
 export type OfferOption = typeof OFFER_OPTIONS[number];
+export type StatusType = typeof STATUS_OPTIONS[number];
 
 export interface Brief {
   type: 'link' | 'file';
@@ -84,6 +86,8 @@ interface BaseCampaign {
   restrictedAccess?: RestrictedAccess;
   countryAvailability: CountryOption;
   requirements: string[];
+  status?: StatusType;
+  createdAt?: string | Date;
 }
 
 export interface RetainerCampaign extends BaseCampaign {
@@ -102,6 +106,8 @@ export interface PayPerViewCampaign extends BaseCampaign {
   type: 'payPerView';
   ratePerThousand: number;
   maxPayoutPerSubmission: number;
+  contentRequirements?: string;
+  viewValidationPeriod?: number;
 }
 
 export interface ChallengeCampaign extends BaseCampaign {
@@ -113,6 +119,8 @@ export interface ChallengeCampaign extends BaseCampaign {
     }[];
   };
   submissionDeadline: Date;
+  prizeAmount?: number;
+  winnersCount?: number;
 }
 
 export type Campaign = RetainerCampaign | PayPerViewCampaign | ChallengeCampaign;

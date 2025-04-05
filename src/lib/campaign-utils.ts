@@ -7,6 +7,7 @@ import {
   Currency, 
   CountryOption, 
   VisibilityType,
+  StatusType,
   RetainerCampaign,
   PayPerViewCampaign,
   ChallengeCampaign,
@@ -15,7 +16,8 @@ import {
   PLATFORMS,
   CURRENCIES,
   COUNTRY_OPTIONS,
-  VISIBILITY_TYPES
+  VISIBILITY_TYPES,
+  STATUS_OPTIONS
 } from "@/lib/campaign-types";
 import { Json } from "@/integrations/supabase/types";
 
@@ -52,6 +54,12 @@ export const validateVisibilityType = (value: string): VisibilityType => {
   return VISIBILITY_TYPES.includes(value as VisibilityType) 
     ? (value as VisibilityType) 
     : "public"; // Default fallback
+};
+
+export const validateStatusType = (value: string): StatusType => {
+  return STATUS_OPTIONS.includes(value as StatusType)
+    ? (value as StatusType)
+    : "active"; // Default fallback
 };
 
 // Helper function to safely parse JSON
@@ -92,6 +100,8 @@ export const convertDatabaseCampaign = (data: any): Campaign => {
     trackingLink: data.tracking_link,
     requestedTrackingLink: data.requested_tracking_link,
     guidelines: safeParseJson(data.guidelines) || { dos: [], donts: [] },
+    status: data.status ? validateStatusType(data.status) : "active",
+    createdAt: data.created_at,
   };
   
   // Create the appropriate campaign type based on data.type
@@ -118,7 +128,9 @@ export const convertDatabaseCampaign = (data: any): Campaign => {
       ...baseCampaign,
       type: 'payPerView',
       ratePerThousand: data.rate_per_thousand ? Number(data.rate_per_thousand) : 0,
-      maxPayoutPerSubmission: data.max_payout_per_submission ? Number(data.max_payout_per_submission) : 0
+      maxPayoutPerSubmission: data.max_payout_per_submission ? Number(data.max_payout_per_submission) : 0,
+      contentRequirements: data.content_requirements,
+      viewValidationPeriod: data.view_validation_period ? Number(data.view_validation_period) : undefined
     };
     
     typedCampaign = payPerViewCampaign;
@@ -129,7 +141,9 @@ export const convertDatabaseCampaign = (data: any): Campaign => {
       ...baseCampaign,
       type: 'challenge',
       submissionDeadline: data.submission_deadline ? new Date(data.submission_deadline) : new Date(),
-      prizePool: safeParseJson(data.prize_pool) || { places: [] }
+      prizePool: safeParseJson(data.prize_pool) || { places: [] },
+      prizeAmount: data.prize_amount ? Number(data.prize_amount) : undefined,
+      winnersCount: data.winners_count ? Number(data.winners_count) : undefined
     };
     
     typedCampaign = challengeCampaign;
@@ -178,6 +192,8 @@ export const convertCampaignToDatabase = (campaign: Campaign) => {
     brand_id: campaign.brandId,
     brand_name: campaign.brandName,
     instruction_video: campaign.instructionVideo,
+    status: campaign.status,
+    created_at: campaign.createdAt ? new Date(campaign.createdAt).toISOString() : new Date().toISOString(),
     
     // Optional fields common to all campaign types
     brief: campaign.brief ? JSON.stringify(campaign.brief) : null,
@@ -195,8 +211,12 @@ export const convertCampaignToDatabase = (campaign: Campaign) => {
     deliverables: null,
     rate_per_thousand: null,
     max_payout_per_submission: null,
+    content_requirements: null,
+    view_validation_period: null,
     submission_deadline: null,
     prize_pool: null,
+    prize_amount: null,
+    winners_count: null,
     application_questions: null
   };
   
@@ -220,6 +240,8 @@ export const convertCampaignToDatabase = (campaign: Campaign) => {
     const payPerViewCampaign = campaign as PayPerViewCampaign;
     databaseCampaign.rate_per_thousand = payPerViewCampaign.ratePerThousand || null;
     databaseCampaign.max_payout_per_submission = payPerViewCampaign.maxPayoutPerSubmission || null;
+    databaseCampaign.content_requirements = payPerViewCampaign.contentRequirements || null;
+    databaseCampaign.view_validation_period = payPerViewCampaign.viewValidationPeriod || null;
   } 
   else if (campaign.type === 'challenge') {
     const challengeCampaign = campaign as ChallengeCampaign;
@@ -229,6 +251,8 @@ export const convertCampaignToDatabase = (campaign: Campaign) => {
     databaseCampaign.prize_pool = challengeCampaign.prizePool 
       ? JSON.stringify(challengeCampaign.prizePool) 
       : null;
+    databaseCampaign.prize_amount = challengeCampaign.prizeAmount || null;
+    databaseCampaign.winners_count = challengeCampaign.winnersCount || null;
   }
   
   return databaseCampaign;
