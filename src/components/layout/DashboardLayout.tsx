@@ -138,13 +138,7 @@ export default function DashboardLayout({
       </Sidebar>
       {state === "collapsed" && <SidebarToggle />}
       <div className="flex-1 flex flex-col overflow-auto">
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border/40 bg-background/95 px-6 backdrop-blur">
-          <div className="flex w-full items-center justify-between">
-            <h1 className="text-xl font-semibold">
-              {menuItems.find(item => item.path === location.pathname || item.path !== "/dashboard" && location.pathname.startsWith(item.path))?.title || "Dashboard"}
-            </h1>
-          </div>
-        </header>
+        {/* Removed redundant header with page title */}
         <main className="flex-1">
           {children}
         </main>

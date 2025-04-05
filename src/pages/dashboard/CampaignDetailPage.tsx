@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -17,6 +17,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 
 // Mock creators data
@@ -127,11 +129,15 @@ export default function CampaignDetailPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("active-creators");
   
-  // Filter states for submissions
+  // New state for improved filter
+  const [filterType, setFilterType] = useState<string>("none");
   const [creatorFilter, setCreatorFilter] = useState<string>("");
   const [platformFilter, setPlatformFilter] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // Add budget dialog
+  const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
+  const [budgetAmount, setBudgetAmount] = useState<string>("1000");
   
   const {
     data: campaign,
@@ -159,43 +165,46 @@ export default function CampaignDetailPage() {
   const uniqueCreators = Array.from(new Set(mockSubmissions.map(sub => sub.creator)));
   const uniquePlatforms = Array.from(new Set(mockSubmissions.map(sub => sub.platform)));
   
-  // Apply filters to submissions
+  // Apply filters to submissions based on selected filter type
   const filteredSubmissions = mockSubmissions.filter(submission => {
-    // Creator filter
-    if (creatorFilter && submission.creator !== creatorFilter) {
-      return false;
+    if (filterType === "none") return true;
+    
+    if (filterType === "creator" && creatorFilter) {
+      return submission.creator === creatorFilter;
     }
     
-    // Platform filter
-    if (platformFilter && submission.platform !== platformFilter) {
-      return false;
+    if (filterType === "platform" && platformFilter) {
+      return submission.platform === platformFilter;
     }
     
-    // Date filter
-    if (dateFilter) {
+    if (filterType === "date" && dateFilter) {
       const submissionDate = new Date(submission.date);
       const filterDate = new Date(dateFilter);
       
-      if (
-        submissionDate.getFullYear() !== filterDate.getFullYear() ||
-        submissionDate.getMonth() !== filterDate.getMonth() ||
-        submissionDate.getDate() !== filterDate.getDate()
-      ) {
-        return false;
-      }
+      return (
+        submissionDate.getFullYear() === filterDate.getFullYear() &&
+        submissionDate.getMonth() === filterDate.getMonth() &&
+        submissionDate.getDate() === filterDate.getDate()
+      );
     }
     
     return true;
   });
   
-  // Check if any filters are active
-  const hasActiveFilters = creatorFilter || platformFilter || dateFilter;
-  
   // Function to clear all filters
   const clearFilters = () => {
+    setFilterType("none");
     setCreatorFilter("");
     setPlatformFilter("");
     setDateFilter(undefined);
+  };
+  
+  // Handle adding budget
+  const handleAddBudget = () => {
+    // In a real app, this would make an API call
+    console.log(`Adding $${budgetAmount} to campaign budget`);
+    setBudgetDialogOpen(false);
+    // Would refetch the campaign to get updated budget
   };
 
   if (isLoading) {
@@ -328,22 +337,9 @@ export default function CampaignDetailPage() {
                   </div>
                 </div>
                 <div className="md:col-span-2">
-                  <Drawer>
-                    <DrawerTrigger asChild>
-                      <Button variant="outline" className="w-full">Add Budget</Button>
-                    </DrawerTrigger>
-                    <DrawerContent>
-                      <DrawerHeader>
-                        <DrawerTitle>Add Budget to Campaign</DrawerTitle>
-                        <DrawerDescription>
-                          Increase the budget for "{campaign.title}"
-                        </DrawerDescription>
-                      </DrawerHeader>
-                      <div className="p-4 space-y-4">
-                        <Button className="w-full">Add $1,000 to Budget</Button>
-                      </div>
-                    </DrawerContent>
-                  </Drawer>
+                  <Button variant="outline" className="w-full" onClick={() => setBudgetDialogOpen(true)}>
+                    Add Budget
+                  </Button>
                 </div>
               </>}
             
@@ -392,88 +388,71 @@ export default function CampaignDetailPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle>Submissions</CardTitle>
           <div className="flex items-center gap-2">
-            <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className={hasActiveFilters ? "border-primary text-primary" : ""}
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
-                  {hasActiveFilters && (
-                    <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary">
-                      {(creatorFilter ? 1 : 0) + (platformFilter ? 1 : 0) + (dateFilter ? 1 : 0)}
-                    </Badge>
-                  )}
+            {/* Simplified Filter UI */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center">
+                <span className="text-sm mr-2 font-medium">Filter By:</span>
+                <Select value={filterType} onValueChange={(value) => {
+                  setFilterType(value);
+                  // Reset specific filters when changing type
+                  setCreatorFilter("");
+                  setPlatformFilter("");
+                  setDateFilter(undefined);
+                }}>
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Select filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="creator">Creator</SelectItem>
+                    <SelectItem value="platform">Platform</SelectItem>
+                    <SelectItem value="date">Date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {filterType === "creator" && (
+                <Select value={creatorFilter} onValueChange={setCreatorFilter}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Select creator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {uniqueCreators.map(creator => (
+                      <SelectItem key={creator} value={creator}>{creator}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+              {filterType === "platform" && (
+                <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {uniquePlatforms.map(platform => (
+                      <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+              {filterType === "date" && (
+                <DatePicker 
+                  date={dateFilter} 
+                  onSelect={setDateFilter} 
+                  placeholder="Select date"
+                  className="w-[160px]"
+                />
+              )}
+              
+              {filterType !== "none" && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
+                  <X className="h-4 w-4 mr-1" />
+                  Clear
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80" align="end">
-                <div className="space-y-4 p-1">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Filter Submissions</h4>
-                    {hasActiveFilters && (
-                      <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2">
-                        <X className="h-4 w-4 mr-1" />
-                        Clear
-                      </Button>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1">
-                      <User className="h-4 w-4" />
-                      Creator
-                    </label>
-                    <Select value={creatorFilter} onValueChange={setCreatorFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select creator" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Creators</SelectItem>
-                        {uniqueCreators.map(creator => (
-                          <SelectItem key={creator} value={creator}>{creator}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Platform</label>
-                    <Select value={platformFilter} onValueChange={setPlatformFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select platform" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Platforms</SelectItem>
-                        {uniquePlatforms.map(platform => (
-                          <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      Post Date
-                    </label>
-                    <DatePicker 
-                      date={dateFilter} 
-                      onSelect={setDateFilter} 
-                      placeholder="Select date"
-                    />
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-            
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
-                <X className="h-4 w-4 mr-1" />
-                Clear filters
-              </Button>
-            )}
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -646,6 +625,44 @@ export default function CampaignDetailPage() {
           </CardContent>
         </Tabs>
       </Card>
+
+      {/* Add Budget Dialog */}
+      <Dialog open={budgetDialogOpen} onOpenChange={setBudgetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Budget to Campaign</DialogTitle>
+            <DialogDescription>
+              Increase the budget for "{campaign.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="budget-amount" className="text-sm font-medium">
+                Budget Amount
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="budget-amount"
+                  type="number"
+                  value={budgetAmount}
+                  onChange={(e) => setBudgetAmount(e.target.value)}
+                  className="pl-7"
+                  min="1"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBudgetDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddBudget}>
+              Add Budget
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <CampaignFormDialog campaign={campaign} open={editDialogOpen} onOpenChange={setEditDialogOpen} isEditing={true} onCampaignUpdated={() => {
       if (refetch) refetch();
