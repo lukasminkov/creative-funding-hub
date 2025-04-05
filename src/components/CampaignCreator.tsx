@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -185,7 +184,6 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
     onSubmit(campaign as Campaign);
   };
 
-  // Use a different content for each campaign type tab to avoid key conflicts
   const renderCampaignForm = (type: "retainer" | "payPerView" | "challenge") => {
     const generalInfoSection = (
       <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
@@ -205,100 +203,114 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
       </div>
     );
 
-    if (type === "retainer") {
-      return (
-        <div className="space-y-8">
-          <div className="space-y-6">
-            {generalInfoSection}
-            <RetainerForm
-              campaign={campaign as Partial<RetainerCampaign>}
-              onChange={handleRetainerCampaignChange}
-              showCreatorInfoSection={false}
-              disableBudgetEdit={disableBudgetEdit && isEditing}
-            />
-            <VisibilitySelector
-              visibility={campaign.visibility || "public"}
-              applicationQuestions={campaign.applicationQuestions}
-              restrictedAccess={campaign.restrictedAccess}
-              onChange={handleVisibilityChange}
-            />
-          </div>
-          
-          <Separator className="my-4 bg-muted" />
-          
-          <div className="space-y-6">
-            {creatorInfoSection}
-            <RetainerForm
-              campaign={campaign as Partial<RetainerCampaign>}
-              onChange={handleRetainerCampaignChange}
-              showCreatorInfoSection={true}
-            />
-          </div>
-        </div>
-      );
-    } else if (type === "payPerView") {
-      return (
-        <div className="space-y-8">
-          <div className="space-y-6">
-            {generalInfoSection}
-            <PayPerViewForm
-              campaign={campaign as Partial<PayPerViewCampaign>}
-              onChange={handlePayPerViewCampaignChange}
-              showCreatorInfoSection={false}
-              disableBudgetEdit={disableBudgetEdit && isEditing}
-            />
-            <VisibilitySelector
-              visibility={campaign.visibility || "public"}
-              applicationQuestions={campaign.applicationQuestions}
-              restrictedAccess={campaign.restrictedAccess}
-              onChange={handleVisibilityChange}
-            />
-          </div>
-          
-          <Separator className="my-4 bg-muted" />
-          
-          <div className="space-y-6">
-            {creatorInfoSection}
-            <PayPerViewForm
-              campaign={campaign as Partial<PayPerViewCampaign>}
-              onChange={handlePayPerViewCampaignChange}
-              showCreatorInfoSection={true}
-            />
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="space-y-8">
-          <div className="space-y-6">
-            {generalInfoSection}
-            <ChallengeForm
-              campaign={campaign as Partial<ChallengeCampaign>}
-              onChange={handleChallengeCampaignChange}
-              showCreatorInfoSection={false}
-              disableBudgetEdit={disableBudgetEdit && isEditing}
-            />
-            <VisibilitySelector
-              visibility={campaign.visibility || "public"}
-              applicationQuestions={campaign.applicationQuestions}
-              restrictedAccess={campaign.restrictedAccess}
-              onChange={handleVisibilityChange}
-            />
-          </div>
-          
-          <Separator className="my-4 bg-muted" />
-          
-          <div className="space-y-6">
-            {creatorInfoSection}
-            <ChallengeForm
-              campaign={campaign as Partial<ChallengeCampaign>}
-              onChange={handleChallengeCampaignChange}
-              showCreatorInfoSection={true}
-            />
-          </div>
-        </div>
-      );
-    }
+    const getFormContent = () => {
+      if (type === "retainer") {
+        return (
+          <>
+            <div className="space-y-6">
+              {generalInfoSection}
+              <RetainerForm
+                campaign={campaign as Partial<RetainerCampaign>}
+                onChange={handleRetainerCampaignChange}
+                showCreatorInfoSection={false}
+                disableBudgetEdit={disableBudgetEdit && isEditing}
+              />
+              <div className="mt-6">
+                <VisibilitySelector
+                  visibility={campaign.visibility || "public"}
+                  applicationQuestions={campaign.applicationQuestions}
+                  restrictedAccess={campaign.restrictedAccess}
+                  onChange={handleVisibilityChange}
+                />
+              </div>
+            </div>
+            
+            <Separator className="my-8 bg-muted" />
+            
+            <div className="space-y-6">
+              {creatorInfoSection}
+              <RetainerForm
+                campaign={campaign as Partial<RetainerCampaign>}
+                onChange={handleRetainerCampaignChange}
+                showCreatorInfoSection={true}
+              />
+            </div>
+          </>
+        );
+      } else if (type === "payPerView") {
+        return (
+          <>
+            <div className="space-y-6">
+              {generalInfoSection}
+              <PayPerViewForm
+                campaign={campaign as Partial<PayPerViewCampaign>}
+                onChange={handlePayPerViewCampaignChange}
+                showCreatorInfoSection={false}
+                disableBudgetEdit={disableBudgetEdit && isEditing}
+              />
+              <div className="mt-6">
+                <VisibilitySelector
+                  visibility={campaign.visibility || "public"}
+                  applicationQuestions={campaign.applicationQuestions}
+                  restrictedAccess={campaign.restrictedAccess}
+                  onChange={handleVisibilityChange}
+                />
+              </div>
+            </div>
+            
+            <Separator className="my-8 bg-muted" />
+            
+            <div className="space-y-6">
+              {creatorInfoSection}
+              <PayPerViewForm
+                campaign={campaign as Partial<PayPerViewCampaign>}
+                onChange={handlePayPerViewCampaignChange}
+                showCreatorInfoSection={true}
+              />
+            </div>
+          </>
+        );
+      } else {
+        return (
+          <>
+            <div className="space-y-6">
+              {generalInfoSection}
+              <ChallengeForm
+                campaign={campaign as Partial<ChallengeCampaign>}
+                onChange={handleChallengeCampaignChange}
+                showCreatorInfoSection={false}
+                disableBudgetEdit={disableBudgetEdit && isEditing}
+              />
+              <div className="mt-6">
+                <VisibilitySelector
+                  visibility={campaign.visibility || "public"}
+                  applicationQuestions={campaign.applicationQuestions}
+                  restrictedAccess={campaign.restrictedAccess}
+                  onChange={handleVisibilityChange}
+                />
+              </div>
+            </div>
+            
+            <Separator className="my-8 bg-muted" />
+            
+            <div className="space-y-6">
+              {creatorInfoSection}
+              <ChallengeForm
+                campaign={campaign as Partial<ChallengeCampaign>}
+                onChange={handleChallengeCampaignChange}
+                showCreatorInfoSection={true}
+              />
+            </div>
+          </>
+        );
+      }
+    };
+
+    return (
+      <div className="space-y-8">
+        {getFormContent()}
+      </div>
+    );
   };
 
   return (

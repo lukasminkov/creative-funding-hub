@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign } from "@/lib/campaign-types";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/lib/campaign-types";
+import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
 
 export default function CampaignsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -47,6 +49,11 @@ export default function CampaignsPage() {
           Create Campaign
         </Button>
       </div>
+
+      {/* Analytics Dashboard - Restored */}
+      {campaigns && campaigns.length > 0 && (
+        <CampaignAnalytics campaigns={campaigns} />
+      )}
 
       <div className="grid gap-6">
         {campaigns && campaigns.length > 0 ? (
