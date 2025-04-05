@@ -181,17 +181,17 @@ const VisibilitySelector = ({
 
   // Content for each visibility option
   const renderPublicContent = () => (
-    <div className="flex items-center justify-center h-[300px] text-center py-8 text-muted-foreground">
+    <div className="flex items-center justify-center h-[350px] text-center">
       <div>
         <p>This campaign will be visible to all creators.</p>
-        <p className="text-sm mt-2">No additional settings required.</p>
+        <p className="text-sm mt-2 text-muted-foreground">No additional settings required.</p>
       </div>
     </div>
   );
 
   const renderApplicationContent = () => (
-    <div className="space-y-4 h-[300px] overflow-y-auto">
-      <div className="flex justify-between items-center">
+    <div className="h-[350px] overflow-y-auto py-2">
+      <div className="flex justify-between items-center mb-4">
         <h3 className="text-sm font-medium">Application Questions</h3>
         <Button
           variant="outline"
@@ -269,7 +269,7 @@ const VisibilitySelector = ({
   );
 
   const renderRestrictedContent = () => (
-    <div className="space-y-4 h-[300px] overflow-y-auto">
+    <div className="h-[350px] overflow-y-auto py-2">
       <RadioGroup
         value={accessType}
         onValueChange={(value) => handleAccessTypeChange(value as 'offer' | 'invite')}
@@ -438,13 +438,15 @@ const VisibilitySelector = ({
         </RadioGroup>
       </div>
 
-      {/* Fixed height content area with stable layout */}
+      {/* Card with fixed height to prevent layout jumps */}
       <Card className="mt-4">
         <CardContent className="pt-6">
-          {/* Conditionally render content based on visibility type */}
-          {visibility === "public" && renderPublicContent()}
-          {visibility === "applicationOnly" && renderApplicationContent()}
-          {visibility === "restricted" && renderRestrictedContent()}
+          {/* Using fixed height containers for each content type */}
+          <div className="min-h-[350px]">
+            {visibility === "public" && renderPublicContent()}
+            {visibility === "applicationOnly" && renderApplicationContent()}
+            {visibility === "restricted" && renderRestrictedContent()}
+          </div>
         </CardContent>
       </Card>
     </div>
