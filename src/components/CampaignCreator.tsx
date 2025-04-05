@@ -196,11 +196,6 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
         animate={{ opacity: 1, y: 0 }}
         className="bg-card border border-border rounded-lg overflow-hidden shadow-sm"
       >
-        <div className="p-6 border-b border-border/60">
-          <h2 className="text-2xl font-medium">{isEditing ? "Edit Campaign" : "New Campaign"}</h2>
-          <p className="text-muted-foreground">Set up rewards for creator content</p>
-        </div>
-        
         <div className="p-6">
           <Tabs
             defaultValue={campaignType}
