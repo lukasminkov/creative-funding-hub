@@ -13,6 +13,7 @@ import ExampleVideos from "@/components/ExampleVideos";
 import BriefUploader from "@/components/BriefUploader";
 import InstructionVideoUploader from "@/components/InstructionVideoUploader";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 
 interface PayPerViewFormProps {
   campaign: Partial<PayPerViewCampaign>;
@@ -158,6 +159,7 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
               selectedPlatforms={campaign.platforms || []}
               onChange={handlePlatformChange}
               showLabel={false}
+              singleSelection={false}
             />
             <p className="text-xs text-muted-foreground mt-1">
               Select platforms where creators will post content
@@ -220,35 +222,41 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
             />
           </FormItem>
 
-          <FormItem className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="requestedTrackingLink"
-                checked={campaign.requestedTrackingLink || false}
-                onCheckedChange={(checked) => 
-                  onChange({ requestedTrackingLink: checked as boolean })
-                }
-              />
-              <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
-                Request tracking link in submissions
-              </Label>
-            </div>
-          </FormItem>
+          <Separator className="my-4" />
 
-          {campaign.requestedTrackingLink && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Tracking Link</h3>
+            
             <FormItem className="space-y-2">
-              <Label htmlFor="trackingLink">Tracking Link</Label>
-              <Input
-                id="trackingLink"
-                value={campaign.trackingLink || ""}
-                onChange={(e) => onChange({ trackingLink: e.target.value })}
-                placeholder="Enter tracking link"
-              />
-              <p className="text-xs text-muted-foreground">
-                This link will be provided to creators for tracking purposes
-              </p>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="requestedTrackingLink"
+                  checked={campaign.requestedTrackingLink || false}
+                  onCheckedChange={(checked) => 
+                    onChange({ requestedTrackingLink: checked as boolean })
+                  }
+                />
+                <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
+                  Request tracking link in submissions
+                </Label>
+              </div>
             </FormItem>
-          )}
+
+            {campaign.requestedTrackingLink && (
+              <FormItem className="space-y-2">
+                <Label htmlFor="trackingLink">Tracking Link</Label>
+                <Input
+                  id="trackingLink"
+                  value={campaign.trackingLink || ""}
+                  onChange={(e) => onChange({ trackingLink: e.target.value })}
+                  placeholder="Enter tracking link"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This link will be provided to creators for tracking purposes
+                </p>
+              </FormItem>
+            )}
+          </div>
 
           <FormItem className="space-y-2">
             <Label>Example Videos</Label>

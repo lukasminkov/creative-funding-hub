@@ -1,3 +1,4 @@
+
 import React from "react";
 import { RetainerCampaign, Platform, DeliverableMode, DELIVERABLE_MODES, CreatorTier, Brief } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -34,17 +35,10 @@ interface RetainerFormProps {
 const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudgetEdit = false }: RetainerFormProps) => {
   const handlePlatformChange = (platform: string) => {
     const platformValue = platform as Platform;
-    const currentPlatforms = [...(campaign.platforms || [])];
-    
-    if (currentPlatforms.includes(platformValue)) {
-      onChange({
-        platforms: currentPlatforms.filter(p => p !== platformValue),
-      });
-    } else {
-      onChange({
-        platforms: [...currentPlatforms, platformValue],
-      });
-    }
+    // For Retainer campaigns, we only allow a single platform selection
+    onChange({
+      platforms: [platformValue],
+    });
   };
 
   const handleDeliverableModeChange = (mode: DeliverableMode) => {
@@ -164,15 +158,16 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
           
           <div className="space-y-2 col-span-2">
             <Label>
-              Platforms <span className="text-destructive">*</span>
+              Platform <span className="text-destructive">*</span>
             </Label>
             <PlatformSelector
-              selectedPlatforms={campaign.platforms || []}
+              selectedPlatform={campaign.platforms?.[0] || ""}
               onChange={handlePlatformChange}
               showLabel={false}
+              singleSelection={true}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Select platforms where creators will post content
+              Select the platform where creators will post content
             </p>
           </div>
 
@@ -362,35 +357,41 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
             />
           </FormItem>
 
-          <FormItem className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="requestedTrackingLink"
-                checked={campaign.requestedTrackingLink || false}
-                onCheckedChange={(checked) => 
-                  onChange({ requestedTrackingLink: checked as boolean })
-                }
-              />
-              <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
-                Request tracking link in submissions
-              </Label>
-            </div>
-          </FormItem>
+          <Separator className="my-4" />
 
-          {campaign.requestedTrackingLink && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Tracking Link</h3>
+            
             <FormItem className="space-y-2">
-              <Label htmlFor="trackingLink">Tracking Link</Label>
-              <Input
-                id="trackingLink"
-                value={campaign.trackingLink || ""}
-                onChange={(e) => onChange({ trackingLink: e.target.value })}
-                placeholder="Enter tracking link"
-              />
-              <p className="text-xs text-muted-foreground">
-                This link will be provided to creators for tracking purposes
-              </p>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="requestedTrackingLink"
+                  checked={campaign.requestedTrackingLink || false}
+                  onCheckedChange={(checked) => 
+                    onChange({ requestedTrackingLink: checked as boolean })
+                  }
+                />
+                <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
+                  Request tracking link in submissions
+                </Label>
+              </div>
             </FormItem>
-          )}
+
+            {campaign.requestedTrackingLink && (
+              <FormItem className="space-y-2">
+                <Label htmlFor="trackingLink">Tracking Link</Label>
+                <Input
+                  id="trackingLink"
+                  value={campaign.trackingLink || ""}
+                  onChange={(e) => onChange({ trackingLink: e.target.value })}
+                  placeholder="Enter tracking link"
+                />
+                <p className="text-xs text-muted-foreground">
+                  This link will be provided to creators for tracking purposes
+                </p>
+              </FormItem>
+            )}
+          </div>
 
           <FormItem className="space-y-2">
             <Label>Example Videos</Label>
