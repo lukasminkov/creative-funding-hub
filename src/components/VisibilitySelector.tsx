@@ -179,6 +179,189 @@ const VisibilitySelector = ({
     }
   };
 
+  // Content for each visibility option
+  const renderPublicContent = () => (
+    <div className="text-center py-8 text-muted-foreground">
+      <p>This campaign will be visible to all creators.</p>
+      <p className="text-sm mt-2">No additional settings required.</p>
+    </div>
+  );
+
+  const renderApplicationContent = () => (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium">Application Questions</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={addQuestion}
+          className="h-8"
+        >
+          <Plus className="h-3.5 w-3.5 mr-1" />
+          Add Question
+        </Button>
+      </div>
+      
+      <div className="space-y-4">
+        {questions.length === 0 ? (
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            No questions added yet. Add questions for creators to answer when applying.
+          </div>
+        ) : (
+          questions.map((q) => (
+            <div
+              key={q.id}
+              className="grid grid-cols-[1fr,auto] gap-4 items-start border border-border rounded-md p-3"
+            >
+              <div className="space-y-3 w-full">
+                <div className="space-y-1 w-full">
+                  <Input
+                    value={q.question}
+                    onChange={(e) => updateQuestion(q.id, "question", e.target.value)}
+                    placeholder="Enter your question"
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground pt-0.5">
+                    <span>Answer type:</span>
+                    <label className="flex items-center space-x-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={q.required}
+                        onChange={(e) => updateQuestion(q.id, "required", e.target.checked)}
+                        className="rounded text-primary w-3 h-3"
+                      />
+                      <span>Required</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 flex-wrap">
+                  {QUESTION_TYPES.map((type) => (
+                    <Button
+                      key={type}
+                      variant={q.type === type ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 text-xs px-2 flex items-center gap-1.5"
+                      onClick={() => updateQuestion(q.id, "type", type)}
+                    >
+                      {getQuestionTypeIcon(type)}
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 mt-1"
+                onClick={() => removeQuestion(q.id)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const renderRestrictedContent = () => (
+    <div className="space-y-4">
+      <RadioGroup
+        value={accessType}
+        onValueChange={(value) => handleAccessTypeChange(value as 'offer' | 'invite')}
+        className="space-y-3"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="offer" id="offer-access" />
+          <Label htmlFor="offer-access">Available to members of these offers</Label>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="invite" id="invite-access" />
+          <Label htmlFor="invite-access">Available by invite link</Label>
+        </div>
+      </RadioGroup>
+      
+      {accessType === 'offer' && (
+        <div className="pt-3 pb-1">
+          <div className="text-sm mb-3">Select offers that can participate:</div>
+          <div className="space-y-2">
+            <Select
+              onValueChange={handleOfferSelect}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select offers" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableOffers.map((offer) => (
+                  <SelectItem
+                    key={offer.id}
+                    value={offer.id}
+                    className={selectedOffers.includes(offer.id) ? "bg-primary/10" : ""}
+                  >
+                    {offer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {selectedOffers.length > 0 && (
+              <div className="mt-3">
+                <div className="text-sm font-medium mb-2">Selected offers:</div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedOffers.map((offerId) => {
+                    const offer = availableOffers.find(o => o.id === offerId);
+                    return offer ? (
+                      <div 
+                        key={offerId}
+                        className="flex items-center bg-primary/10 rounded-md px-2 py-1 text-sm"
+                      >
+                        <span>{offer.name}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-5 w-5 ml-1"
+                          onClick={() => handleOfferSelect(offerId)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
+          
+            {selectedOffers.length === 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Select at least one offer to enable this option.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {accessType === 'invite' && (
+        <div className="pt-3">
+          <Label htmlFor="invite-link" className="text-sm mb-2 block">
+            Invite Link (optional)
+          </Label>
+          <Input
+            id="invite-link"
+            value={inviteLink}
+            onChange={(e) => handleInviteLinkChange(e.target.value)}
+            placeholder="https://example.com/invite/xyz123"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Leave empty to auto-generate a link when campaign is published.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -253,202 +436,16 @@ const VisibilitySelector = ({
         </RadioGroup>
       </div>
 
-      {/* Content area with fixed height to prevent layout jumps */}
-      <div className="min-h-[300px]">
-        {visibility === "applicationOnly" && (
-          <Card className="mt-4">
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-medium">Application Questions</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={addQuestion}
-                    className="h-8"
-                  >
-                    <Plus className="h-3.5 w-3.5 mr-1" />
-                    Add Question
-                  </Button>
-                </div>
-                
-                <div className="space-y-4">
-                  {questions.length === 0 ? (
-                    <div className="text-center py-4 text-muted-foreground text-sm">
-                      No questions added yet. Add questions for creators to answer when applying.
-                    </div>
-                  ) : (
-                    questions.map((q) => (
-                      <div
-                        key={q.id}
-                        className="grid grid-cols-[1fr,auto] gap-4 items-start border border-border rounded-md p-3"
-                      >
-                        <div className="space-y-3 w-full">
-                          <div className="space-y-1 w-full">
-                            <Input
-                              value={q.question}
-                              onChange={(e) => updateQuestion(q.id, "question", e.target.value)}
-                              placeholder="Enter your question"
-                              className="w-full"
-                            />
-                            <div className="flex justify-between text-xs text-muted-foreground pt-0.5">
-                              <span>Answer type:</span>
-                              <label className="flex items-center space-x-1 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={q.required}
-                                  onChange={(e) => updateQuestion(q.id, "required", e.target.checked)}
-                                  className="rounded text-primary w-3 h-3"
-                                />
-                                <span>Required</span>
-                              </label>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-2 flex-wrap">
-                            {QUESTION_TYPES.map((type) => (
-                              <Button
-                                key={type}
-                                variant={q.type === type ? "default" : "outline"}
-                                size="sm"
-                                className="h-8 text-xs px-2 flex items-center gap-1.5"
-                                onClick={() => updateQuestion(q.id, "type", type)}
-                              >
-                                {getQuestionTypeIcon(type)}
-                                {type.charAt(0).toUpperCase() + type.slice(1)}
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 mt-1"
-                          onClick={() => removeQuestion(q.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {visibility === "restricted" && (
-          <Card className="mt-4">
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <RadioGroup
-                  value={accessType}
-                  onValueChange={(value) => handleAccessTypeChange(value as 'offer' | 'invite')}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="offer" id="offer-access" />
-                    <Label htmlFor="offer-access">Available to members of these offers</Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="invite" id="invite-access" />
-                    <Label htmlFor="invite-access">Available by invite link</Label>
-                  </div>
-                </RadioGroup>
-                
-                {accessType === 'offer' && (
-                  <div className="pt-3 pb-1">
-                    <div className="text-sm mb-3">Select offers that can participate:</div>
-                    <div className="space-y-2">
-                      <Select
-                        onValueChange={handleOfferSelect}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select offers" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableOffers.map((offer) => (
-                            <SelectItem
-                              key={offer.id}
-                              value={offer.id}
-                              className={selectedOffers.includes(offer.id) ? "bg-primary/10" : ""}
-                            >
-                              {offer.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      
-                      {selectedOffers.length > 0 && (
-                        <div className="mt-3">
-                          <div className="text-sm font-medium mb-2">Selected offers:</div>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedOffers.map((offerId) => {
-                              const offer = availableOffers.find(o => o.id === offerId);
-                              return offer ? (
-                                <div 
-                                  key={offerId}
-                                  className="flex items-center bg-primary/10 rounded-md px-2 py-1 text-sm"
-                                >
-                                  <span>{offer.name}</span>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-5 w-5 ml-1"
-                                    onClick={() => handleOfferSelect(offerId)}
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              ) : null;
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    
-                      {selectedOffers.length === 0 && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Select at least one offer to enable this option.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-                
-                {accessType === 'invite' && (
-                  <div className="pt-3">
-                    <Label htmlFor="invite-link" className="text-sm mb-2 block">
-                      Invite Link (optional)
-                    </Label>
-                    <Input
-                      id="invite-link"
-                      value={inviteLink}
-                      onChange={(e) => handleInviteLinkChange(e.target.value)}
-                      placeholder="https://example.com/invite/xyz123"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Leave empty to auto-generate a link when campaign is published.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Add empty card for "public" option to maintain consistent height */}
-        {visibility === "public" && (
-          <Card className="mt-4">
-            <CardContent className="pt-6">
-              <div className="text-center py-8 text-muted-foreground">
-                <p>This campaign will be visible to all creators.</p>
-                <p className="text-sm mt-2">No additional settings required.</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      {/* Fixed height content area */}
+      <div className="relative">
+        <Card className="mt-4">
+          <CardContent className="pt-6 min-h-[300px]">
+            {/* Conditionally render content based on visibility type */}
+            {visibility === "public" && renderPublicContent()}
+            {visibility === "applicationOnly" && renderApplicationContent()}
+            {visibility === "restricted" && renderRestrictedContent()}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
