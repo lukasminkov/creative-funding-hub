@@ -14,8 +14,6 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 import ExplorePage from "./pages/dashboard/ExplorePage";
 import CampaignsPage from "./pages/dashboard/CampaignsPage";
 import CampaignDetailPage from "./pages/dashboard/CampaignDetailPage";
-import CampaignCreatePage from "./pages/dashboard/CampaignCreatePage";
-import CampaignEditPage from "./pages/dashboard/CampaignEditPage";
 import CampaignChatPage from "./pages/dashboard/CampaignChatPage";
 import CreatorsPage from "./pages/dashboard/CreatorsPage";
 import MessagesPage from "./pages/dashboard/MessagesPage";
@@ -39,9 +37,7 @@ const App = () => (
                 <Route index element={<DashboardHome />} />
                 <Route path="explore" element={<ExplorePage />} />
                 <Route path="campaigns" element={<CampaignsPage />} />
-                <Route path="campaigns/create" element={<CampaignCreatePage />} />
                 <Route path="campaigns/:id" element={<CampaignDetailPage />} />
-                <Route path="campaigns/:id/edit" element={<CampaignEditPage />} />
                 <Route path="campaigns/:id/chat" element={<CampaignChatPage />} />
                 <Route path="creators" element={<CreatorsPage />} />
                 <Route path="messages" element={<MessagesPage />} />
@@ -50,6 +46,10 @@ const App = () => (
 
               {/* Redirect old dashboard to new dashboard */}
               <Route path="/dashboard/campaigns" element={<Navigate to="/dashboard/campaigns" replace />} />
+              
+              {/* Redirects for the now unused pages */}
+              <Route path="/dashboard/campaigns/create" element={<Navigate to="/dashboard/campaigns" replace />} />
+              <Route path="/dashboard/campaigns/:id/edit" element={<Navigate to="/dashboard/campaigns/:id" replace />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

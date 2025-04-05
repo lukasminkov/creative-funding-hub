@@ -1,28 +1,11 @@
 import { useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  ChevronRight, 
-  DollarSign, 
-  Edit, 
-  Eye, 
-  FileCheck, 
-  MessageSquare, 
-  Users,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Campaign } from "@/lib/campaign-types";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { SocialIcon } from "@/components/icons/SocialIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
+import { Edit2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 
 // Mock creators data
 const mockCreators = [
@@ -142,12 +125,11 @@ const mockSubmissions = [
 export default function CampaignDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("active-creators");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
-  const { data: campaign, isLoading } = useQuery({
+  const { data: campaign, isLoading, refetch } = useQuery({
     queryKey: ['campaign', id],
     queryFn: async () => {
-      // Fetch campaign from Supabase
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
@@ -190,7 +172,6 @@ export default function CampaignDetailPage() {
     );
   }
 
-  // Determine campaign status and progress
   const now = new Date();
   const endDate = new Date(campaign.endDate);
   let status = "Active";
@@ -209,14 +190,12 @@ export default function CampaignDetailPage() {
       statusColor = "bg-purple-100 text-purple-800";
       progress = 0;
     } else {
-      // Simulate 40% of deliverables submitted
       progress = 40;
     }
     
     const totalVideos = campaign.deliverables?.totalVideos || 10;
     progressText = `${Math.round(totalVideos * (progress/100))}/${totalVideos} deliverables`;
   } else if (campaign.type === "payPerView") {
-    // Simulate 30% of budget spent
     progress = status === "Ended" ? 100 : 30;
     progressText = `$${(campaign.totalBudget * (progress/100)).toFixed(2)}/$${campaign.totalBudget} spent`;
   } else if (campaign.type === "challenge") {
@@ -226,8 +205,7 @@ export default function CampaignDetailPage() {
       statusColor = "bg-yellow-100 text-yellow-800";
       progress = 100;
     } else {
-      // Calculate progress based on time
-      const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000); // Assume started 2 weeks ago
+      const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
       const total = submitDeadline.getTime() - startDate.getTime();
       const elapsed = now.getTime() - startDate.getTime();
       progress = Math.min(100, Math.floor((elapsed / total) * 100));
@@ -277,16 +255,13 @@ export default function CampaignDetailPage() {
               Campaign Chat
             </Button>
           </Link>
-          <Link to={`/dashboard/campaigns/${id}/edit`}>
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Campaign
-            </Button>
-          </Link>
+          <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
+            <Edit2 className="h-4 w-4 mr-2" />
+            Edit Campaign
+          </Button>
         </div>
       </div>
 
-      {/* Campaign Status Card */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Campaign Status</CardTitle>
@@ -302,7 +277,6 @@ export default function CampaignDetailPage() {
             <Progress value={progress} className="h-3" />
           </div>
           
-          {/* Campaign type specific metrics */}
           <div className="grid md:grid-cols-2 gap-4">
             {campaign.type === "payPerView" && (
               <>
@@ -382,7 +356,6 @@ export default function CampaignDetailPage() {
         </CardContent>
       </Card>
       
-      {/* Submissions Section - Moved above Creators & Applications */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-4">Content Submissions</h3>
       </div>
@@ -460,7 +433,6 @@ export default function CampaignDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Creators & Applications */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-4">Creators & Applications</h3>
       </div>
@@ -588,6 +560,16 @@ export default function CampaignDetailPage() {
           </CardContent>
         </Tabs>
       </Card>
+
+      <CampaignFormDialog
+        campaign={campaign}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        isEditing={true}
+        onCampaignUpdated={() => {
+          if (refetch) refetch();
+        }}
+      />
     </div>
   );
 }
