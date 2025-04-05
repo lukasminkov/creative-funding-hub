@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Check } from 'lucide-react';
-import { PLATFORMS } from '@/lib/campaign-types';
+import { PLATFORMS, Platform } from '@/lib/campaign-types';
 import { cn } from '@/lib/utils';
 
 interface PlatformSelectorProps {

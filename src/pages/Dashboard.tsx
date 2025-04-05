@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,25 @@ const Dashboard = () => {
   const [showBrandSelector, setShowBrandSelector] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+  // Load campaigns from localStorage on component mount
+  useEffect(() => {
+    const storedCampaigns = localStorage.getItem("campaigns");
+    if (storedCampaigns) {
+      try {
+        setCampaigns(JSON.parse(storedCampaigns));
+      } catch (e) {
+        console.error("Error parsing stored campaigns:", e);
+      }
+    }
+  }, []);
+
+  // Save campaigns to localStorage when they change
+  useEffect(() => {
+    if (campaigns.length > 0) {
+      localStorage.setItem("campaigns", JSON.stringify(campaigns));
+    }
+  }, [campaigns]);
 
   const handleBrandSelect = (brand: Brand) => {
     setSelectedBrand(brand);
@@ -129,8 +148,8 @@ const Dashboard = () => {
                       <div className="flex justify-between items-center mb-3">
                         <div className="text-sm">Budget: <span className="font-medium">{new Intl.NumberFormat('en-US', { 
                           style: 'currency', 
-                          currency: campaign.currency
-                        }).format(campaign.totalBudget)}</span></div>
+                          currency: campaign.currency || 'USD'
+                        }).format(campaign.totalBudget || 0)}</span></div>
                       </div>
                       
                       <Button variant="outline" className="w-full">

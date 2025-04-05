@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   Activity, 
@@ -14,7 +15,7 @@ import { Campaign } from "@/lib/campaign-types";
 import { Progress } from "@/components/ui/progress";
 
 export default function DashboardHome() {
-  // For demo purposes, we'll simulate data loading
+  // For demo purposes, we'll load from localStorage
   const { data: campaigns = [], isLoading } = useQuery({
     queryKey: ['campaigns'],
     queryFn: () => {
@@ -199,7 +200,6 @@ export default function DashboardHome() {
                       <Progress 
                         value={progress} 
                         className={`h-2 ${campaign.type === 'payPerView' ? 'bg-green-100' : ''}`}
-                        color={campaign.type === 'payPerView' ? 'bg-green-500' : undefined}
                       />
                     </div>
 
