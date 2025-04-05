@@ -1,51 +1,29 @@
+
 import React from "react";
-import { Campaign, RetainerCampaign, Platform, PLATFORMS } from "@/lib/campaign-types";
+import { RetainerCampaign, Platform, DeliverableMode, DELIVERABLE_MODES, CreatorTier } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form";
-import { 
+import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/date-picker";
+import PlatformSelector from "@/components/PlatformSelector";
+import { FormItem } from "@/components/ui/form";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { 
-  CONTENT_TYPES, 
-  CATEGORIES, 
-  CURRENCIES,
-  COUNTRY_OPTIONS,
-  getCountryLabel
-} from "@/lib/campaign-types";
-import { CalendarIcon, Plus, Trash2, Upload } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { useFieldArray, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { DatePicker } from "@/components/ui/date-picker";
-import PlatformSelector from "@/components/PlatformSelector";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash } from "lucide-react";
+import RequirementsList from "@/components/RequirementsList";
+import GuidelinesList from "@/components/GuidelinesList";
+import BannerImageUpload from "@/components/BannerImageUpload";
+import ExampleVideos from "@/components/ExampleVideos";
+import BriefUploader from "@/components/BriefUploader";
+import InstructionVideoUploader from "@/components/InstructionVideoUploader";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface RetainerFormProps {
   campaign: Partial<RetainerCampaign>;
@@ -55,559 +33,373 @@ interface RetainerFormProps {
 }
 
 const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudgetEdit = false }: RetainerFormProps) => {
-  const handleInputChange = (field: string, value: any) => {
-    onChange({ [field]: value } as Partial<RetainerCampaign>);
-  };
-
-  const handleDateChange = (field: string, date: Date | undefined) => {
-    if (date) {
-      onChange({ [field]: date } as Partial<RetainerCampaign>);
-    }
-  };
-
-  const handlePlatformToggle = (platform: string) => {
+  const handlePlatformChange = (platform: string) => {
     const platformValue = platform as Platform;
     const currentPlatforms = [...(campaign.platforms || [])];
     
-    const updatedPlatforms = currentPlatforms.includes(platformValue)
-      ? currentPlatforms.filter(p => p !== platformValue)
-      : [...currentPlatforms, platformValue];
-    
-    onChange({ platforms: updatedPlatforms });
+    if (currentPlatforms.includes(platformValue)) {
+      onChange({
+        platforms: currentPlatforms.filter(p => p !== platformValue),
+      });
+    } else {
+      onChange({
+        platforms: [...currentPlatforms, platformValue],
+      });
+    }
   };
 
-  const handleGuidelineChange = (type: 'dos' | 'donts', index: number, value: string) => {
-    const guidelines = { ...(campaign.guidelines || { dos: [], donts: [] }) };
-    guidelines[type][index] = value;
-    onChange({ guidelines });
+  const handleDeliverableModeChange = (mode: DeliverableMode) => {
+    onChange({
+      deliverables: {
+        ...campaign.deliverables,
+        mode,
+      },
+    });
   };
 
-  const addGuideline = (type: 'dos' | 'donts') => {
-    const guidelines = { ...(campaign.guidelines || { dos: [], donts: [] }) };
-    guidelines[type] = [...guidelines[type], ''];
-    onChange({ guidelines });
+  const handleAddCreatorTier = () => {
+    const tiers = [...(campaign.creatorTiers || [])];
+    tiers.push({ name: "", price: 0 });
+    onChange({ creatorTiers: tiers });
   };
 
-  const removeGuideline = (type: 'dos' | 'donts', index: number) => {
-    const guidelines = { ...(campaign.guidelines || { dos: [], donts: [] }) };
-    guidelines[type] = guidelines[type].filter((_, i) => i !== index);
-    onChange({ guidelines });
-  };
-
-  const handleCreatorTierChange = (index: number, field: string, value: any) => {
+  const handleUpdateCreatorTier = (index: number, field: keyof CreatorTier, value: string | number) => {
     const tiers = [...(campaign.creatorTiers || [])];
     tiers[index] = { ...tiers[index], [field]: value };
     onChange({ creatorTiers: tiers });
   };
 
-  const addCreatorTier = () => {
-    const tiers = [...(campaign.creatorTiers || []), { name: '', price: 0 }];
+  const handleRemoveCreatorTier = (index: number) => {
+    const tiers = [...(campaign.creatorTiers || [])];
+    tiers.splice(index, 1);
     onChange({ creatorTiers: tiers });
   };
-
-  const removeCreatorTier = (index: number) => {
-    const tiers = (campaign.creatorTiers || []).filter((_, i) => i !== index);
-    onChange({ creatorTiers: tiers });
-  };
-
-  const handleDeliverablesChange = (field: string, value: any) => {
-    const deliverables = { ...(campaign.deliverables || { mode: 'totalVideos', totalVideos: 10 }) };
-    onChange({ deliverables: { ...deliverables, [field]: value } });
-  };
-
+  
   return (
     <div className="space-y-6">
       {!showCreatorInfoSection && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">
-                Campaign Title <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="title"
-                value={campaign.title || ''}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="Enter campaign title"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="totalBudget">
-                Total Budget <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="totalBudget"
-                type="number"
-                min="0"
-                value={campaign.totalBudget || ""}
-                onChange={(e) => onChange({ totalBudget: Number(e.target.value) })}
-                placeholder="Campaign budget"
-                disabled={disableBudgetEdit}
-                className={disableBudgetEdit ? "bg-muted cursor-not-allowed" : ""}
-                required
-              />
-              {disableBudgetEdit && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Budget can only be increased using the "Add Budget" button
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contentType">
-                Content Type <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={campaign.contentType}
-                onValueChange={(value) => handleInputChange('contentType', value)}
-              >
-                <SelectTrigger id="contentType">
-                  <SelectValue placeholder="Select content type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONTENT_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category">
-                Category <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={campaign.category}
-                onValueChange={(value) => handleInputChange('category', value)}
-              >
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency">
-                Currency <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={campaign.currency}
-                onValueChange={(value) => handleInputChange('currency', value)}
-              >
-                <SelectTrigger id="currency">
-                  <SelectValue placeholder="Select currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map((currency) => (
-                    <SelectItem key={currency} value={currency}>
-                      {currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="countryAvailability">
-                Country Availability <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={campaign.countryAvailability}
-                onValueChange={(value) => handleInputChange('countryAvailability', value)}
-              >
-                <SelectTrigger id="countryAvailability">
-                  <SelectValue placeholder="Select availability" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRY_OPTIONS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {getCountryLabel(option)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="endDate">
-                End Date <span className="text-destructive">*</span>
-              </Label>
-              <DatePicker
-                id="endDate"
-                date={campaign.endDate ? new Date(campaign.endDate) : undefined}
-                onSelect={(date) => handleDateChange('endDate', date)}
-                placeholder="Select end date"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="applicationDeadline">
-                Application Deadline <span className="text-destructive">*</span>
-              </Label>
-              <DatePicker
-                id="applicationDeadline"
-                date={campaign.applicationDeadline ? new Date(campaign.applicationDeadline) : undefined}
-                onSelect={(date) => handleDateChange('applicationDeadline', date)}
-                placeholder="Select deadline"
-              />
-            </div>
-
-            <div className="space-y-2 col-span-2">
-              <Label>
-                Platforms <span className="text-destructive">*</span>
-              </Label>
-              <PlatformSelector
-                selectedPlatforms={campaign.platforms || []}
-                onChange={handlePlatformToggle}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Select platforms where creators will post content
-              </p>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
+            <Label htmlFor="title">
+              Campaign Title <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="title"
+              value={campaign.title || ""}
+              onChange={(e) => onChange({ title: e.target.value })}
+              placeholder="Enter a title for your campaign"
+              required
+            />
+          </div>
+          
+          <div className="space-y-2 md:col-span-2">
             <Label htmlFor="description">
               Campaign Description <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="description"
-              value={campaign.description || ''}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Describe your campaign"
-              className="min-h-[100px]"
+              className="min-h-[120px]"
+              value={campaign.description || ""}
+              onChange={(e) => onChange({ description: e.target.value })}
+              placeholder="Tell creators about your campaign"
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Explain your campaign details and goals
+            </p>
           </div>
 
+          <div className="space-y-2 md:col-span-2">
+            <Label>Banner Image</Label>
+            <BannerImageUpload
+              value={campaign.bannerImage}
+              onChange={(url) => onChange({ bannerImage: url })}
+            />
+          </div>
+          
           <div className="space-y-2">
-            <Label htmlFor="bannerImage">Banner Image</Label>
-            <div className="flex items-center gap-4">
-              {campaign.bannerImage ? (
-                <div className="relative w-full h-40 bg-muted rounded-md overflow-hidden">
-                  <img
-                    src={campaign.bannerImage}
-                    alt="Banner"
-                    className="w-full h-full object-cover"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => handleInputChange('bannerImage', '')}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="w-full">
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-md p-8 text-center">
-                    <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Drag and drop or click to upload
-                    </p>
-                    <Input
-                      id="bannerImage"
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          // In a real app, you'd upload this to a server
-                          // For now, we'll create a local URL
-                          const url = URL.createObjectURL(file);
-                          handleInputChange('bannerImage', url);
-                        }
-                      }}
-                    />
-                    <Button
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => document.getElementById('bannerImage')?.click()}
-                    >
-                      Select Image
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Label htmlFor="totalBudget">
+              Total Budget <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="totalBudget"
+              type="number"
+              min="0"
+              value={campaign.totalBudget || ""}
+              onChange={(e) => onChange({ totalBudget: Number(e.target.value) })}
+              placeholder="Campaign budget"
+              disabled={disableBudgetEdit}
+              className={disableBudgetEdit ? "bg-muted cursor-not-allowed" : ""}
+              required
+            />
+            {disableBudgetEdit && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Budget can only be increased using the "Add Budget" button
+              </p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="applicationDeadline">
+              Application Deadline <span className="text-destructive">*</span>
+            </Label>
+            <DatePicker
+              id="applicationDeadline" 
+              date={campaign.applicationDeadline ? new Date(campaign.applicationDeadline) : undefined}
+              onSelect={(date) => onChange({ applicationDeadline: date })}
+              placeholder="Select deadline"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="endDate">
+              Campaign End Date <span className="text-destructive">*</span>
+            </Label>
+            <DatePicker
+              id="endDate"
+              date={campaign.endDate ? new Date(campaign.endDate) : undefined}
+              onSelect={(date) => onChange({ endDate: date })}
+              placeholder="Select end date"
+            />
+          </div>
+          
+          <div className="space-y-2 col-span-2">
+            <Label>
+              Platforms <span className="text-destructive">*</span>
+            </Label>
+            <PlatformSelector
+              selectedPlatforms={campaign.platforms || []}
+              onChange={handlePlatformChange}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Select platforms where creators will post content
+            </p>
+          </div>
+
+          <div className="space-y-2 col-span-2">
+            <RequirementsList
+              requirements={campaign.requirements || []}
+              onChange={(requirements) => onChange({ requirements })}
+              title="Specific Requirements"
+            />
           </div>
         </div>
       )}
-
+      
       {showCreatorInfoSection && (
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Creator Tiers</h3>
-            <p className="text-sm text-muted-foreground">
-              Define different tiers for creators based on their audience size or quality
-            </p>
+            <FormItem className="space-y-2">
+              <Label>Deliverable Structure <span className="text-destructive">*</span></Label>
+              <Select
+                value={campaign.deliverables?.mode || "videosPerDay"}
+                onValueChange={(value) => handleDeliverableModeChange(value as DeliverableMode)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select deliverable mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DELIVERABLE_MODES.map((mode) => (
+                    <SelectItem key={mode} value={mode}>
+                      {mode === "videosPerDay" ? "Videos Per Day" : "Total Videos"}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormItem>
 
-            {(campaign.creatorTiers || []).map((tier, index) => (
-              <div key={index} className="flex items-center gap-4">
-                <Input
-                  placeholder="Tier name (e.g. Micro, Macro)"
-                  value={tier.name}
-                  onChange={(e) => handleCreatorTierChange(index, 'name', e.target.value)}
-                  className="flex-1"
-                />
-                <div className="flex items-center">
-                  <span className="mr-2">$</span>
+            {campaign.deliverables?.mode === "videosPerDay" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormItem className="space-y-2">
+                  <Label htmlFor="videosPerDay">
+                    Videos Per Day <span className="text-destructive">*</span>
+                  </Label>
                   <Input
+                    id="videosPerDay"
+                    type="number"
+                    min="1"
+                    value={campaign.deliverables?.videosPerDay || ""}
+                    onChange={(e) => onChange({
+                      deliverables: {
+                        ...campaign.deliverables,
+                        videosPerDay: Number(e.target.value),
+                      },
+                    })}
+                    placeholder="Number of videos per day"
+                  />
+                </FormItem>
+                
+                <FormItem className="space-y-2">
+                  <Label htmlFor="durationDays">
+                    Duration (days) <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="durationDays"
+                    type="number"
+                    min="1"
+                    value={campaign.deliverables?.durationDays || ""}
+                    onChange={(e) => onChange({
+                      deliverables: {
+                        ...campaign.deliverables,
+                        durationDays: Number(e.target.value),
+                      },
+                    })}
+                    placeholder="Number of days"
+                  />
+                </FormItem>
+              </div>
+            )}
+
+            {campaign.deliverables?.mode === "totalVideos" && (
+              <FormItem className="space-y-2">
+                <Label htmlFor="totalVideos">
+                  Total Videos <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="totalVideos"
+                  type="number"
+                  min="1"
+                  value={campaign.deliverables?.totalVideos || ""}
+                  onChange={(e) => onChange({
+                    deliverables: {
+                      ...campaign.deliverables,
+                      totalVideos: Number(e.target.value),
+                    },
+                  })}
+                  placeholder="Total number of videos"
+                />
+              </FormItem>
+            )}
+          </div>
+
+          <Separator className="my-4" />
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label>Creator Tiers</Label>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAddCreatorTier}
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add Tier
+              </Button>
+            </div>
+            
+            {(campaign.creatorTiers || []).length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                No tiers defined. Add tiers to classify creators by different pricing.
+              </p>
+            )}
+            
+            {(campaign.creatorTiers || []).map((tier, index) => (
+              <div 
+                key={index} 
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-border rounded-md"
+              >
+                <FormItem className="space-y-2">
+                  <Label htmlFor={`tier-${index}-name`}>Tier Name</Label>
+                  <Input
+                    id={`tier-${index}-name`}
+                    value={tier.name}
+                    onChange={(e) => handleUpdateCreatorTier(index, "name", e.target.value)}
+                    placeholder="e.g. Premium, Standard"
+                  />
+                </FormItem>
+                
+                <FormItem className="space-y-2">
+                  <Label htmlFor={`tier-${index}-price`}>Price</Label>
+                  <Input
+                    id={`tier-${index}-price`}
                     type="number"
                     min="0"
-                    placeholder="Price"
                     value={tier.price}
-                    onChange={(e) => handleCreatorTierChange(index, 'price', Number(e.target.value))}
-                    className="w-24"
+                    onChange={(e) => handleUpdateCreatorTier(index, "price", Number(e.target.value))}
+                    placeholder="Price for this tier"
                   />
+                </FormItem>
+                
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleRemoveCreatorTier(index)}
+                    className="h-10 w-10"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeCreatorTier(index)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </div>
             ))}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addCreatorTier}
-              className="mt-2"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Tier
-            </Button>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Deliverables</h3>
-            <p className="text-sm text-muted-foreground">
-              Define what creators need to deliver for this campaign
-            </p>
-
-            <RadioGroup
-              value={campaign.deliverables?.mode || 'totalVideos'}
-              onValueChange={(value) => handleDeliverablesChange('mode', value)}
-              className="space-y-4"
-            >
-              <div className="flex items-start space-x-2">
-                <RadioGroupItem value="totalVideos" id="totalVideos" className="mt-1" />
-                <div className="grid gap-1.5">
-                  <Label htmlFor="totalVideos" className="font-medium">Total Videos</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min="1"
-                      value={campaign.deliverables?.totalVideos || 10}
-                      onChange={(e) => handleDeliverablesChange('totalVideos', Number(e.target.value))}
-                      className="w-20"
-                      disabled={campaign.deliverables?.mode !== 'totalVideos'}
-                    />
-                    <span className="text-sm text-muted-foreground">videos in total</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-2">
-                <RadioGroupItem value="videosPerDay" id="videosPerDay" className="mt-1" />
-                <div className="grid gap-1.5">
-                  <Label htmlFor="videosPerDay" className="font-medium">Videos Per Day</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min="1"
-                      value={campaign.deliverables?.videosPerDay || 1}
-                      onChange={(e) => handleDeliverablesChange('videosPerDay', Number(e.target.value))}
-                      className="w-20"
-                      disabled={campaign.deliverables?.mode !== 'videosPerDay'}
-                    />
-                    <span className="text-sm text-muted-foreground">videos per day for</span>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={campaign.deliverables?.durationDays || 30}
-                      onChange={(e) => handleDeliverablesChange('durationDays', Number(e.target.value))}
-                      className="w-20"
-                      disabled={campaign.deliverables?.mode !== 'videosPerDay'}
-                    />
-                    <span className="text-sm text-muted-foreground">days</span>
-                  </div>
-                </div>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Content Guidelines</h3>
-            <p className="text-sm text-muted-foreground">
-              Provide clear guidelines for creators to follow
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium mb-2">Do's</h4>
-                {(campaign.guidelines?.dos || []).map((item, index) => (
-                  <div key={index} className="flex items-center gap-2 mb-2">
-                    <Input
-                      value={item}
-                      onChange={(e) => handleGuidelineChange('dos', index, e.target.value)}
-                      placeholder="Add a guideline"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeGuideline('dos', index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addGuideline('dos')}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Do
-                </Button>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-medium mb-2">Don'ts</h4>
-                {(campaign.guidelines?.donts || []).map((item, index) => (
-                  <div key={index} className="flex items-center gap-2 mb-2">
-                    <Input
-                      value={item}
-                      onChange={(e) => handleGuidelineChange('donts', index, e.target.value)}
-                      placeholder="Add a guideline"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeGuideline('donts', index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addGuideline('donts')}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Don't
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-medium">Tracking Link</h3>
-                <p className="text-sm text-muted-foreground">
-                  Provide a tracking link for creators to use
-                </p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="requestedTrackingLink"
-                  checked={campaign.requestedTrackingLink}
-                  onCheckedChange={(checked) => handleInputChange('requestedTrackingLink', checked)}
-                />
-                <Label htmlFor="requestedTrackingLink">Required</Label>
-              </div>
-            </div>
-
-            <Input
-              placeholder="Enter tracking link"
-              value={campaign.trackingLink || ''}
-              onChange={(e) => handleInputChange('trackingLink', e.target.value)}
-              disabled={!campaign.requestedTrackingLink}
+          <FormItem className="space-y-2">
+            <Label>Guidelines for Creators</Label>
+            <GuidelinesList
+              dos={campaign.guidelines?.dos || []}
+              donts={campaign.guidelines?.donts || []}
+              onChange={(guidelines) => onChange({ guidelines })}
             />
-          </div>
+          </FormItem>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Example Videos</h3>
-            <p className="text-sm text-muted-foreground">
-              Provide examples of the type of content you're looking for
-            </p>
+          <FormItem className="space-y-2">
+            <Label>Content Brief</Label>
+            <BriefUploader
+              brief={campaign.brief}
+              onChange={(brief) => onChange({ brief })}
+            />
+          </FormItem>
 
-            {(campaign.exampleVideos || []).map((video, index) => (
-              <div key={index} className="flex items-center gap-2 mb-2">
-                <Select
-                  value={video.platform}
-                  onValueChange={(value) => {
-                    const updatedVideos = [...(campaign.exampleVideos || [])];
-                    updatedVideos[index] = { ...video, platform: value as Platform };
-                    handleInputChange('exampleVideos', updatedVideos);
-                  }}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PLATFORMS.map((platform) => (
-                      <SelectItem key={platform} value={platform}>
-                        {platform}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  value={video.url}
-                  onChange={(e) => {
-                    const updatedVideos = [...(campaign.exampleVideos || [])];
-                    updatedVideos[index] = { ...video, url: e.target.value };
-                    handleInputChange('exampleVideos', updatedVideos);
-                  }}
-                  placeholder="Video URL"
-                  className="flex-1"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    const updatedVideos = (campaign.exampleVideos || []).filter((_, i) => i !== index);
-                    handleInputChange('exampleVideos', updatedVideos);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+          <FormItem className="space-y-2">
+            <Label>Explanation Video</Label>
+            <InstructionVideoUploader
+              value={campaign.instructionVideo}
+              onChange={(url) => onChange({ instructionVideo: url })}
+              file={campaign.instructionVideoFile}
+              onFileChange={(file) => onChange({ instructionVideoFile: file })}
+            />
+          </FormItem>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const updatedVideos = [
-                  ...(campaign.exampleVideos || []),
-                  { platform: PLATFORMS[0], url: '' }
-                ];
-                handleInputChange('exampleVideos', updatedVideos);
-              }}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Example
-            </Button>
-          </div>
+          <FormItem className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="requestedTrackingLink"
+                checked={campaign.requestedTrackingLink || false}
+                onCheckedChange={(checked) => 
+                  onChange({ requestedTrackingLink: checked as boolean })
+                }
+              />
+              <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
+                Request tracking link in submissions
+              </Label>
+            </div>
+          </FormItem>
+
+          {campaign.requestedTrackingLink && (
+            <FormItem className="space-y-2">
+              <Label htmlFor="trackingLink">Tracking Link</Label>
+              <Input
+                id="trackingLink"
+                value={campaign.trackingLink || ""}
+                onChange={(e) => onChange({ trackingLink: e.target.value })}
+                placeholder="Enter tracking link"
+              />
+              <p className="text-xs text-muted-foreground">
+                This link will be provided to creators for tracking purposes
+              </p>
+            </FormItem>
+          )}
+
+          <FormItem className="space-y-2">
+            <Label>Example Videos</Label>
+            <ExampleVideos
+              exampleVideos={campaign.exampleVideos || []}
+              selectedPlatforms={campaign.platforms || []}
+              onChange={(exampleVideos) => onChange({ exampleVideos })}
+            />
+          </FormItem>
         </div>
       )}
     </div>

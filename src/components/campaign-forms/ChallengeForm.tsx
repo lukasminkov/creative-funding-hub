@@ -7,6 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import PlatformSelector from "@/components/PlatformSelector";
 import { DatePicker } from "@/components/ui/date-picker";
 import { FormItem } from "@/components/ui/form";
+import RequirementsList from "@/components/RequirementsList";
+import GuidelinesList from "@/components/GuidelinesList";
+import BannerImageUpload from "@/components/BannerImageUpload";
+import ExampleVideos from "@/components/ExampleVideos";
+import BriefUploader from "@/components/BriefUploader";
+import InstructionVideoUploader from "@/components/InstructionVideoUploader";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ChallengeFormProps {
   campaign: Partial<ChallengeCampaign>;
@@ -45,6 +52,31 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
               onChange={(e) => onChange({ title: e.target.value })}
               placeholder="Enter a title for your campaign"
               required
+            />
+          </div>
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="description">
+              Challenge Description <span className="text-destructive">*</span>
+            </Label>
+            <Textarea
+              id="description"
+              className="min-h-[120px]"
+              value={campaign.description || ""}
+              onChange={(e) => onChange({ description: e.target.value })}
+              placeholder="Tell creators about your challenge"
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              Explain your challenge in detail. What should creators do? What are the rules?
+            </p>
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label>Banner Image</Label>
+            <BannerImageUpload
+              value={campaign.bannerImage}
+              onChange={(url) => onChange({ bannerImage: url })}
             />
           </div>
           
@@ -124,26 +156,83 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
               Select platforms where creators will post content
             </p>
           </div>
+
+          <div className="space-y-2 col-span-2">
+            <RequirementsList
+              requirements={campaign.requirements || []}
+              onChange={(requirements) => onChange({ requirements })}
+              title="Challenge Requirements"
+            />
+          </div>
         </div>
       )}
       
       {showCreatorInfoSection && (
         <div className="space-y-6">
           <FormItem className="space-y-2">
-            <Label htmlFor="description">
-              Challenge Description <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="description"
-              className="min-h-[120px]"
-              value={campaign.description || ""}
-              onChange={(e) => onChange({ description: e.target.value })}
-              placeholder="Tell creators about your challenge"
-              required
+            <Label>Guidelines for Creators</Label>
+            <GuidelinesList
+              dos={campaign.guidelines?.dos || []}
+              donts={campaign.guidelines?.donts || []}
+              onChange={(guidelines) => onChange({ guidelines })}
             />
-            <p className="text-xs text-muted-foreground">
-              Explain your challenge in detail. What should creators do? What are the rules?
-            </p>
+          </FormItem>
+
+          <FormItem className="space-y-2">
+            <Label>Content Brief</Label>
+            <BriefUploader
+              brief={campaign.brief}
+              onChange={(brief) => onChange({ brief })}
+            />
+          </FormItem>
+
+          <FormItem className="space-y-2">
+            <Label>Explanation Video</Label>
+            <InstructionVideoUploader
+              value={campaign.instructionVideo}
+              onChange={(url) => onChange({ instructionVideo: url })}
+              file={campaign.instructionVideoFile}
+              onFileChange={(file) => onChange({ instructionVideoFile: file })}
+            />
+          </FormItem>
+
+          <FormItem className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="requestedTrackingLink"
+                checked={campaign.requestedTrackingLink || false}
+                onCheckedChange={(checked) => 
+                  onChange({ requestedTrackingLink: checked as boolean })
+                }
+              />
+              <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
+                Request tracking link in submissions
+              </Label>
+            </div>
+          </FormItem>
+
+          {campaign.requestedTrackingLink && (
+            <FormItem className="space-y-2">
+              <Label htmlFor="trackingLink">Tracking Link</Label>
+              <Input
+                id="trackingLink"
+                value={campaign.trackingLink || ""}
+                onChange={(e) => onChange({ trackingLink: e.target.value })}
+                placeholder="Enter tracking link"
+              />
+              <p className="text-xs text-muted-foreground">
+                This link will be provided to creators for tracking purposes
+              </p>
+            </FormItem>
+          )}
+
+          <FormItem className="space-y-2">
+            <Label>Example Videos</Label>
+            <ExampleVideos
+              exampleVideos={campaign.exampleVideos || []}
+              selectedPlatforms={campaign.platforms || []}
+              onChange={(exampleVideos) => onChange({ exampleVideos })}
+            />
           </FormItem>
         </div>
       )}
