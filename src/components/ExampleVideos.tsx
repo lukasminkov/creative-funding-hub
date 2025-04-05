@@ -1,5 +1,6 @@
+
 import React, { useState } from "react";
-import { Plus, X, Youtube, Instagram, TikTok } from "lucide-react";
+import { Plus, X, Youtube, Instagram } from "lucide-react";
 import { Platform, ExampleVideo } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,12 +23,20 @@ const ExampleVideos = ({
   const [videos, setVideos] = useState<ExampleVideo[]>(exampleVideos);
 
   const handleAddVideo = () => {
-    setVideos([...videos, { url: "", platform: selectedPlatforms[0] }]);
+    // Make sure we're using a valid Platform type
+    if (selectedPlatforms.length > 0) {
+      setVideos([...videos, { url: "", platform: selectedPlatforms[0] }]);
+    }
   };
 
   const handleVideoChange = (index: number, field: "url" | "platform", value: string) => {
     const updatedVideos = [...videos];
-    updatedVideos[index][field] = value;
+    if (field === "platform") {
+      // Ensure the platform value is a valid Platform type
+      updatedVideos[index][field] = value as Platform;
+    } else {
+      updatedVideos[index][field] = value;
+    }
     setVideos(updatedVideos);
     onChange(updatedVideos);
   };
