@@ -213,7 +213,7 @@ export default function PaymentsPage() {
               </span>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All submissions</SelectItem>
+              <SelectItem value="all">All submissions</SelectItem>
               <SelectItem value="creator">Creator</SelectItem>
               <SelectItem value="campaign">Campaign</SelectItem>
               <SelectItem value="platform">Platform</SelectItem>
@@ -304,7 +304,7 @@ export default function PaymentsPage() {
                   <TableCell>${submission.paymentAmount}</TableCell>
                   <TableCell>
                     <Badge variant={submission.status === "pending" ? "outline" : 
-                                   submission.status === "approved" ? "success" : "destructive"}>
+                                   submission.status === "approved" ? "secondary" : "destructive"}>
                       {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
                     </Badge>
                   </TableCell>
