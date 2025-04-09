@@ -32,36 +32,7 @@ import {
 } from "@/components/ui/pagination";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-
-type Submission = {
-  id: string;
-  creator_id: string;
-  creator_name: string;
-  creator_avatar?: string;
-  campaign_id: string;
-  campaign_title: string;
-  submitted_date: Date;
-  platform: string;
-  content: string;
-  payment_amount: number;
-  views: number;
-  status: "pending" | "approved" | "rejected" | "paid";
-};
-
-type Payment = {
-  id: string;
-  creator_id: string;
-  creator_name: string;
-  creator_avatar?: string;
-  campaign_id?: string;
-  campaign_title: string;
-  platform: string;
-  content: string;
-  views: number;
-  payment_amount: number;
-  payment_date: Date;
-  transaction_id: string;
-};
+import { Payment, Submission, SubmissionStatusType } from "@/lib/campaign-types";
 
 // Function to simulate content from different platforms
 const getPlatformIcon = (platform: string) => {
@@ -91,7 +62,7 @@ export default function PaymentsPage() {
   const [activeTab, setActiveTab] = useState<string>("pendingPayouts");
   
   // Fetch submissions from Supabase
-  const { data: submissions = [], isLoading: submissionsLoading } = useQuery({
+  const { data: submissions = [], isLoading: submissionsLoading, refetch: refetchSubmissions } = useQuery({
     queryKey: ['submissions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -186,6 +157,7 @@ export default function PaymentsPage() {
         title: "Submission approved",
         description: `The submission from ${submission.creator_name} has been approved.`,
       });
+      refetchSubmissions();
     }
     
     setPreviewSubmission(null);
@@ -210,6 +182,7 @@ export default function PaymentsPage() {
         title: "Submission rejected",
         description: `The submission from ${submission.creator_name} has been rejected.`,
       });
+      refetchSubmissions();
     }
     
     setPreviewSubmission(null);
@@ -218,8 +191,6 @@ export default function PaymentsPage() {
   // Handle payout
   const handlePayout = async (submission: Submission) => {
     // In a real app, we would process the payment here
-    // For now, we'll just mark the submission as paid and create a payment record
-    
     // 1. Update submission status to paid
     const updateSubmission = await supabase
       .from('submissions')
@@ -267,6 +238,8 @@ export default function PaymentsPage() {
       title: "Payment processed",
       description: `Payment of $${submission.payment_amount} to ${submission.creator_name} has been processed.`,
     });
+    
+    refetchSubmissions();
   };
 
   return (

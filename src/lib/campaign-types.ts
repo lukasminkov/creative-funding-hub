@@ -9,6 +9,7 @@ export const QUESTION_TYPES = ["text", "image", "number", "link"] as const;
 export const COUNTRY_OPTIONS = ["worldwide", "usa", "mexico", "canada", "dach"] as const;
 export const OFFER_OPTIONS = ["MediaLabs Creator", "MediaLabs Campus", "Brez Clipping", "GROWTH Clippers", "Freezertarps Clipping", "Banks Interns"] as const;
 export const STATUS_OPTIONS = ["active", "draft", "completed", "paused"] as const;
+export const SUBMISSION_STATUS_OPTIONS = ["pending", "approved", "rejected", "paid"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
 export type Category = typeof CATEGORIES[number];
@@ -20,6 +21,7 @@ export type QuestionType = typeof QUESTION_TYPES[number];
 export type CountryOption = typeof COUNTRY_OPTIONS[number];
 export type OfferOption = typeof OFFER_OPTIONS[number];
 export type StatusType = typeof STATUS_OPTIONS[number];
+export type SubmissionStatusType = typeof SUBMISSION_STATUS_OPTIONS[number];
 
 export interface Brief {
   type: 'link' | 'file';
@@ -124,6 +126,37 @@ export interface ChallengeCampaign extends BaseCampaign {
 }
 
 export type Campaign = RetainerCampaign | PayPerViewCampaign | ChallengeCampaign;
+
+// Payment and Submission types
+export interface Submission {
+  id: string;
+  creator_id: string;
+  creator_name: string;
+  creator_avatar?: string;
+  campaign_id: string;
+  campaign_title: string;
+  submitted_date: Date;
+  platform: string;
+  content: string;
+  payment_amount: number;
+  views: number;
+  status: SubmissionStatusType;
+}
+
+export interface Payment {
+  id: string;
+  creator_id: string;
+  creator_name: string;
+  creator_avatar?: string;
+  campaign_id?: string;
+  campaign_title: string;
+  platform: string;
+  content: string;
+  views: number;
+  payment_amount: number;
+  payment_date: Date;
+  transaction_id: string;
+}
 
 export const formatCurrency = (amount: number, currency: Currency = "USD"): string => {
   return new Intl.NumberFormat('en-US', { 
