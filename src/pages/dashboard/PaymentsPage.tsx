@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, DollarSign, Filter, History, MoreHorizontal, XCircle } from "lucide-react";
+import { CheckCircle2, DollarSign, Filter, MoreHorizontal, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 import { 
@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Payment, Submission, SubmissionStatusType, DirectPaymentFormData } from "@/lib/campaign-types";
 import DirectPaymentDialog from "@/components/DirectPaymentDialog";
+import PaymentConfirmationDialog from "@/components/PaymentConfirmationDialog";
 
 // Function to simulate content from different platforms
 const getPlatformIcon = (platform: string) => {
@@ -61,8 +62,11 @@ export default function PaymentsPage() {
   const [previewSubmission, setPreviewSubmission] = useState<Submission | null>(null);
   const [activeTab, setActiveTab] = useState<string>("pendingPayouts");
   const [isDirectPaymentOpen, setIsDirectPaymentOpen] = useState(false);
+  const [paymentConfirmation, setPaymentConfirmation] = useState<{ open: boolean, submission: Submission | null }>({
+    open: false,
+    submission: null
+  });
   
-  // Fetch submissions from Supabase
   const { data: submissions = [], isLoading: submissionsLoading, refetch: refetchSubmissions } = useQuery({
     queryKey: ['submissions'],
     queryFn: async () => {
@@ -87,7 +91,6 @@ export default function PaymentsPage() {
     }
   });
 
-  // Fetch payments history from Supabase
   const { data: payments = [], isLoading: paymentsLoading } = useQuery({
     queryKey: ['payments'],
     queryFn: async () => {
@@ -112,10 +115,8 @@ export default function PaymentsPage() {
     }
   });
   
-  // Derive pending payouts from submissions with 'approved' status
   const pendingPayouts = submissions.filter(s => s.status === 'approved');
   
-  // Filter submissions based on user's filters
   const filteredSubmissions = submissions.filter(submission => {
     if (filterType === "all") return submission.status === 'pending';
     
@@ -134,12 +135,10 @@ export default function PaymentsPage() {
     }
   });
 
-  // Calculate total stats
   const totalPending = submissions.filter(s => s.status === "pending").length;
   const totalPendingPayouts = pendingPayouts.reduce((sum, p) => sum + p.payment_amount, 0);
   const totalPaymentsCompleted = payments.reduce((sum, p) => sum + p.payment_amount, 0);
   
-  // Handle submission approval
   const handleApprove = async (submission: Submission) => {
     const { error } = await supabase
       .from('submissions')
@@ -164,7 +163,6 @@ export default function PaymentsPage() {
     setPreviewSubmission(null);
   };
 
-  // Handle submission rejection
   const handleReject = async (submission: Submission) => {
     const { error } = await supabase
       .from('submissions')
@@ -189,10 +187,14 @@ export default function PaymentsPage() {
     setPreviewSubmission(null);
   };
 
-  // Handle payout
+  const openPaymentConfirmation = (submission: Submission) => {
+    setPaymentConfirmation({
+      open: true,
+      submission
+    });
+  };
+
   const handlePayout = async (submission: Submission) => {
-    // In a real app, we would process the payment here
-    // 1. Update submission status to paid
     const updateSubmission = await supabase
       .from('submissions')
       .update({ status: 'paid' })
@@ -208,7 +210,6 @@ export default function PaymentsPage() {
       return;
     }
     
-    // 2. Create a payment record
     const transactionId = 'tx_' + Math.random().toString(36).substring(2, 15);
     const { error: insertError } = await supabase
       .from('payments')
@@ -243,9 +244,7 @@ export default function PaymentsPage() {
     refetchSubmissions();
   };
 
-  // Handle direct payment
   const handleDirectPayment = async (data: DirectPaymentFormData) => {
-    // Find campaign and creator details
     const { data: campaignData } = await supabase
       .from('campaigns')
       .select('title')
@@ -263,10 +262,8 @@ export default function PaymentsPage() {
       throw new Error("Could not find campaign or creator details");
     }
     
-    // Generate a transaction ID
     const transactionId = 'tx_direct_' + Math.random().toString(36).substring(2, 15);
     
-    // Create a payment record
     const { error: insertError } = await supabase
       .from('payments')
       .insert({
@@ -297,7 +294,6 @@ export default function PaymentsPage() {
       description: `Payment of $${data.payment_amount} to ${creatorData.creator_name} has been processed.`,
     });
     
-    // Refresh payments data
     await refetchSubmissions();
   };
 
@@ -320,7 +316,6 @@ export default function PaymentsPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <Card>
           <CardHeader className="pb-2">
@@ -387,7 +382,6 @@ export default function PaymentsPage() {
         </Card>
       </div>
 
-      {/* Tabs section */}
       <Tabs defaultValue="pendingPayouts" className="mb-8" onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="pendingPayouts">Pending Payouts</TabsTrigger>
@@ -395,7 +389,6 @@ export default function PaymentsPage() {
           <TabsTrigger value="paymentHistory">Payment History</TabsTrigger>
         </TabsList>
         
-        {/* Pending Payouts Tab */}
         <TabsContent value="pendingPayouts" className="space-y-4">
           {paymentsLoading || submissionsLoading ? (
             <div className="flex justify-center items-center py-12">
@@ -446,7 +439,7 @@ export default function PaymentsPage() {
                         <TableCell>{payout.views.toLocaleString()}</TableCell>
                         <TableCell className="font-medium">${payout.payment_amount}</TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" onClick={() => handlePayout(payout)}>
+                          <Button size="sm" onClick={() => openPaymentConfirmation(payout)}>
                             <DollarSign className="mr-1 h-4 w-4" />
                             Pay Now
                           </Button>
@@ -488,9 +481,7 @@ export default function PaymentsPage() {
           )}
         </TabsContent>
         
-        {/* Pending Approvals Tab */}
         <TabsContent value="pendingApprovals" className="space-y-4">
-          {/* Filter Controls */}
           <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <div className="flex gap-2">
               <Select value={filterType} onValueChange={setFilterType}>
@@ -638,7 +629,6 @@ export default function PaymentsPage() {
           )}
         </TabsContent>
 
-        {/* Payment History Tab */}
         <TabsContent value="paymentHistory" className="space-y-4">
           {paymentsLoading ? (
             <div className="flex justify-center items-center py-12">
@@ -727,7 +717,6 @@ export default function PaymentsPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Submission Preview Dialog */}
       <Dialog open={!!previewSubmission} onOpenChange={(open) => !open && setPreviewSubmission(null)}>
         {previewSubmission && (
           <DialogContent className="sm:max-w-[600px]">
@@ -788,11 +777,17 @@ export default function PaymentsPage() {
         )}
       </Dialog>
 
-      {/* Direct Payment Dialog */}
       <DirectPaymentDialog 
         open={isDirectPaymentOpen}
         onOpenChange={setIsDirectPaymentOpen}
         onSubmit={handleDirectPayment}
+      />
+
+      <PaymentConfirmationDialog
+        open={paymentConfirmation.open}
+        onOpenChange={(open) => setPaymentConfirmation(prev => ({ ...prev, open }))}
+        submission={paymentConfirmation.submission}
+        onConfirm={handlePayout}
       />
     </div>
   );

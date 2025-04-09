@@ -28,6 +28,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { DirectPaymentFormData } from "@/lib/campaign-types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Search } from "lucide-react";
 
 interface Creator {
   id: string;
@@ -59,6 +61,11 @@ export default function DirectPaymentDialog({
   onOpenChange,
   onSubmit 
 }: DirectPaymentDialogProps) {
+  const [creatorSearchTerm, setCreatorSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<Creator[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
+
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,6 +81,9 @@ export default function DirectPaymentDialog({
   useEffect(() => {
     if (!open) {
       form.reset();
+      setCreatorSearchTerm("");
+      setSearchResults([]);
+      setSelectedCreator(null);
     }
   }, [open, form]);
 
@@ -99,24 +109,29 @@ export default function DirectPaymentDialog({
     }
   });
 
-  // Fetch creators for dropdown (in a real app, this would be a more sophisticated query)
-  const { data: creators = [] } = useQuery<Creator[]>({
-    queryKey: ['creators-list'],
-    queryFn: async () => {
-      // Fetch unique creators from submissions
+  // Search for creators based on input
+  const searchCreators = async (searchTerm: string) => {
+    if (!searchTerm || searchTerm.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
       const { data, error } = await supabase
         .from('submissions')
         .select('creator_id, creator_name, creator_avatar')
-        .order('creator_name')
+        .or(`creator_name.ilike.%${searchTerm}%`)
+        .order('creator_name');
         
       if (error) {
-        console.error('Error fetching creators:', error);
+        console.error('Error searching creators:', error);
         toast({
-          title: "Error fetching creators",
+          title: "Error searching creators",
           description: error.message,
           variant: "destructive",
         });
-        return [];
+        return;
       }
       
       // Deduplicate creators based on ID
@@ -131,14 +146,40 @@ export default function DirectPaymentDialog({
         return acc;
       }, {});
       
-      return Object.values(uniqueCreators);
+      setSearchResults(Object.values(uniqueCreators));
+    } catch (error) {
+      console.error('Error searching creators:', error);
+    } finally {
+      setIsSearching(false);
     }
-  });
+  };
+
+  // Handle creator selection
+  const handleCreatorSelect = (creator: Creator) => {
+    setSelectedCreator(creator);
+    form.setValue('creator_id', creator.id);
+    setCreatorSearchTerm(creator.name);
+    setSearchResults([]);
+  };
+
+  // Debounce search to avoid too many requests
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchCreators(creatorSearchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [creatorSearchTerm]);
 
   // Handle form submission
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await onSubmit(values);
+      await onSubmit({
+        campaign_id: values.campaign_id,
+        creator_id: values.creator_id,
+        payment_amount: values.payment_amount,
+        note: values.note
+      });
       onOpenChange(false);
     } catch (error) {
       console.error("Error processing direct payment:", error);
@@ -148,6 +189,11 @@ export default function DirectPaymentDialog({
         variant: "destructive",
       });
     }
+  };
+
+  // Generate initials from name
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
   return (
@@ -199,27 +245,61 @@ export default function DirectPaymentDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Creator</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
+                  <div className="relative">
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a creator" />
-                      </SelectTrigger>
+                      <div className="flex items-center relative">
+                        <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search creator by name"
+                          className="pl-8"
+                          value={creatorSearchTerm}
+                          onChange={(e) => setCreatorSearchTerm(e.target.value)}
+                        />
+                      </div>
                     </FormControl>
-                    <SelectContent>
-                      {creators.map((creator) => (
-                        <SelectItem key={creator.id} value={creator.id}>
-                          {creator.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {creatorSearchTerm && searchResults.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+                        {searchResults.map((creator) => (
+                          <div
+                            key={creator.id}
+                            className="flex items-center gap-2 p-2 hover:bg-muted cursor-pointer"
+                            onClick={() => handleCreatorSelect(creator)}
+                          >
+                            <Avatar className="h-8 w-8">
+                              {creator.avatar ? (
+                                <AvatarImage src={creator.avatar} alt={creator.name} />
+                              ) : (
+                                <AvatarFallback>{getInitials(creator.name)}</AvatarFallback>
+                              )}
+                            </Avatar>
+                            <span>{creator.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {creatorSearchTerm && searchResults.length === 0 && !isSearching && (
+                      <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg p-2 text-muted-foreground">
+                        No creators found
+                      </div>
+                    )}
+                  </div>
+                  {selectedCreator && (
+                    <div className="mt-2 flex items-center gap-2 p-2 bg-muted rounded-md">
+                      <Avatar className="h-6 w-6">
+                        {selectedCreator.avatar ? (
+                          <AvatarImage src={selectedCreator.avatar} alt={selectedCreator.name} />
+                        ) : (
+                          <AvatarFallback>{getInitials(selectedCreator.name)}</AvatarFallback>
+                        )}
+                      </Avatar>
+                      <span className="text-sm">{selectedCreator.name}</span>
+                    </div>
+                  )}
                   <FormDescription>
                     The creator who will receive this payment
                   </FormDescription>
                   <FormMessage />
+                  <input type="hidden" {...field} />
                 </FormItem>
               )}
             />
