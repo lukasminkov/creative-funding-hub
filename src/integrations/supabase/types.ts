@@ -117,6 +117,96 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          campaign_id: string | null
+          campaign_title: string
+          content: string
+          creator_avatar: string | null
+          creator_id: string
+          creator_name: string
+          id: string
+          payment_amount: number
+          payment_date: string
+          platform: string
+          transaction_id: string
+          views: number
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_title: string
+          content: string
+          creator_avatar?: string | null
+          creator_id: string
+          creator_name: string
+          id?: string
+          payment_amount: number
+          payment_date?: string
+          platform: string
+          transaction_id: string
+          views?: number
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_title?: string
+          content?: string
+          creator_avatar?: string | null
+          creator_id?: string
+          creator_name?: string
+          id?: string
+          payment_amount?: number
+          payment_date?: string
+          platform?: string
+          transaction_id?: string
+          views?: number
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          campaign_id: string
+          campaign_title: string
+          content: string
+          creator_avatar: string | null
+          creator_id: string
+          creator_name: string
+          id: string
+          payment_amount: number
+          platform: string
+          status: string
+          submitted_date: string
+          views: number
+        }
+        Insert: {
+          campaign_id: string
+          campaign_title: string
+          content: string
+          creator_avatar?: string | null
+          creator_id: string
+          creator_name: string
+          id?: string
+          payment_amount: number
+          platform: string
+          status?: string
+          submitted_date?: string
+          views?: number
+        }
+        Update: {
+          campaign_id?: string
+          campaign_title?: string
+          content?: string
+          creator_avatar?: string | null
+          creator_id?: string
+          creator_name?: string
+          id?: string
+          payment_amount?: number
+          platform?: string
+          status?: string
+          submitted_date?: string
+          views?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
