@@ -18,6 +18,7 @@ import CampaignChatPage from "./pages/dashboard/CampaignChatPage";
 import CreatorsPage from "./pages/dashboard/CreatorsPage";
 import MessagesPage from "./pages/dashboard/MessagesPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import PaymentsPage from "./pages/dashboard/PaymentsPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
                 <Route path="campaigns/:id" element={<CampaignDetailPage />} />
                 <Route path="campaigns/:id/chat" element={<CampaignChatPage />} />
                 <Route path="creators" element={<CreatorsPage />} />
+                <Route path="payments" element={<PaymentsPage />} />
                 <Route path="messages" element={<MessagesPage />} />
                 <Route path="settings" element={<SettingsPage />} />
               </Route>

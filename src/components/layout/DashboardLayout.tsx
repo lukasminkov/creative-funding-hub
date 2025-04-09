@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BarChart3, Compass, Home, Layers, MessageSquare, Settings, User, LogOut, Moon, Sun, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { BarChart3, Compass, Home, Layers, MessageSquare, Settings, User, LogOut, Moon, Sun, Plus, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,6 +28,10 @@ const menuItems = [{
   title: "Creators",
   path: "/dashboard/creators",
   icon: User
+}, {
+  title: "Payments",
+  path: "/dashboard/payments",
+  icon: CreditCard
 }, {
   title: "Chats",
   path: "/dashboard/messages",
@@ -138,7 +142,6 @@ export default function DashboardLayout({
       </Sidebar>
       {state === "collapsed" && <SidebarToggle />}
       <div className="flex-1 flex flex-col overflow-auto">
-        {/* Removed redundant header with page title */}
         <main className="flex-1">
           {children}
         </main>
