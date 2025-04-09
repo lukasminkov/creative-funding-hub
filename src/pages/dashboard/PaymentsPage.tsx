@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { CheckCircle2, DollarSign, Filter, History, MoreHorizontal, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +31,8 @@ import {
 } from "@/components/ui/pagination";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { Payment, Submission, SubmissionStatusType } from "@/lib/campaign-types";
+import { Payment, Submission, SubmissionStatusType, DirectPaymentFormData } from "@/lib/campaign-types";
+import DirectPaymentDialog from "@/components/DirectPaymentDialog";
 
 // Function to simulate content from different platforms
 const getPlatformIcon = (platform: string) => {
@@ -60,6 +60,7 @@ export default function PaymentsPage() {
   const [filterValue, setFilterValue] = useState<string>("");
   const [previewSubmission, setPreviewSubmission] = useState<Submission | null>(null);
   const [activeTab, setActiveTab] = useState<string>("pendingPayouts");
+  const [isDirectPaymentOpen, setIsDirectPaymentOpen] = useState(false);
   
   // Fetch submissions from Supabase
   const { data: submissions = [], isLoading: submissionsLoading, refetch: refetchSubmissions } = useQuery({
@@ -242,13 +243,81 @@ export default function PaymentsPage() {
     refetchSubmissions();
   };
 
+  // Handle direct payment
+  const handleDirectPayment = async (data: DirectPaymentFormData) => {
+    // Find campaign and creator details
+    const { data: campaignData } = await supabase
+      .from('campaigns')
+      .select('title')
+      .eq('id', data.campaign_id)
+      .single();
+    
+    const { data: creatorData } = await supabase
+      .from('submissions')
+      .select('creator_name, creator_avatar')
+      .eq('creator_id', data.creator_id)
+      .limit(1)
+      .single();
+    
+    if (!campaignData || !creatorData) {
+      throw new Error("Could not find campaign or creator details");
+    }
+    
+    // Generate a transaction ID
+    const transactionId = 'tx_direct_' + Math.random().toString(36).substring(2, 15);
+    
+    // Create a payment record
+    const { error: insertError } = await supabase
+      .from('payments')
+      .insert({
+        creator_id: data.creator_id,
+        creator_name: creatorData.creator_name,
+        creator_avatar: creatorData.creator_avatar,
+        campaign_id: data.campaign_id,
+        campaign_title: campaignData.title,
+        platform: 'Direct Payment',
+        content: data.note,
+        views: 0,
+        payment_amount: data.payment_amount,
+        transaction_id: transactionId
+      });
+    
+    if (insertError) {
+      console.error('Error creating direct payment record:', insertError);
+      toast({
+        title: "Error recording payment",
+        description: insertError.message,
+        variant: "destructive",
+      });
+      throw insertError;
+    }
+    
+    toast({
+      title: "Direct payment processed",
+      description: `Payment of $${data.payment_amount} to ${creatorData.creator_name} has been processed.`,
+    });
+    
+    // Refresh payments data
+    await refetchSubmissions();
+  };
+
   return (
     <div className="container py-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Payments & Approvals</h2>
-        <p className="text-muted-foreground">
-          Review submissions, approve payments, and manage your payment history
-        </p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold mb-2">Payments & Approvals</h2>
+          <p className="text-muted-foreground">
+            Review submissions, approve payments, and manage your payment history
+          </p>
+        </div>
+        <Button 
+          onClick={() => setIsDirectPaymentOpen(true)}
+          className="flex items-center" 
+          size="lg"
+        >
+          <DollarSign className="mr-2 h-5 w-5" />
+          Create Direct Payment
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -318,6 +387,7 @@ export default function PaymentsPage() {
         </Card>
       </div>
 
+      {/* Tabs section */}
       <Tabs defaultValue="pendingPayouts" className="mb-8" onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="pendingPayouts">Pending Payouts</TabsTrigger>
@@ -717,6 +787,13 @@ export default function PaymentsPage() {
           </DialogContent>
         )}
       </Dialog>
+
+      {/* Direct Payment Dialog */}
+      <DirectPaymentDialog 
+        open={isDirectPaymentOpen}
+        onOpenChange={setIsDirectPaymentOpen}
+        onSubmit={handleDirectPayment}
+      />
     </div>
   );
 }

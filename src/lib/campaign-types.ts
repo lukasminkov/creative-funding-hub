@@ -1,4 +1,3 @@
-
 export const CONTENT_TYPES = ["UGC", "Faceless", "Clipping"] as const;
 export const CATEGORIES = ["Fashion", "Beauty", "Tech", "Gaming", "Food", "Travel", "Lifestyle", "Fitness", "Education", "Entertainment", "Finance", "Business", "Health", "Sports", "Music", "News", "Politics", "Science", "Art", "Design", "Photography", "Film", "Writing", "DIY", "Automotive", "Real Estate", "Home", "Parenting", "Pets", "Nature"] as const;
 export const PLATFORMS = ["TikTok", "TikTok Shop", "Instagram Reels", "Twitter", "YouTube Shorts"] as const;
@@ -156,6 +155,14 @@ export interface Payment {
   payment_amount: number;
   payment_date: Date;
   transaction_id: string;
+  note?: string;
+}
+
+export interface DirectPaymentFormData {
+  campaign_id: string;
+  creator_id: string;
+  payment_amount: number;
+  note: string;
 }
 
 export const formatCurrency = (amount: number, currency: Currency = "USD"): string => {
