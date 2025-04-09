@@ -12,6 +12,8 @@ import {
 import { Submission } from "@/lib/campaign-types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DollarSign } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface PaymentConfirmationDialogProps {
   open: boolean;
@@ -31,11 +33,18 @@ export default function PaymentConfirmationDialog({
   submission,
   onConfirm,
 }: PaymentConfirmationDialogProps) {
+  const [isProcessing, setIsProcessing] = useState(false);
+
   if (!submission) return null;
 
   const handleConfirm = async () => {
-    await onConfirm(submission);
-    onOpenChange(false);
+    setIsProcessing(true);
+    try {
+      await onConfirm(submission);
+    } finally {
+      setIsProcessing(false);
+      onOpenChange(false);
+    }
   };
 
   return (
@@ -70,10 +79,16 @@ export default function PaymentConfirmationDialog({
         </div>
         
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} className="bg-primary">
-            <DollarSign className="mr-2 h-4 w-4" />
-            Confirm Payment
+          <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm} className="bg-primary" disabled={isProcessing}>
+            {isProcessing ? (
+              <>Processing...</>
+            ) : (
+              <>
+                <DollarSign className="mr-2 h-4 w-4" />
+                Confirm Payment
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

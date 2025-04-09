@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { CheckCircle2, DollarSign, Filter, MoreHorizontal, XCircle } from "lucide-react";
+import { CheckCircle2, DollarSign, Filter, MoreHorizontal, Search, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 import { 
@@ -34,6 +35,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Payment, Submission, SubmissionStatusType, DirectPaymentFormData } from "@/lib/campaign-types";
 import DirectPaymentDialog from "@/components/DirectPaymentDialog";
 import PaymentConfirmationDialog from "@/components/PaymentConfirmationDialog";
+import { Input } from "@/components/ui/input";
 
 const getPlatformIcon = (platform: string) => {
   switch (platform.toLowerCase()) {
@@ -64,6 +66,11 @@ export default function PaymentsPage() {
     open: false,
     submission: null
   });
+  
+  // Search state for each tab
+  const [pendingPayoutsSearch, setPendingPayoutsSearch] = useState("");
+  const [pendingApprovalsSearch, setPendingApprovalsSearch] = useState("");
+  const [paymentHistorySearch, setPaymentHistorySearch] = useState("");
   
   const { data: submissions = [], isLoading: submissionsLoading, refetch: refetchSubmissions } = useQuery({
     queryKey: ['submissions'],
@@ -113,24 +120,71 @@ export default function PaymentsPage() {
     }
   });
   
+  // Filter the data based on search terms
+  const filteredPendingPayouts = (submissions.filter(s => s.status === 'approved') || []).filter(payout => {
+    if (!pendingPayoutsSearch) return true;
+    const searchLower = pendingPayoutsSearch.toLowerCase();
+    return (
+      payout.creator_name.toLowerCase().includes(searchLower) ||
+      payout.campaign_title.toLowerCase().includes(searchLower) ||
+      payout.platform.toLowerCase().includes(searchLower) ||
+      `$${payout.payment_amount}`.includes(searchLower)
+    );
+  });
+  
   const pendingPayouts = submissions.filter(s => s.status === 'approved');
   
   const filteredSubmissions = submissions.filter(submission => {
-    if (filterType === "all") return submission.status === 'pending';
-    
-    switch (filterType) {
-      case "creator":
-        return submission.status === 'pending' && 
-               submission.creator_name.toLowerCase().includes(filterValue.toLowerCase());
-      case "campaign":
-        return submission.status === 'pending' && 
-               submission.campaign_title.toLowerCase().includes(filterValue.toLowerCase());
-      case "platform":
-        return submission.status === 'pending' && 
-               submission.platform.toLowerCase() === filterValue.toLowerCase();
-      default:
-        return submission.status === 'pending';
+    // First apply the filter type
+    if (filterType === "all") {
+      if (submission.status !== 'pending') return false;
+    } else {
+      switch (filterType) {
+        case "creator":
+          if (submission.status !== 'pending' || 
+              !submission.creator_name.toLowerCase().includes(filterValue.toLowerCase())) {
+            return false;
+          }
+          break;
+        case "campaign":
+          if (submission.status !== 'pending' || 
+              !submission.campaign_title.toLowerCase().includes(filterValue.toLowerCase())) {
+            return false;
+          }
+          break;
+        case "platform":
+          if (submission.status !== 'pending' || 
+              submission.platform.toLowerCase() !== filterValue.toLowerCase()) {
+            return false;
+          }
+          break;
+        default:
+          if (submission.status !== 'pending') return false;
+      }
     }
+    
+    // Then apply the search term
+    if (!pendingApprovalsSearch) return true;
+    const searchLower = pendingApprovalsSearch.toLowerCase();
+    return (
+      submission.creator_name.toLowerCase().includes(searchLower) ||
+      submission.campaign_title.toLowerCase().includes(searchLower) ||
+      submission.platform.toLowerCase().includes(searchLower) ||
+      `$${submission.payment_amount}`.includes(searchLower)
+    );
+  });
+
+  const filteredPaymentHistory = payments.filter(payment => {
+    if (!paymentHistorySearch) return true;
+    const searchLower = paymentHistorySearch.toLowerCase();
+    return (
+      payment.creator_name.toLowerCase().includes(searchLower) ||
+      payment.campaign_title.toLowerCase().includes(searchLower) ||
+      payment.platform.toLowerCase().includes(searchLower) ||
+      `$${payment.payment_amount}`.includes(searchLower) ||
+      payment.transaction_id.toLowerCase().includes(searchLower) ||
+      payment.payment_date.toLocaleDateString().includes(searchLower)
+    );
   });
 
   const totalPending = submissions.filter(s => s.status === "pending").length;
@@ -388,6 +442,23 @@ export default function PaymentsPage() {
         </TabsList>
         
         <TabsContent value="pendingPayouts" className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by creator, campaign, platform..."
+                value={pendingPayoutsSearch}
+                onChange={(e) => setPendingPayoutsSearch(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            {pendingPayoutsSearch && (
+              <Button variant="ghost" size="sm" onClick={() => setPendingPayoutsSearch("")}>
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
           {paymentsLoading || submissionsLoading ? (
             <div className="flex justify-center items-center py-12">
               <p>Loading payments data...</p>
@@ -407,8 +478,8 @@ export default function PaymentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pendingPayouts.length > 0 ? (
-                    pendingPayouts.map((payout) => (
+                  {filteredPendingPayouts.length > 0 ? (
+                    filteredPendingPayouts.map((payout) => (
                       <TableRow key={payout.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -447,7 +518,7 @@ export default function PaymentsPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No pending payouts found.
+                        {pendingPayouts.length === 0 ? "No pending payouts found." : "No results match your search."}
                       </TableCell>
                     </TableRow>
                   )}
@@ -455,9 +526,11 @@ export default function PaymentsPage() {
                 <TableCaption>
                   <div className="flex justify-between items-center mt-2">
                     <div>
-                      Showing {pendingPayouts.length} pending payouts
+                      {pendingPayoutsSearch ? 
+                        `Showing ${filteredPendingPayouts.length} of ${pendingPayouts.length} pending payouts` : 
+                        `Showing ${pendingPayouts.length} pending payouts`}
                     </div>
-                    {pendingPayouts.length > 0 && (
+                    {filteredPendingPayouts.length > 0 && (
                       <Pagination>
                         <PaginationContent>
                           <PaginationItem>
@@ -534,6 +607,26 @@ export default function PaymentsPage() {
                     </Button>
                   )}
                 </>
+              )}
+            </div>
+
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search pending approvals..."
+                value={pendingApprovalsSearch}
+                onChange={(e) => setPendingApprovalsSearch(e.target.value)}
+                className="pl-8 w-full"
+              />
+              {pendingApprovalsSearch && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setPendingApprovalsSearch("")}
+                  className="absolute right-1 top-1.5"
+                >
+                  <XCircle className="h-4 w-4" />
+                </Button>
               )}
             </div>
           </div>
@@ -617,7 +710,7 @@ export default function PaymentsPage() {
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         {submissions.filter(s => s.status === 'pending').length === 0 ? 
                           "No pending submissions found." : 
-                          "No submissions match your filters."}
+                          "No submissions match your search criteria."}
                       </TableCell>
                     </TableRow>
                   )}
@@ -628,6 +721,26 @@ export default function PaymentsPage() {
         </TabsContent>
 
         <TabsContent value="paymentHistory" className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search payment history..."
+              value={paymentHistorySearch}
+              onChange={(e) => setPaymentHistorySearch(e.target.value)}
+              className="pl-8 w-full mb-4"
+            />
+            {paymentHistorySearch && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setPaymentHistorySearch("")}
+                className="absolute right-1 top-1.5"
+              >
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
           {paymentsLoading ? (
             <div className="flex justify-center items-center py-12">
               <p>Loading payment history...</p>
@@ -647,8 +760,8 @@ export default function PaymentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments.length > 0 ? (
-                    payments.map((payment) => (
+                  {filteredPaymentHistory.length > 0 ? (
+                    filteredPaymentHistory.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -682,7 +795,9 @@ export default function PaymentsPage() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No payment history found.
+                        {payments.length === 0 ? 
+                          "No payment history found." : 
+                          "No payments match your search criteria."}
                       </TableCell>
                     </TableRow>
                   )}
@@ -690,9 +805,11 @@ export default function PaymentsPage() {
                 <TableCaption>
                   <div className="flex justify-between items-center mt-2">
                     <div>
-                      Showing {payments.length} payments
+                      {paymentHistorySearch ? 
+                        `Showing ${filteredPaymentHistory.length} of ${payments.length} payments` : 
+                        `Showing ${payments.length} payments`}
                     </div>
-                    {payments.length > 0 && (
+                    {filteredPaymentHistory.length > 0 && (
                       <Pagination>
                         <PaginationContent>
                           <PaginationItem>
