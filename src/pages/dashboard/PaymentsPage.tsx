@@ -35,7 +35,6 @@ import { Payment, Submission, SubmissionStatusType, DirectPaymentFormData } from
 import DirectPaymentDialog from "@/components/DirectPaymentDialog";
 import PaymentConfirmationDialog from "@/components/PaymentConfirmationDialog";
 
-// Function to simulate content from different platforms
 const getPlatformIcon = (platform: string) => {
   switch (platform.toLowerCase()) {
     case 'youtube':
@@ -51,7 +50,6 @@ const getPlatformIcon = (platform: string) => {
   }
 };
 
-// Generate initials from name
 const getInitials = (name: string) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
@@ -312,7 +310,7 @@ export default function PaymentsPage() {
           size="lg"
         >
           <DollarSign className="mr-2 h-5 w-5" />
-          Create Direct Payment
+          Direct Payment
         </Button>
       </div>
 
