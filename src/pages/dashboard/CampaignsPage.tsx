@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
@@ -81,7 +82,7 @@ const generateSampleSubmissions = () => {
       creator_avatar: creator.avatar,
       campaign_id: campaign.id,
       campaign_title: campaign.title,
-      campaign_type: campaign.type,
+      campaign_type: campaign.type as 'retainer' | 'payPerView' | 'challenge',
       submitted_date: generateDate(daysAgo),
       platform,
       content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/video${i + 100}`,
