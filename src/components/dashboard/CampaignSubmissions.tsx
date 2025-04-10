@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Clock, 
@@ -71,10 +70,8 @@ export default function CampaignSubmissions({
   const [isProcessing, setIsProcessing] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
-  // Get unique platforms from submissions
   const platforms = Array.from(new Set(submissions.map(s => s.platform)));
 
-  // Handle deny submission
   const handleDenyClick = (submission: Submission) => {
     setSelectedSubmission(submission);
     setDenyReason("");
@@ -100,20 +97,16 @@ export default function CampaignSubmissions({
     setDetailsDialogOpen(true);
   };
 
-  // Calculate deadline for each submission based on campaign type
   const getDeadlineInfo = (submission: Submission) => {
     const submittedDate = new Date(submission.submitted_date);
     
-    // Pay-per-view: 240 hours (10 days) to auto-accept
     const deadlineDate = addHours(submittedDate, 240);
     const isExpired = isAfter(new Date(), deadlineDate);
     const timeLeft = formatDistanceToNow(deadlineDate, { addSuffix: true });
     
-    // For auto-acceptance logic
     const shouldAutoAccept = isExpired && submission.status === "pending";
     
-    // Percentage of time elapsed
-    const totalTime = 240 * 60 * 60 * 1000; // 240 hours in milliseconds
+    const totalTime = 240 * 60 * 60 * 1000;
     const elapsed = Date.now() - submittedDate.getTime();
     const timePercentage = Math.min(100, Math.round((elapsed / totalTime) * 100));
     
@@ -126,25 +119,20 @@ export default function CampaignSubmissions({
     };
   };
 
-  // Filter and sort submissions
   const filteredSubmissions = submissions
     .filter(submission => {
-      // Search filter
       const matchesSearch = 
         submission.creator_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         submission.campaign_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         submission.content.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // Status filter
       const matchesStatus = statusFilter === "all" || submission.status === statusFilter;
       
-      // Platform filter
       const matchesPlatform = platformFilter === "all" || submission.platform === platformFilter;
       
       return matchesSearch && matchesStatus && matchesPlatform;
     })
     .sort((a, b) => {
-      // Sort submissions based on selected option
       switch (sortBy) {
         case "date-asc":
           return new Date(a.submitted_date).getTime() - new Date(b.submitted_date).getTime();
@@ -258,7 +246,6 @@ export default function CampaignSubmissions({
               {filteredSubmissions.map((submission) => {
                 const { deadline, isExpired, timeLeft, shouldAutoAccept, timePercentage } = getDeadlineInfo(submission);
                 
-                // Auto-accept logic for display purposes (actual implementation would be server-side)
                 const displayStatus = shouldAutoAccept ? "approved" : submission.status;
                 
                 return (
@@ -364,7 +351,6 @@ export default function CampaignSubmissions({
         </div>
       )}
       
-      {/* Deny Reason Dialog */}
       <Dialog open={denyDialogOpen} onOpenChange={setDenyDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -392,7 +378,6 @@ export default function CampaignSubmissions({
         </DialogContent>
       </Dialog>
       
-      {/* Submission Details Dialog */}
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           {selectedSubmission && (
@@ -408,7 +393,10 @@ export default function CampaignSubmissions({
                 <div className="aspect-video bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex items-center justify-center flex-col">
-                      <SocialIcon platform={selectedSubmission.platform.toLowerCase().split(' ')[0]} size={48} />
+                      <SocialIcon 
+                        platform={selectedSubmission.platform.toLowerCase().split(' ')[0]} 
+                        className="h-12 w-12"
+                      />
                       <span className="mt-2 text-muted-foreground">{selectedSubmission.platform} Content Preview</span>
                     </div>
                   </div>
