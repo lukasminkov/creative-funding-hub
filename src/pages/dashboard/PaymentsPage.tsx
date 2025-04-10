@@ -10,11 +10,10 @@ import { formatCurrency } from "@/lib/campaign-types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { Submission, Payment } from "@/lib/campaign-types";
-import { DirectPaymentDialog } from "@/components/DirectPaymentDialog";
-import { PaymentConfirmationDialog } from "@/components/PaymentConfirmationDialog";
+import DirectPaymentDialog from "@/components/DirectPaymentDialog";
+import PaymentConfirmationDialog from "@/components/PaymentConfirmationDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// Mock data - would be replaced with actual API calls in production
 const mockSubmissions: Submission[] = [
   {
     id: "1",
@@ -172,15 +171,9 @@ export default function PaymentsPage() {
   const [pendingApprovalsSearch, setPendingApprovalsSearch] = useState("");
   const [paymentHistorySearch, setPaymentHistorySearch] = useState("");
   
-  // Fetch submissions from API
   const { data: submissions = mockSubmissions } = useQuery({
     queryKey: ['submissions'],
     queryFn: async () => {
-      // In a real app, this would call an API endpoint
-      // return await fetch('/api/submissions').then(res => res.json());
-      
-      // For now, we'll use the mock data
-      // This simulates a delay like a real API call would have
       await new Promise(resolve => setTimeout(resolve, 500));
       
       return mockSubmissions.map(item => ({
@@ -192,15 +185,9 @@ export default function PaymentsPage() {
     }
   });
   
-  // Fetch payment history from API
   const { data: paymentHistory = mockPayments } = useQuery({
     queryKey: ['payments'],
     queryFn: async () => {
-      // In a real app, this would call an API endpoint
-      // return await fetch('/api/payments').then(res => res.json());
-      
-      // For now, we'll use the mock data
-      // This simulates a delay like a real API call would have
       await new Promise(resolve => setTimeout(resolve, 500));
       
       return mockPayments.map(item => ({
@@ -222,7 +209,6 @@ export default function PaymentsPage() {
     );
   });
   
-  // Calculate total pending payout amount
   const pendingPayouts = submissions.filter(s => s.status === 'approved');
   
   const filteredSubmissions = submissions.filter(submission => {
@@ -255,12 +241,10 @@ export default function PaymentsPage() {
   });
   
   const handleDenySubmission = (submission: Submission) => {
-    // In a real app, this would call an API endpoint to deny the submission
     console.log("Denying submission:", submission);
   };
   
   const handleApproveSubmission = (submission: Submission) => {
-    // In a real app, this would call an API endpoint to approve the submission
     console.log("Approving submission:", submission);
     
     setSelectedSubmission(submission);
