@@ -20,6 +20,14 @@ import MessagesPage from "./pages/dashboard/MessagesPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import PaymentsPage from "./pages/dashboard/PaymentsPage";
 
+// Admin routes
+import AdminIndexPage from "./pages/admin/IndexPage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsersPage from "./pages/admin/UsersPage";
+import AdminBrandsPage from "./pages/admin/BrandsPage";
+import AdminCampaignsPage from "./pages/admin/CampaignsPage";
+import AdminSettingsPage from "./pages/admin/SettingsPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -44,6 +52,15 @@ const App = () => (
                 <Route path="payments" element={<PaymentsPage />} />
                 <Route path="messages" element={<MessagesPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+              </Route>
+
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminIndexPage />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="brands" element={<AdminBrandsPage />} />
+                <Route path="campaigns" element={<AdminCampaignsPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
               </Route>
 
               {/* Redirect old dashboard to new dashboard */}
