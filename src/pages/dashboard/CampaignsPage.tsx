@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign, Submission } from "@/lib/campaign-types";
@@ -14,64 +15,75 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import CampaignSubmissionsReview from "@/components/CampaignSubmissionsReview";
 import { toast } from "sonner";
 
-const mockSubmissions: Submission[] = [
-  {
-    id: "301",
-    creator_id: "1001",
-    creator_name: "Sarah Johnson",
-    creator_avatar: "https://i.pravatar.cc/150?u=sarah",
-    campaign_id: "campaign-1",
-    campaign_title: "Summer Fashion Collection",
-    submitted_date: new Date("2023-09-10"),
-    platform: "TikTok",
-    content: "https://tiktok.com/video123",
-    payment_amount: 150,
-    views: 8500,
-    status: "pending"
-  },
-  {
-    id: "302",
-    creator_id: "1002",
-    creator_name: "Mike Peters",
-    creator_avatar: "https://i.pravatar.cc/150?u=mike",
-    campaign_id: "campaign-2",
-    campaign_title: "Tech Gadget Review",
-    submitted_date: new Date("2023-09-05"),
-    platform: "YouTube Shorts",
-    content: "https://youtube.com/shorts/video456",
-    payment_amount: 200,
-    views: 12300,
-    status: "pending"
-  },
-  {
-    id: "303",
-    creator_id: "1003",
-    creator_name: "Jessica Williams",
-    creator_avatar: "https://i.pravatar.cc/150?u=jessica",
-    campaign_id: "campaign-3",
-    campaign_title: "Fitness Challenge",
-    submitted_date: new Date("2023-09-12"),
-    platform: "Instagram Reels",
-    content: "https://instagram.com/reel789",
-    payment_amount: 175,
-    views: 5600,
-    status: "pending"
-  },
-  {
-    id: "304",
-    creator_id: "1004",
-    creator_name: "David Chen",
-    creator_avatar: "https://i.pravatar.cc/150?u=david",
-    campaign_id: "campaign-4",
-    campaign_title: "Cooking Tutorial",
-    submitted_date: new Date("2023-09-15"),
-    platform: "TikTok",
-    content: "https://tiktok.com/video789",
-    payment_amount: 125,
-    views: 3200,
-    status: "approved"
+// Generate sample submission data with different dates
+const generateSampleSubmissions = () => {
+  const platforms = ["TikTok", "Instagram Reels", "YouTube Shorts"];
+  const statuses = ["pending", "approved", "rejected", "paid"];
+  const creators = [
+    { name: "Sarah Johnson", id: "1001", avatar: "https://i.pravatar.cc/150?u=sarah" },
+    { name: "Mike Peters", id: "1002", avatar: "https://i.pravatar.cc/150?u=mike" },
+    { name: "Jessica Williams", id: "1003", avatar: "https://i.pravatar.cc/150?u=jessica" },
+    { name: "David Chen", id: "1004", avatar: "https://i.pravatar.cc/150?u=david" },
+    { name: "Emma Lopez", id: "1005", avatar: "https://i.pravatar.cc/150?u=emma" },
+    { name: "Alex Wong", id: "1006", avatar: "https://i.pravatar.cc/150?u=alex" },
+    { name: "Taylor Reed", id: "1007", avatar: "https://i.pravatar.cc/150?u=taylor" },
+    { name: "Jordan Martinez", id: "1008", avatar: "https://i.pravatar.cc/150?u=jordan" },
+    { name: "Sophia Kim", id: "1009", avatar: "https://i.pravatar.cc/150?u=sophia" },
+    { name: "Lucas Brown", id: "1010", avatar: "https://i.pravatar.cc/150?u=lucas" }
+  ];
+  
+  const campaigns = [
+    { id: "campaign-1", title: "Summer Fashion Collection" },
+    { id: "campaign-2", title: "Tech Gadget Review" },
+    { id: "campaign-3", title: "Fitness Challenge" },
+    { id: "campaign-4", title: "Cooking Tutorial" },
+    { id: "campaign-5", title: "Beauty Product Showcase" }
+  ];
+  
+  // Generate date function
+  const generateDate = (daysAgo) => {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    // Add random hours, minutes, and seconds
+    date.setHours(Math.floor(Math.random() * 24));
+    date.setMinutes(Math.floor(Math.random() * 60));
+    date.setSeconds(Math.floor(Math.random() * 60));
+    return date;
+  };
+  
+  const submissions: Submission[] = [];
+  
+  // Generate 20 submissions for variety
+  for (let i = 0; i < 20; i++) {
+    const creator = creators[Math.floor(Math.random() * creators.length)];
+    const campaign = campaigns[Math.floor(Math.random() * campaigns.length)];
+    const platform = platforms[Math.floor(Math.random() * platforms.length)];
+    // Weighted status - more pending than others
+    const status = i < 10 ? "pending" : statuses[Math.floor(Math.random() * statuses.length)];
+    // Generate a date between now and 14 days ago
+    const daysAgo = Math.random() * 14;
+    
+    submissions.push({
+      id: `${300 + i}`,
+      creator_id: creator.id,
+      creator_name: creator.name,
+      creator_avatar: creator.avatar,
+      campaign_id: campaign.id,
+      campaign_title: campaign.title,
+      submitted_date: generateDate(daysAgo),
+      platform,
+      content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/video${i + 100}`,
+      payment_amount: Math.floor(Math.random() * 200) + 100,
+      views: Math.floor(Math.random() * 50000) + 1000,
+      status
+    });
   }
-];
+  
+  return submissions;
+};
+
+// Generate sample submissions
+const mockSubmissions: Submission[] = generateSampleSubmissions();
 
 export default function CampaignsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -276,6 +288,15 @@ export default function CampaignsPage() {
         
         <TabsContent value="submissions" className="mt-6">
           <div className="bg-card border border-border rounded-lg p-6">
+            <div className="mb-4 bg-muted/30 p-4 rounded-md text-sm">
+              <div className="font-medium mb-1">Campaign Types and Submission Rules</div>
+              <ul className="list-disc ml-5 text-muted-foreground space-y-1">
+                <li><strong>Pay-per-view:</strong> Submissions have 10 days to accumulate views and are paid based on the views after this period. Submissions auto-accept after 240 hours (10 days) if not reviewed.</li>
+                <li><strong>Retainer:</strong> Fixed payment after all deliverables are successfully submitted. All submissions must be accepted to receive payment.</li>
+                <li><strong>Challenge:</strong> Paid out after the campaign ends. Winners are selected from approved submissions.</li>
+              </ul>
+            </div>
+            
             <CampaignSubmissionsReview 
               submissions={mockSubmissions}
               onApprove={handleApproveSubmission}

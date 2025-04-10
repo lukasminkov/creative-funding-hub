@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +16,7 @@ import { SocialIcon } from "@/components/icons/SocialIcons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { format } from "date-fns";
+import { format, addDays, addHours } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
@@ -23,7 +24,7 @@ import CampaignSubmissionsReview from "@/components/CampaignSubmissionsReview";
 import { Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { toast } from "sonner";
 
-// Mock creators data
+// Enhanced mock creators data with more details
 const mockCreators = [{
   id: 1,
   name: "Sarah Johnson",
@@ -48,9 +49,25 @@ const mockCreators = [{
   submissions: 4,
   views: 15200,
   status: "active"
+}, {
+  id: 4,
+  name: "Alex Rodriguez",
+  avatar: "https://i.pravatar.cc/150?u=alex",
+  platforms: ["tiktok", "instagram"],
+  submissions: 6,
+  views: 42000,
+  status: "active"
+}, {
+  id: 5,
+  name: "Emma Chen",
+  avatar: "https://i.pravatar.cc/150?u=emma",
+  platforms: ["youtube", "twitter"],
+  submissions: 2,
+  views: 31500,
+  status: "active"
 }];
 
-// Mock applications data
+// Enhanced mock applications data
 const mockApplications = [{
   id: 101,
   name: "Tyler Rodriguez",
@@ -84,62 +101,144 @@ const mockApplications = [{
   customQuestion1: "I specialize in unboxing videos",
   customQuestion2: "Can provide additional promotion",
   status: "pending"
+}, {
+  id: 104,
+  name: "Lily Wang",
+  avatar: "https://i.pravatar.cc/150?u=lily",
+  platforms: ["tiktok", "instagram"],
+  followers: 31000,
+  totalViews: 250000,
+  totalGmv: 9200,
+  customQuestion1: "My audience is primarily 18-24 year olds",
+  customQuestion2: "I can create unique storytelling content",
+  status: "pending"
+}, {
+  id: 105,
+  name: "Jordan Smith",
+  avatar: "https://i.pravatar.cc/150?u=jordan",
+  platforms: ["youtube", "twitter"],
+  followers: 42000,
+  totalViews: 320000,
+  totalGmv: 12500,
+  customQuestion1: "I have a unique approach to product reviews",
+  customQuestion2: "Can deliver high production quality videos",
+  status: "pending"
 }];
 
-// Mock submissions data with corrected type for status
-const mockSubmissions: Submission[] = [{
-  id: "201",
-  creator_id: "1001",
-  creator_name: "Sarah Johnson",
-  creator_avatar: "https://i.pravatar.cc/150?u=sarah",
-  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
-  campaign_title: "Product Review Video",
-  submitted_date: new Date("2023-09-10"),
-  platform: "TikTok",
-  content: "https://tiktok.com/video123",
-  payment_amount: 150,
-  views: 8500,
-  status: "pending" as SubmissionStatusType
-}, {
-  id: "202",
-  creator_id: "1002",
-  creator_name: "Mike Peters",
-  creator_avatar: "https://i.pravatar.cc/150?u=mike",
-  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
-  campaign_title: "Brand Unboxing",
-  submitted_date: new Date("2023-09-05"),
-  platform: "YouTube Shorts",
-  content: "https://youtube.com/shorts/video456",
-  payment_amount: 200,
-  views: 12300,
-  status: "approved" as SubmissionStatusType
-}, {
-  id: "203",
-  creator_id: "1003",
-  creator_name: "Jessica Williams",
-  creator_avatar: "https://i.pravatar.cc/150?u=jessica",
-  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
-  campaign_title: "Tutorial with Product",
-  submitted_date: new Date("2023-09-12"),
-  platform: "Instagram Reels",
-  content: "https://instagram.com/reel789",
-  payment_amount: 175,
-  views: 5600,
-  status: "pending" as SubmissionStatusType
-}, {
-  id: "204",
-  creator_id: "1004",
-  creator_name: "David Chen",
-  creator_avatar: "https://i.pravatar.cc/150?u=david",
-  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
-  campaign_title: "Product Demo",
-  submitted_date: new Date("2023-09-15"),
-  platform: "TikTok",
-  content: "https://tiktok.com/video789",
-  payment_amount: 125,
-  views: 3200,
-  status: "pending" as SubmissionStatusType
-}];
+// Create functions to generate different submission date timestamps for variety
+const generateSubmissionDate = (daysAgo) => {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  // Add random hours, minutes, and seconds
+  date.setHours(Math.floor(Math.random() * 24));
+  date.setMinutes(Math.floor(Math.random() * 60));
+  date.setSeconds(Math.floor(Math.random() * 60));
+  return date;
+};
+
+// Enhanced mock submissions data with more variety in dates and statuses
+const generateMockSubmissions = (campaignId) => {
+  return [
+    {
+      id: "201",
+      creator_id: "1001",
+      creator_name: "Sarah Johnson",
+      creator_avatar: "https://i.pravatar.cc/150?u=sarah",
+      campaign_id: campaignId,
+      campaign_title: "Product Review Video",
+      submitted_date: generateSubmissionDate(1),
+      platform: "TikTok",
+      content: "https://tiktok.com/video123",
+      payment_amount: 150,
+      views: 8500,
+      status: "pending" as SubmissionStatusType
+    },
+    {
+      id: "202",
+      creator_id: "1002",
+      creator_name: "Mike Peters",
+      creator_avatar: "https://i.pravatar.cc/150?u=mike",
+      campaign_id: campaignId,
+      campaign_title: "Brand Unboxing",
+      submitted_date: generateSubmissionDate(5),
+      platform: "YouTube Shorts",
+      content: "https://youtube.com/shorts/video456",
+      payment_amount: 200,
+      views: 12300,
+      status: "approved" as SubmissionStatusType
+    },
+    {
+      id: "203",
+      creator_id: "1003",
+      creator_name: "Jessica Williams",
+      creator_avatar: "https://i.pravatar.cc/150?u=jessica",
+      campaign_id: campaignId,
+      campaign_title: "Tutorial with Product",
+      submitted_date: generateSubmissionDate(2),
+      platform: "Instagram Reels",
+      content: "https://instagram.com/reel789",
+      payment_amount: 175,
+      views: 5600,
+      status: "pending" as SubmissionStatusType
+    },
+    {
+      id: "204",
+      creator_id: "1004",
+      creator_name: "David Chen",
+      creator_avatar: "https://i.pravatar.cc/150?u=david",
+      campaign_id: campaignId,
+      campaign_title: "Product Demo",
+      submitted_date: generateSubmissionDate(9),
+      platform: "TikTok",
+      content: "https://tiktok.com/video789",
+      payment_amount: 125,
+      views: 3200,
+      status: "rejected" as SubmissionStatusType
+    },
+    {
+      id: "205",
+      creator_id: "1005",
+      creator_name: "Emma Lopez",
+      creator_avatar: "https://i.pravatar.cc/150?u=emma",
+      campaign_id: campaignId,
+      campaign_title: "Lifestyle Integration",
+      submitted_date: generateSubmissionDate(0.5),
+      platform: "Instagram Reels",
+      content: "https://instagram.com/reel987",
+      payment_amount: 220,
+      views: 9800,
+      status: "pending" as SubmissionStatusType
+    },
+    {
+      id: "206",
+      creator_id: "1006",
+      creator_name: "Alex Wong",
+      creator_avatar: "https://i.pravatar.cc/150?u=alex",
+      campaign_id: campaignId,
+      campaign_title: "Product Review",
+      submitted_date: generateSubmissionDate(11),
+      platform: "TikTok",
+      content: "https://tiktok.com/video654",
+      payment_amount: 180,
+      views: 15200,
+      status: "paid" as SubmissionStatusType
+    },
+    {
+      id: "207",
+      creator_id: "1007",
+      creator_name: "Taylor Reed",
+      creator_avatar: "https://i.pravatar.cc/150?u=taylor",
+      campaign_id: campaignId,
+      campaign_title: "First Impressions",
+      submitted_date: generateSubmissionDate(0.1),
+      platform: "YouTube Shorts",
+      content: "https://youtube.com/shorts/video321",
+      payment_amount: 195,
+      views: 7200,
+      status: "pending" as SubmissionStatusType
+    }
+  ];
+};
 
 export default function CampaignDetailPage() {
   const { id } = useParams();
@@ -154,6 +253,9 @@ export default function CampaignDetailPage() {
   
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState<string>("1000");
+  
+  // Create mock submissions specific to this campaign ID
+  const mockSubmissions = id ? generateMockSubmissions(id) : [];
   
   const {
     data: campaign,
@@ -292,8 +394,8 @@ export default function CampaignDetailPage() {
             <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
               {campaign.contentType}
             </span>
-            <span className={`text-xs py-1 px-2 rounded-full bg-green-100 text-green-800`}>
-              Active
+            <span className={`text-xs py-1 px-2 rounded-full ${statusColor}`}>
+              {status}
             </span>
           </div>
         </div>
@@ -319,8 +421,8 @@ export default function CampaignDetailPage() {
           <div className="mb-5">
             <div className="flex justify-between mb-1 text-sm">
               <span>{progressText}</span>
-              <span className={`text-xs py-1 px-2 rounded-full bg-green-100 text-green-800`}>
-                Active
+              <span className={`text-xs py-1 px-2 rounded-full ${statusColor}`}>
+                {status}
               </span>
             </div>
             <Progress value={progress} className="h-3" />
@@ -404,6 +506,7 @@ export default function CampaignDetailPage() {
                   onApprove={handleApproveSubmission}
                   onDeny={handleDenySubmission}
                   campaignId={id}
+                  campaign={campaign}
                 />
               </CardContent>
             </Card>
