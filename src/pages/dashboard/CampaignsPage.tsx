@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Campaign, Submission } from "@/lib/campaign-types";
+import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
 import { PlusCircle } from "lucide-react";
@@ -18,7 +18,7 @@ import { toast } from "sonner";
 // Generate sample submission data with different dates
 const generateSampleSubmissions = () => {
   const platforms = ["TikTok", "Instagram Reels", "YouTube Shorts"];
-  const statuses = ["pending", "approved", "rejected", "paid"];
+  const statuses: SubmissionStatusType[] = ["pending", "approved", "rejected", "paid"];
   const creators = [
     { name: "Sarah Johnson", id: "1001", avatar: "https://i.pravatar.cc/150?u=sarah" },
     { name: "Mike Peters", id: "1002", avatar: "https://i.pravatar.cc/150?u=mike" },
@@ -59,7 +59,7 @@ const generateSampleSubmissions = () => {
     const campaign = campaigns[Math.floor(Math.random() * campaigns.length)];
     const platform = platforms[Math.floor(Math.random() * platforms.length)];
     // Weighted status - more pending than others
-    const status = i < 10 ? "pending" : statuses[Math.floor(Math.random() * statuses.length)];
+    const status = i < 10 ? "pending" as SubmissionStatusType : statuses[Math.floor(Math.random() * statuses.length)];
     // Generate a date between now and 14 days ago
     const daysAgo = Math.random() * 14;
     
