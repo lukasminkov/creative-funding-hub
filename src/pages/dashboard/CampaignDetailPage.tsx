@@ -7,20 +7,14 @@ import { convertDatabaseCampaign } from "@/lib/campaign-utils";
 import { Edit2, Trash2, ArrowLeft, ChevronRight, MessageSquare, Filter, X, Calendar, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { SocialIcon } from "@/components/icons/SocialIcons";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
-import { format, addDays, addHours } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
-import CampaignSubmissionsReview from "@/components/CampaignSubmissionsReview";
+import CampaignSubmissions from "@/components/dashboard/CampaignSubmissions";
+import CampaignStatusCard from "@/components/dashboard/CampaignStatusCard";
+import CampaignCreatorsList from "@/components/dashboard/CampaignCreatorsList";
+import CampaignApplicationsList from "@/components/dashboard/CampaignApplicationsList";
 import { Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { toast } from "sonner";
 
@@ -245,12 +239,6 @@ export default function CampaignDetailPage() {
   const navigate = useNavigate();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("submissions");
-  
-  const [filterType, setFilterType] = useState<string>("none");
-  const [creatorFilter, setCreatorFilter] = useState<string>("");
-  const [platformFilter, setPlatformFilter] = useState<string>("");
-  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
-  
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState<string>("1000");
   
@@ -331,46 +319,9 @@ export default function CampaignDetailPage() {
         </Button>
       </div>;
   }
-  
-  const now = new Date();
-  const endDate = new Date(campaign.endDate);
-  let status = "Active";
-  let statusColor = "bg-green-100 text-green-800";
-  let progress = 0;
-  let progressText = "";
-  if (endDate < now) {
-    status = "Ended";
-    statusColor = "bg-gray-100 text-gray-800";
-    progress = 100;
-  } else if (campaign.type === "retainer") {
-    const appDeadline = new Date(campaign.applicationDeadline);
-    if (appDeadline > now) {
-      status = "Application Phase";
-      statusColor = "bg-purple-100 text-purple-800";
-      progress = 0;
-    } else {
-      progress = 40;
-    }
-    const totalVideos = campaign.deliverables?.totalVideos || 10;
-    progressText = `${Math.round(totalVideos * (progress / 100))}/${totalVideos} deliverables`;
-  } else if (campaign.type === "payPerView") {
-    progress = status === "Ended" ? 100 : 30;
-    progressText = `$${(campaign.totalBudget * (progress / 100)).toFixed(2)}/$${campaign.totalBudget} spent`;
-  } else if (campaign.type === "challenge") {
-    const submitDeadline = new Date(campaign.submissionDeadline);
-    if (submitDeadline < now) {
-      status = "Judging";
-      statusColor = "bg-yellow-100 text-yellow-800";
-      progress = 100;
-    } else {
-      const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-      const total = submitDeadline.getTime() - startDate.getTime();
-      const elapsed = now.getTime() - startDate.getTime();
-      progress = Math.min(100, Math.floor(elapsed / total * 100));
-    }
-    progressText = `${Math.round(progress)}% complete`;
-  }
-  return <div className="container py-8">
+
+  return (
+    <div className="container py-8">
       <div className="flex items-center mb-2">
         <Button variant="ghost" size="sm" className="mr-2" onClick={() => navigate("/dashboard/campaigns")}>
           <ArrowLeft className="h-4 w-4" />
@@ -394,9 +345,6 @@ export default function CampaignDetailPage() {
             <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
               {campaign.contentType}
             </span>
-            <span className={`text-xs py-1 px-2 rounded-full ${statusColor}`}>
-              {status}
-            </span>
           </div>
         </div>
         <div className="flex gap-2 self-end md:self-auto">
@@ -413,84 +361,12 @@ export default function CampaignDetailPage() {
         </div>
       </div>
 
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Campaign Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-5">
-            <div className="flex justify-between mb-1 text-sm">
-              <span>{progressText}</span>
-              <span className={`text-xs py-1 px-2 rounded-full ${statusColor}`}>
-                {status}
-              </span>
-            </div>
-            <Progress value={progress} className="h-3" />
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-4">
-            {campaign.type === "payPerView" && <>
-                <div>
-                  <div className="text-sm text-muted-foreground">Cost Per View</div>
-                  <div className="text-lg font-semibold">
-                    ${(campaign.totalBudget * (progress / 100) / 15000 || 0).toFixed(4)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Remaining Budget</div>
-                  <div className="text-lg font-semibold">
-                    ${(campaign.totalBudget - campaign.totalBudget * (progress / 100)).toFixed(2)}
-                  </div>
-                </div>
-                <div className="md:col-span-2">
-                  <Button variant="outline" className="w-full" onClick={() => setBudgetDialogOpen(true)}>
-                    Add Budget
-                  </Button>
-                </div>
-              </>}
-            
-            {campaign.type === "retainer" && <>
-                <div>
-                  <div className="text-sm text-muted-foreground">Days Remaining</div>
-                  <div className="text-lg font-semibold">
-                    {Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Approval Rate</div>
-                  <div className="text-lg font-semibold">
-                    92%
-                  </div>
-                </div>
-              </>}
-            
-            {campaign.type === "challenge" && <>
-                <div>
-                  <div className="text-sm text-muted-foreground">Submissions</div>
-                  <div className="text-lg font-semibold">
-                    {mockSubmissions.length}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Days Remaining</div>
-                  <div className="text-lg font-semibold">
-                    {Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))}
-                  </div>
-                </div>
-                
-                {status === "Judging" && <div className="md:col-span-2">
-                    <Button variant="outline" className="w-full">View Submissions for Judging</Button>
-                  </div>}
-              </>}
-          </div>
-        </CardContent>
-      </Card>
+      <CampaignStatusCard 
+        campaign={campaign} 
+        onAddBudget={() => setBudgetDialogOpen(true)} 
+      />
       
-      <div className="mb-6">
-        
-      </div>
-      
-      <Card className="mb-8">
+      <Card className="mb-8 mt-8">
         <Tabs defaultValue="submissions" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
@@ -501,7 +377,7 @@ export default function CampaignDetailPage() {
           <TabsContent value="submissions" className="mt-6">
             <Card>
               <CardContent className="pt-6">
-                <CampaignSubmissionsReview 
+                <CampaignSubmissions 
                   submissions={mockSubmissions}
                   onApprove={handleApproveSubmission}
                   onDeny={handleDenySubmission}
@@ -518,46 +394,7 @@ export default function CampaignDetailPage() {
                 <CardTitle>Active Creators</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Creator</TableHead>
-                        <TableHead>Platforms</TableHead>
-                        <TableHead>Submissions</TableHead>
-                        <TableHead>Views</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockCreators.map(creator => <TableRow key={creator.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar>
-                                <AvatarImage src={creator.avatar} alt={creator.name} />
-                                <AvatarFallback>{creator.name.substring(0, 2)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{creator.name}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              {creator.platforms.map(platform => <div key={platform} className="bg-secondary/50 p-1 rounded-full">
-                                  <SocialIcon platform={platform} />
-                                </div>)}
-                            </div>
-                          </TableCell>
-                          <TableCell>{creator.submissions}</TableCell>
-                          <TableCell>{creator.views.toLocaleString()}</TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">View Profile</Button>
-                          </TableCell>
-                        </TableRow>)}
-                    </TableBody>
-                  </Table>
-                </div>
+                <CampaignCreatorsList creators={mockCreators} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -568,51 +405,7 @@ export default function CampaignDetailPage() {
                 <CardTitle>Applications</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Creator</TableHead>
-                        <TableHead>Platforms</TableHead>
-                        <TableHead>Total Views</TableHead>
-                        <TableHead>Total GMV</TableHead>
-                        <TableHead>Custom Question 1</TableHead>
-                        <TableHead>Custom Question 2</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockApplications.map(creator => <TableRow key={creator.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar>
-                                <AvatarImage src={creator.avatar} alt={creator.name} />
-                                <AvatarFallback>{creator.name.substring(0, 2)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">{creator.name}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              {creator.platforms.map(platform => <div key={platform} className="bg-secondary/50 p-1 rounded-full">
-                                  <SocialIcon platform={platform} />
-                                </div>)}
-                            </div>
-                          </TableCell>
-                          <TableCell>{creator.totalViews.toLocaleString()}</TableCell>
-                          <TableCell>${creator.totalGmv.toLocaleString()}</TableCell>
-                          <TableCell>{creator.customQuestion1}</TableCell>
-                          <TableCell>{creator.customQuestion2}</TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button variant="outline" size="sm">Review</Button>
-                            <Button variant="ghost" size="sm">Approve</Button>
-                          </TableCell>
-                        </TableRow>)}
-                    </TableBody>
-                  </Table>
-                </div>
+                <CampaignApplicationsList applications={mockApplications} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -660,5 +453,6 @@ export default function CampaignDetailPage() {
       <CampaignFormDialog campaign={campaign} open={editDialogOpen} onOpenChange={setEditDialogOpen} isEditing={true} onCampaignUpdated={() => {
       if (refetch) refetch();
     }} />
-    </div>;
+    </div>
+  );
 }

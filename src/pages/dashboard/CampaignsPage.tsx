@@ -4,16 +4,28 @@ import { useQuery } from "@tanstack/react-query";
 import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ChevronDown, Dices, CalendarDays, CircleDollarSign, Filter, LayoutGrid, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 import { Link } from "react-router-dom";
-import { formatCurrency } from "@/lib/campaign-types";
+import CampaignSummaryCard from "@/components/dashboard/CampaignSummaryCard";
 import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import CampaignSubmissionsReview from "@/components/CampaignSubmissionsReview";
+import CampaignSubmissions from "@/components/dashboard/CampaignSubmissions";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Generate sample submission data with different dates
 const generateSampleSubmissions = () => {
@@ -88,6 +100,9 @@ const mockSubmissions: Submission[] = generateSampleSubmissions();
 export default function CampaignsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("campaigns");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [campaignTypeFilter, setCampaignTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   
   const { data: campaigns, isLoading, error, refetch } = useQuery({
     queryKey: ['campaigns'],
@@ -127,150 +142,195 @@ export default function CampaignsPage() {
       return Promise.reject(error);
     }
   };
-
-  const getCampaignProgress = (campaign: Campaign) => {
-    let progress = 0;
-    let progressText = "";
-    let status = "Active";
-
-    if (campaign.type === "payPerView") {
-      progress = 30;
-      progressText = `$${(campaign.totalBudget * 0.3).toFixed(2)}/$${campaign.totalBudget} spent`;
-    } else if (campaign.type === "retainer") {
-      const totalVideos = campaign.deliverables?.totalVideos || 10;
-      progress = 40;
-      progressText = `${Math.round(totalVideos * 0.4)}/${totalVideos} deliverables`;
-      status = "Application Phase";
-    } else {
-      const now = new Date();
-      const deadline = new Date(campaign.submissionDeadline);
-      
-      if (!deadline) {
-        return { progress: 50, progressText: "50% complete", status: "In Progress" };
-      }
-      
-      const total = deadline.getTime() - new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime();
-      const elapsed = now.getTime() - (new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime());
-      progress = Math.min(100, Math.floor((elapsed / total) * 100));
-      progressText = `${Math.round(progress)}% complete`;
-    }
-
-    return { progress, progressText, status };
+  
+  const handleDeleteCampaign = (id: string) => {
+    toast.success("Campaign deleted successfully");
+    // In a real app, you would connect to the database and delete the campaign
   };
 
+  // Filter campaigns based on selected filters
+  const filteredCampaigns = campaigns?.filter(campaign => {
+    if (campaignTypeFilter !== "all" && campaign.type !== campaignTypeFilter) {
+      return false;
+    }
+    
+    if (statusFilter === "all") {
+      return true;
+    }
+    
+    const now = new Date();
+    const endDate = new Date(campaign.endDate);
+    
+    if (statusFilter === "active" && endDate > now) {
+      return true;
+    }
+    
+    if (statusFilter === "ended" && endDate < now) {
+      return true;
+    }
+    
+    if (statusFilter === "application" && campaign.type === "retainer") {
+      const appDeadline = new Date(campaign.applicationDeadline);
+      return appDeadline > now;
+    }
+    
+    return false;
+  });
+
   if (isLoading) {
-    return <div className="container py-8">Loading campaigns...</div>;
+    return (
+      <div className="container py-8">
+        <div className="flex justify-between items-center mb-6 animate-pulse">
+          <div className="h-10 w-48 bg-muted rounded"></div>
+          <div className="h-10 w-36 bg-muted rounded"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="bg-card border border-border rounded-lg overflow-hidden shadow-sm animate-pulse">
+              <div className="h-40 bg-muted"></div>
+              <div className="p-4">
+                <div className="h-6 bg-muted rounded mb-3"></div>
+                <div className="h-3 bg-muted rounded mb-4 w-2/3"></div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {[1, 2, 3, 4].map((j) => (
+                    <div key={j}>
+                      <div className="h-3 bg-muted rounded mb-2 w-1/2"></div>
+                      <div className="h-5 bg-muted rounded w-full"></div>
+                    </div>
+                  ))}
+                </div>
+                <div className="h-9 bg-muted rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="container py-8">Error: {error.message}</div>;
+    return (
+      <div className="container py-8">
+        <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg p-6 text-center">
+          <h2 className="text-2xl font-bold mb-4">Error Loading Campaigns</h2>
+          <p className="mb-6">{error.message}</p>
+          <Button onClick={() => refetch()}>Try Again</Button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold">Campaigns</h1>
           <p className="text-muted-foreground">Manage your creator campaigns</p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Create Campaign
-        </Button>
+        <div className="flex items-center gap-2 self-end md:self-auto">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Create Campaign
+          </Button>
+        </div>
       </div>
 
-      {campaigns && campaigns.length > 0 && activeTab === "campaigns" && (
-        <CampaignAnalytics campaigns={campaigns} />
-      )}
-
-      <Tabs defaultValue="campaigns" value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-          <TabsTrigger value="submissions">All Submissions</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="campaigns" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <TabsList className="w-full md:w-auto">
+            <TabsTrigger value="campaigns" className="flex items-center">
+              <CalendarDays className="h-4 w-4 mr-2" />
+              Campaigns
+            </TabsTrigger>
+            <TabsTrigger value="submissions" className="flex items-center">
+              <CircleDollarSign className="h-4 w-4 mr-2" />
+              Submissions
+            </TabsTrigger>
+          </TabsList>
+          
+          {activeTab === "campaigns" && (
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+              <Select value={campaignTypeFilter} onValueChange={setCampaignTypeFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Campaign Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="retainer">Retainer</SelectItem>
+                  <SelectItem value="payPerView">Pay Per View</SelectItem>
+                  <SelectItem value="challenge">Challenge</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="ended">Ended</SelectItem>
+                  <SelectItem value="application">Application Phase</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-10 w-10">
+                    {viewMode === "grid" ? (
+                      <LayoutGrid className="h-4 w-4" />
+                    ) : (
+                      <LayoutList className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setViewMode("grid")}>
+                    <LayoutGrid className="h-4 w-4 mr-2" />
+                    Grid View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setViewMode("list")}>
+                    <LayoutList className="h-4 w-4 mr-2" />
+                    List View
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
         
         <TabsContent value="campaigns" className="mt-6">
-          <div className="grid gap-6">
-            {campaigns && campaigns.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {campaigns.map((campaign) => {
-                  const { progress, progressText, status } = getCampaignProgress(campaign);
-                  
-                  const views = Math.floor(Math.random() * 50000) + 10000;
-                  const cpm = Number(((campaign.totalBudget * 0.3) / (views / 1000)).toFixed(2));
-                  
-                  return (
-                    <div key={campaign.id} className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
-                      {campaign.bannerImage ? (
-                        <div className="h-40 relative">
-                          <img src={campaign.bannerImage} alt={campaign.title} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                          <div className="absolute bottom-0 left-0 p-4">
-                            <h3 className="text-lg font-medium text-white">{campaign.title}</h3>
-                            <p className="text-sm text-white/80">
-                              {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-4 border-b border-border/60">
-                          <h3 className="text-lg font-medium">{campaign.title}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
-                          </p>
-                        </div>
-                      )}
-                      
-                      <div className="p-4">
-                        <div className="mb-4">
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-muted-foreground">{progressText}</span>
-                            <span className="font-medium">{status}</span>
-                          </div>
-                          <Progress value={progress} className="h-2" />
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {campaign.platforms && campaign.platforms.slice(0, 3).map(platform => (
-                            <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded">
-                              {platform.split(' ')[0]}
-                            </span>
-                          ))}
-                          {campaign.platforms && campaign.platforms.length > 3 && (
-                            <span className="bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded">
-                              +{campaign.platforms.length - 3}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">Budget:</p>
-                            <p className="font-medium">{formatCurrency(campaign.totalBudget, campaign.currency)}</p>
-                          </div>
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">Views:</p>
-                            <p className="font-medium">{views.toLocaleString()}</p>
-                          </div>
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">CPM:</p>
-                            <p className="font-medium">{formatCurrency(cpm, campaign.currency)}</p>
-                          </div>
-                          <div className="text-sm">
-                            <p className="text-muted-foreground">Creators:</p>
-                            <p className="font-medium">{Math.floor(Math.random() * 5) + 1}</p>
-                          </div>
-                        </div>
-                        
-                        <Link to={`/dashboard/campaigns/${campaign.id}`}>
-                          <Button variant="outline" className="w-full">
-                            View Details
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
+          {campaigns && campaigns.length > 0 && activeTab === "campaigns" && (
+            <CampaignAnalytics campaigns={campaigns} />
+          )}
+          
+          <div className="grid gap-6 mt-6">
+            {filteredCampaigns && filteredCampaigns.length > 0 ? (
+              <div className={
+                viewMode === "grid" 
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                  : "space-y-4"
+              }>
+                {filteredCampaigns.map((campaign) => (
+                  <CampaignSummaryCard 
+                    key={campaign.id} 
+                    campaign={campaign}
+                    onDelete={handleDeleteCampaign} 
+                  />
+                ))}
+              </div>
+            ) : campaigns && campaigns.length > 0 ? (
+              <div className="bg-card border border-border rounded-lg p-8 text-center">
+                <h2 className="text-2xl font-bold mb-4">No matching campaigns</h2>
+                <p className="text-muted-foreground mb-6">
+                  Try changing your filters to see more results
+                </p>
+                <Button variant="outline" onClick={() => {
+                  setCampaignTypeFilter("all");
+                  setStatusFilter("all");
+                }}>
+                  Clear Filters
+                </Button>
               </div>
             ) : (
               <div className="bg-card border border-border rounded-lg p-8 text-center">
@@ -288,16 +348,7 @@ export default function CampaignsPage() {
         
         <TabsContent value="submissions" className="mt-6">
           <div className="bg-card border border-border rounded-lg p-6">
-            <div className="mb-4 bg-muted/30 p-4 rounded-md text-sm">
-              <div className="font-medium mb-1">Campaign Types and Submission Rules</div>
-              <ul className="list-disc ml-5 text-muted-foreground space-y-1">
-                <li><strong>Pay-per-view:</strong> Submissions have 10 days to accumulate views and are paid based on the views after this period. Submissions auto-accept after 240 hours (10 days) if not reviewed.</li>
-                <li><strong>Retainer:</strong> Fixed payment after all deliverables are successfully submitted. All submissions must be accepted to receive payment.</li>
-                <li><strong>Challenge:</strong> Paid out after the campaign ends. Winners are selected from approved submissions.</li>
-              </ul>
-            </div>
-            
-            <CampaignSubmissionsReview 
+            <CampaignSubmissions 
               submissions={mockSubmissions}
               onApprove={handleApproveSubmission}
               onDeny={handleDenySubmission}
