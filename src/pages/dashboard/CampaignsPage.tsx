@@ -1,13 +1,11 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
+import { Campaign, Submission } from "@/lib/campaign-types";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
-import { PlusCircle, ChevronDown, Dices, CalendarDays, CircleDollarSign, Filter, LayoutGrid, LayoutList } from "lucide-react";
+import { PlusCircle, ChevronDown, CalendarDays, CircleDollarSign, Filter, LayoutGrid, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
-import { Link } from "react-router-dom";
 import CampaignSummaryCard from "@/components/dashboard/CampaignSummaryCard";
 import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -27,7 +25,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Generate sample submission data with different dates
 const generateSampleSubmissions = () => {
   const platforms = ["TikTok", "Instagram Reels", "YouTube Shorts"];
   const statuses: SubmissionStatusType[] = ["pending", "approved", "rejected", "paid"];
@@ -52,11 +49,9 @@ const generateSampleSubmissions = () => {
     { id: "campaign-5", title: "Beauty Product Showcase", type: "payPerView" }
   ];
   
-  // Generate date function
   const generateDate = (daysAgo) => {
     const date = new Date();
     date.setDate(date.getDate() - daysAgo);
-    // Add random hours, minutes, and seconds
     date.setHours(Math.floor(Math.random() * 24));
     date.setMinutes(Math.floor(Math.random() * 60));
     date.setSeconds(Math.floor(Math.random() * 60));
@@ -65,14 +60,11 @@ const generateSampleSubmissions = () => {
   
   const submissions: Submission[] = [];
   
-  // Generate 20 submissions for variety
   for (let i = 0; i < 20; i++) {
     const creator = creators[Math.floor(Math.random() * creators.length)];
     const campaign = campaigns[Math.floor(Math.random() * campaigns.length)];
     const platform = platforms[Math.floor(Math.random() * platforms.length)];
-    // Weighted status - more pending than others
     const status = i < 10 ? "pending" : statuses[Math.floor(Math.random() * statuses.length)];
-    // Generate a date between now and 14 days ago
     const daysAgo = Math.random() * 14;
     
     submissions.push({
@@ -92,13 +84,11 @@ const generateSampleSubmissions = () => {
     });
   }
   
-  // Add some grouped submissions for retainer campaigns to test progress tracking
-  // For campaign-1 (Summer Fashion Collection)
   for (let i = 0; i < 3; i++) {
-    const creator = creators[0]; // Same creator for all submissions in this retainer
+    const creator = creators[0];
     const platform = platforms[i % platforms.length];
     const status = i < 2 ? "approved" : "pending";
-    const daysAgo = i * 2; // Spaced out over days
+    const daysAgo = i * 2;
     
     submissions.push({
       id: `retainer-1-${i}`,
@@ -111,18 +101,17 @@ const generateSampleSubmissions = () => {
       submitted_date: generateDate(daysAgo),
       platform,
       content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/retainer${i}`,
-      payment_amount: 500, // Fixed payment for retainer
+      payment_amount: 500,
       views: Math.floor(Math.random() * 10000) + 500,
       status
     });
   }
   
-  // For campaign-4 (Cooking Tutorial)
   for (let i = 0; i < 4; i++) {
-    const creator = creators[3]; // Same creator for all submissions in this retainer
+    const creator = creators[3];
     const platform = platforms[i % platforms.length];
     const status = i < 1 ? "approved" : "pending";
-    const daysAgo = i + 1; // More recent submissions
+    const daysAgo = i + 1;
     
     submissions.push({
       id: `retainer-2-${i}`,
@@ -135,7 +124,7 @@ const generateSampleSubmissions = () => {
       submitted_date: generateDate(daysAgo),
       platform,
       content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/cooking${i}`,
-      payment_amount: 750, // Fixed payment for retainer
+      payment_amount: 750,
       views: Math.floor(Math.random() * 15000) + 1000,
       status
     });
@@ -144,7 +133,6 @@ const generateSampleSubmissions = () => {
   return submissions;
 };
 
-// Generate sample submissions
 const mockSubmissions: Submission[] = generateSampleSubmissions();
 
 export default function CampaignsPage() {
@@ -195,10 +183,8 @@ export default function CampaignsPage() {
   
   const handleDeleteCampaign = (id: string) => {
     toast.success("Campaign deleted successfully");
-    // In a real app, you would connect to the database and delete the campaign
   };
 
-  // Filter campaigns based on selected filters
   const filteredCampaigns = campaigns?.filter(campaign => {
     if (campaignTypeFilter !== "all" && campaign.type !== campaignTypeFilter) {
       return false;

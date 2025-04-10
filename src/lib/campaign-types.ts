@@ -1,3 +1,4 @@
+
 export const CONTENT_TYPES = ["UGC", "Faceless", "Clipping"] as const;
 export const CATEGORIES = ["Fashion", "Beauty", "Tech", "Gaming", "Food", "Travel", "Lifestyle", "Fitness", "Education", "Entertainment", "Finance", "Business", "Health", "Sports", "Music", "News", "Politics", "Science", "Art", "Design", "Photography", "Film", "Writing", "DIY", "Automotive", "Real Estate", "Home", "Parenting", "Pets", "Nature"] as const;
 export const PLATFORMS = ["TikTok", "TikTok Shop", "Instagram Reels", "Twitter", "YouTube Shorts"] as const;
@@ -144,6 +145,17 @@ export interface Submission {
   status: SubmissionStatusType;
 }
 
+export interface RetainerProgress {
+  creator_id: string;
+  campaign_id: string;
+  total_required: number;
+  submitted: number;
+  approved: number;
+  rejected: number;
+  pending: number;
+  completion_percentage: number;
+}
+
 export interface Payment {
   id: string;
   creator_id: string;
@@ -196,4 +208,41 @@ export const getCountryLabel = (countryOption: CountryOption): string => {
     default:
       return 'Worldwide';
   }
+};
+
+export const calculatePayPerViewPayout = (views: number, ratePerThousand: number, maxPayout?: number): number => {
+  const payout = (views / 1000) * ratePerThousand;
+  return maxPayout ? Math.min(payout, maxPayout) : payout;
+};
+
+export const getRetainerProgress = (submissions: Submission[], campaign: RetainerCampaign, creatorId: string): RetainerProgress => {
+  const creatorSubmissions = submissions.filter(s => 
+    s.creator_id === creatorId && 
+    s.campaign_id === campaign.id
+  );
+  
+  let totalRequired = 0;
+  
+  if (campaign.deliverables.mode === "videosPerDay" && campaign.deliverables.videosPerDay && campaign.deliverables.durationDays) {
+    totalRequired = campaign.deliverables.videosPerDay * campaign.deliverables.durationDays;
+  } else if (campaign.deliverables.mode === "totalVideos" && campaign.deliverables.totalVideos) {
+    totalRequired = campaign.deliverables.totalVideos;
+  }
+  
+  const submitted = creatorSubmissions.length;
+  const approved = creatorSubmissions.filter(s => s.status === "approved" || s.status === "paid").length;
+  const rejected = creatorSubmissions.filter(s => s.status === "rejected").length;
+  const pending = creatorSubmissions.filter(s => s.status === "pending").length;
+  const completionPercentage = totalRequired > 0 ? Math.round((approved / totalRequired) * 100) : 0;
+  
+  return {
+    creator_id: creatorId,
+    campaign_id: campaign.id || "",
+    total_required: totalRequired,
+    submitted,
+    approved,
+    rejected,
+    pending,
+    completion_percentage: completionPercentage
+  };
 };
