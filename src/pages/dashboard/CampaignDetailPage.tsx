@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 import CampaignSubmissionsReview from "@/components/CampaignSubmissionsReview";
-import { Submission } from "@/lib/campaign-types";
+import { Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { toast } from "sonner";
 
 // Mock creators data
@@ -86,8 +86,8 @@ const mockApplications = [{
   status: "pending"
 }];
 
-// Mock submissions data
-const mockSubmissions = [{
+// Mock submissions data with corrected type for status
+const mockSubmissions: Submission[] = [{
   id: "201",
   creator_id: "1001",
   creator_name: "Sarah Johnson",
@@ -99,7 +99,7 @@ const mockSubmissions = [{
   content: "https://tiktok.com/video123",
   payment_amount: 150,
   views: 8500,
-  status: "pending"
+  status: "pending" as SubmissionStatusType
 }, {
   id: "202",
   creator_id: "1002",
@@ -112,7 +112,7 @@ const mockSubmissions = [{
   content: "https://youtube.com/shorts/video456",
   payment_amount: 200,
   views: 12300,
-  status: "approved"
+  status: "approved" as SubmissionStatusType
 }, {
   id: "203",
   creator_id: "1003",
@@ -125,7 +125,7 @@ const mockSubmissions = [{
   content: "https://instagram.com/reel789",
   payment_amount: 175,
   views: 5600,
-  status: "pending"
+  status: "pending" as SubmissionStatusType
 }, {
   id: "204",
   creator_id: "1004",
@@ -138,7 +138,7 @@ const mockSubmissions = [{
   content: "https://tiktok.com/video789",
   payment_amount: 125,
   views: 3200,
-  status: "pending"
+  status: "pending" as SubmissionStatusType
 }];
 
 export default function CampaignDetailPage() {
@@ -176,6 +176,17 @@ export default function CampaignDetailPage() {
       return convertDatabaseCampaign(data);
     }
   });
+
+  const handleAddBudget = () => {
+    const amount = parseFloat(budgetAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Please enter a valid budget amount");
+      return;
+    }
+    
+    toast.success(`Added $${amount.toFixed(2)} to campaign budget`);
+    setBudgetDialogOpen(false);
+  };
 
   const handleApproveSubmission = async (submission: Submission) => {
     try {
