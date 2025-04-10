@@ -9,10 +9,11 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { formatCurrency } from "@/lib/campaign-types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
-import { Submission, Payment } from "@/lib/campaign-types";
+import { Submission, Payment, DirectPaymentFormData } from "@/lib/campaign-types";
 import DirectPaymentDialog from "@/components/DirectPaymentDialog";
 import PaymentConfirmationDialog from "@/components/PaymentConfirmationDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 const mockSubmissions: Submission[] = [
   {
@@ -268,6 +269,42 @@ export default function PaymentsPage() {
   
   const handleDirectPayment = () => {
     setDirectPaymentOpen(true);
+  };
+
+  const handleDirectPaymentSubmit = async (data: DirectPaymentFormData) => {
+    try {
+      console.log("Processing direct payment:", data);
+      toast.success(`Direct payment of ${formatCurrency(data.payment_amount)} created for campaign`);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error processing direct payment:", error);
+      toast.error("Failed to process direct payment");
+      return Promise.reject(error);
+    }
+  };
+
+  const handleConfirmPayment = async (submission: Submission) => {
+    try {
+      console.log("Processing payment for submission:", submission);
+      toast.success(`Payment of ${formatCurrency(submission.payment_amount)} processed for ${submission.creator_name}`);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      toast.error("Failed to process payment");
+      return Promise.reject(error);
+    }
+  };
+
+  const handleDenyPayment = async (submission: Submission, reason: string) => {
+    try {
+      console.log("Denying payment for submission:", submission, "Reason:", reason);
+      toast.success(`Payment denied for ${submission.creator_name}`);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error denying payment:", error);
+      toast.error("Failed to deny payment");
+      return Promise.reject(error);
+    }
   };
   
   return (
@@ -563,15 +600,16 @@ export default function PaymentsPage() {
       
       <DirectPaymentDialog 
         open={directPaymentOpen} 
-        onOpenChange={setDirectPaymentOpen} 
+        onOpenChange={setDirectPaymentOpen}
+        onSubmit={handleDirectPaymentSubmit}
       />
       
       <PaymentConfirmationDialog 
         open={paymentConfirmationOpen} 
         onOpenChange={setPaymentConfirmationOpen}
-        creatorName={paymentDialogData.creatorName}
-        amount={paymentDialogData.amount}
         submission={selectedSubmission}
+        onConfirm={handleConfirmPayment}
+        onDeny={handleDenyPayment}
       />
     </div>
   );
