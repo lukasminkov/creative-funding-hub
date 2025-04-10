@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +19,9 @@ import { format } from "date-fns";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
+import CampaignSubmissionsReview from "@/components/CampaignSubmissionsReview";
+import { Submission } from "@/lib/campaign-types";
+import { toast } from "sonner";
 
 // Mock creators data
 const mockCreators = [{
@@ -86,40 +88,56 @@ const mockApplications = [{
 
 // Mock submissions data
 const mockSubmissions = [{
-  id: 201,
-  creator: "Sarah Johnson",
-  avatar: "https://i.pravatar.cc/150?u=sarah",
-  title: "Product Review Video",
-  platform: "tiktok",
+  id: "201",
+  creator_id: "1001",
+  creator_name: "Sarah Johnson",
+  creator_avatar: "https://i.pravatar.cc/150?u=sarah",
+  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
+  campaign_title: "Product Review Video",
+  submitted_date: new Date("2023-09-10"),
+  platform: "TikTok",
+  content: "https://tiktok.com/video123",
+  payment_amount: 150,
   views: 8500,
-  date: "2023-09-10",
-  status: "approved"
-}, {
-  id: 202,
-  creator: "Mike Peters",
-  avatar: "https://i.pravatar.cc/150?u=mike",
-  title: "Brand Unboxing",
-  platform: "youtube",
-  views: 12300,
-  date: "2023-09-05",
-  status: "approved"
-}, {
-  id: 203,
-  creator: "Jessica Williams",
-  avatar: "https://i.pravatar.cc/150?u=jessica",
-  title: "Tutorial with Product",
-  platform: "instagram",
-  views: 5600,
-  date: "2023-09-12",
   status: "pending"
 }, {
-  id: 204,
-  creator: "David Chen",
-  avatar: "https://i.pravatar.cc/150?u=david",
-  title: "Product Demo",
-  platform: "tiktok",
+  id: "202",
+  creator_id: "1002",
+  creator_name: "Mike Peters",
+  creator_avatar: "https://i.pravatar.cc/150?u=mike",
+  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
+  campaign_title: "Brand Unboxing",
+  submitted_date: new Date("2023-09-05"),
+  platform: "YouTube Shorts",
+  content: "https://youtube.com/shorts/video456",
+  payment_amount: 200,
+  views: 12300,
+  status: "approved"
+}, {
+  id: "203",
+  creator_id: "1003",
+  creator_name: "Jessica Williams",
+  creator_avatar: "https://i.pravatar.cc/150?u=jessica",
+  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
+  campaign_title: "Tutorial with Product",
+  submitted_date: new Date("2023-09-12"),
+  platform: "Instagram Reels",
+  content: "https://instagram.com/reel789",
+  payment_amount: 175,
+  views: 5600,
+  status: "pending"
+}, {
+  id: "204",
+  creator_id: "1004",
+  creator_name: "David Chen",
+  creator_avatar: "https://i.pravatar.cc/150?u=david",
+  campaign_id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
+  campaign_title: "Product Demo",
+  submitted_date: new Date("2023-09-15"),
+  platform: "TikTok",
+  content: "https://tiktok.com/video789",
+  payment_amount: 125,
   views: 3200,
-  date: "2023-09-15",
   status: "pending"
 }];
 
@@ -127,15 +145,13 @@ export default function CampaignDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("active-creators");
+  const [activeTab, setActiveTab] = useState("submissions");
   
-  // New state for improved filter
   const [filterType, setFilterType] = useState<string>("none");
   const [creatorFilter, setCreatorFilter] = useState<string>("");
   const [platformFilter, setPlatformFilter] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   
-  // Add budget dialog
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState<string>("1000");
   
@@ -160,51 +176,28 @@ export default function CampaignDetailPage() {
       return convertDatabaseCampaign(data);
     }
   });
-  
-  // Get unique creators and platforms for filter options
-  const uniqueCreators = Array.from(new Set(mockSubmissions.map(sub => sub.creator)));
-  const uniquePlatforms = Array.from(new Set(mockSubmissions.map(sub => sub.platform)));
-  
-  // Apply filters to submissions based on selected filter type
-  const filteredSubmissions = mockSubmissions.filter(submission => {
-    if (filterType === "none") return true;
-    
-    if (filterType === "creator" && creatorFilter) {
-      return submission.creator === creatorFilter;
+
+  const handleApproveSubmission = async (submission: Submission) => {
+    try {
+      toast.success(`Approved submission from ${submission.creator_name}`);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error approving submission:", error);
+      toast.error("Failed to approve submission");
+      return Promise.reject(error);
     }
-    
-    if (filterType === "platform" && platformFilter) {
-      return submission.platform === platformFilter;
-    }
-    
-    if (filterType === "date" && dateFilter) {
-      const submissionDate = new Date(submission.date);
-      const filterDate = new Date(dateFilter);
-      
-      return (
-        submissionDate.getFullYear() === filterDate.getFullYear() &&
-        submissionDate.getMonth() === filterDate.getMonth() &&
-        submissionDate.getDate() === filterDate.getDate()
-      );
-    }
-    
-    return true;
-  });
-  
-  // Function to clear all filters
-  const clearFilters = () => {
-    setFilterType("none");
-    setCreatorFilter("");
-    setPlatformFilter("");
-    setDateFilter(undefined);
   };
-  
-  // Handle adding budget
-  const handleAddBudget = () => {
-    // In a real app, this would make an API call
-    console.log(`Adding $${budgetAmount} to campaign budget`);
-    setBudgetDialogOpen(false);
-    // Would refetch the campaign to get updated budget
+
+  const handleDenySubmission = async (submission: Submission, reason: string) => {
+    try {
+      toast.success(`Denied submission from ${submission.creator_name}`);
+      console.log("Denial reason:", reason);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error denying submission:", error);
+      toast.error("Failed to deny submission");
+      return Promise.reject(error);
+    }
   };
 
   if (isLoading) {
@@ -288,8 +281,8 @@ export default function CampaignDetailPage() {
             <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
               {campaign.contentType}
             </span>
-            <span className={`text-xs py-1 px-2 rounded-full ${statusColor}`}>
-              {status}
+            <span className={`text-xs py-1 px-2 rounded-full bg-green-100 text-green-800`}>
+              Active
             </span>
           </div>
         </div>
@@ -315,8 +308,8 @@ export default function CampaignDetailPage() {
           <div className="mb-5">
             <div className="flex justify-between mb-1 text-sm">
               <span>{progressText}</span>
-              <span className={`text-xs py-1 px-2 rounded-full ${statusColor}`}>
-                {status}
+              <span className={`text-xs py-1 px-2 rounded-full bg-green-100 text-green-800`}>
+                Active
               </span>
             </div>
             <Progress value={progress} className="h-3" />
@@ -385,150 +378,33 @@ export default function CampaignDetailPage() {
       </div>
       
       <Card className="mb-8">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle>Submissions</CardTitle>
-          <div className="flex items-center gap-2">
-            {/* Simplified Filter UI */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                <span className="text-sm mr-2 font-medium">Filter By:</span>
-                <Select value={filterType} onValueChange={(value) => {
-                  setFilterType(value);
-                  // Reset specific filters when changing type
-                  setCreatorFilter("");
-                  setPlatformFilter("");
-                  setDateFilter(undefined);
-                }}>
-                  <SelectTrigger className="w-[130px]">
-                    <SelectValue placeholder="Select filter" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="creator">Creator</SelectItem>
-                    <SelectItem value="platform">Platform</SelectItem>
-                    <SelectItem value="date">Date</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {filterType === "creator" && (
-                <Select value={creatorFilter} onValueChange={setCreatorFilter}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Select creator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {uniqueCreators.map(creator => (
-                      <SelectItem key={creator} value={creator}>{creator}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              
-              {filterType === "platform" && (
-                <Select value={platformFilter} onValueChange={setPlatformFilter}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Select platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {uniquePlatforms.map(platform => (
-                      <SelectItem key={platform} value={platform}>{platform}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              
-              {filterType === "date" && (
-                <DatePicker 
-                  date={dateFilter} 
-                  onSelect={setDateFilter} 
-                  placeholder="Select date"
-                  className="w-[160px]"
+        <Tabs defaultValue="submissions" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="submissions">Submissions</TabsTrigger>
+            <TabsTrigger value="creators">Creators</TabsTrigger>
+            <TabsTrigger value="applications">Applications</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="submissions" className="mt-6">
+            <Card>
+              <CardContent className="pt-6">
+                <CampaignSubmissionsReview 
+                  submissions={mockSubmissions}
+                  onApprove={handleApproveSubmission}
+                  onDeny={handleDenySubmission}
+                  campaignId={id}
                 />
-              )}
-              
-              {filterType !== "none" && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
-                  <X className="h-4 w-4 mr-1" />
-                  Clear
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {filteredSubmissions.length > 0 ? <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Creator</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Platform</TableHead>
-                    <TableHead>Views</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSubmissions.map(submission => <TableRow key={submission.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={submission.avatar} alt={submission.creator} />
-                            <AvatarFallback>{submission.creator.substring(0, 2)}</AvatarFallback>
-                          </Avatar>
-                          <div className="font-medium">{submission.creator}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{submission.title}</TableCell>
-                      <TableCell>
-                        <div className="bg-secondary/50 p-1 rounded-full w-fit">
-                          <SocialIcon platform={submission.platform} />
-                        </div>
-                      </TableCell>
-                      <TableCell>{submission.views.toLocaleString()}</TableCell>
-                      <TableCell>{new Date(submission.date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 text-xs rounded-full ${submission.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="space-x-2">
-                          <Button variant="ghost" size="sm">View</Button>
-                          {submission.status === 'pending' && <>
-                              <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">Approve</Button>
-                              <Button variant="destructive" size="sm">Deny</Button>
-                            </>}
-                        </div>
-                      </TableCell>
-                    </TableRow>)}
-                </TableBody>
-              </Table>
-            </div> : <div className="text-center py-6">
-              <p className="text-muted-foreground mb-4">
-                {mockSubmissions.length === 0 ? "No submissions yet" : "No results match your filters"}
-              </p>
-              <Button variant="outline">Remind Creators</Button>
-            </div>}
-        </CardContent>
-      </Card>
-
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-4">Creators & Applications</h3>
-      </div>
-
-      <Card className="mb-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <CardHeader className="pb-0 border-b">
-            <TabsList>
-              <TabsTrigger value="active-creators">Active Creators</TabsTrigger>
-              <TabsTrigger value="applications">Applications</TabsTrigger>
-            </TabsList>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <TabsContent value="active-creators" className="mt-0">
-              {mockCreators.length > 0 ? <div className="overflow-x-auto">
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="creators" className="mt-6">
+            <Card>
+              <CardHeader className="pb-0 border-b">
+                <CardTitle>Active Creators</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -567,13 +443,18 @@ export default function CampaignDetailPage() {
                         </TableRow>)}
                     </TableBody>
                   </Table>
-                </div> : <div className="text-center py-6">
-                  <p className="text-muted-foreground mb-4">No active creators yet</p>
-                  <Button variant="outline">Invite Creators</Button>
-                </div>}
-            </TabsContent>
-            <TabsContent value="applications" className="mt-0">
-              {mockApplications.length > 0 ? <div className="overflow-x-auto">
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="applications" className="mt-6">
+            <Card>
+              <CardHeader className="pb-0 border-b">
+                <CardTitle>Applications</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -617,12 +498,10 @@ export default function CampaignDetailPage() {
                         </TableRow>)}
                     </TableBody>
                   </Table>
-                </div> : <div className="text-center py-6">
-                  <p className="text-muted-foreground mb-4">No applications yet</p>
-                  <Button variant="outline">Share Campaign</Button>
-                </div>}
-            </TabsContent>
-          </CardContent>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </Card>
 

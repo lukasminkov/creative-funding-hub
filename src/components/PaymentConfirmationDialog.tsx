@@ -11,15 +11,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Submission } from "@/lib/campaign-types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DollarSign } from "lucide-react";
+import { DollarSign, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface PaymentConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   submission: Submission | null;
   onConfirm: (submission: Submission) => Promise<void>;
+  isDenial?: boolean;
+  onDeny?: (submission: Submission, reason: string) => Promise<void>;
 }
 
 // Generate initials from name
@@ -32,8 +36,12 @@ export default function PaymentConfirmationDialog({
   onOpenChange,
   submission,
   onConfirm,
+  isDenial = false,
+  onDeny,
 }: PaymentConfirmationDialogProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [denialReason, setDenialReason] = useState("");
+  const [denialReasonError, setDenialReasonError] = useState(false);
 
   if (!submission) return null;
 
@@ -47,13 +55,34 @@ export default function PaymentConfirmationDialog({
     }
   };
 
+  const handleDeny = async () => {
+    if (isDenial && (!denialReason || denialReason.trim() === "")) {
+      setDenialReasonError(true);
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      if (onDeny) {
+        await onDeny(submission, denialReason);
+      }
+    } finally {
+      setIsProcessing(false);
+      onOpenChange(false);
+    }
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirm Payment</AlertDialogTitle>
+          <AlertDialogTitle>
+            {isDenial ? "Deny Submission" : "Confirm Payment"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            You are about to process a payment to the following creator:
+            {isDenial ? 
+              "You are about to deny this submission. Please provide a reason:" : 
+              "You are about to process a payment to the following creator:"}
           </AlertDialogDescription>
         </AlertDialogHeader>
         
@@ -72,24 +101,64 @@ export default function PaymentConfirmationDialog({
             </div>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Payment amount:</span>
-            <span className="text-lg font-bold">${submission.payment_amount}</span>
-          </div>
+          {!isDenial && (
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Payment amount:</span>
+              <span className="text-lg font-bold">${submission.payment_amount}</span>
+            </div>
+          )}
         </div>
+        
+        {isDenial && (
+          <div className="space-y-2">
+            <Label htmlFor="denial-reason">Reason for denial <span className="text-red-500">*</span></Label>
+            <Textarea 
+              id="denial-reason" 
+              placeholder="Please explain why this submission is being denied..." 
+              value={denialReason} 
+              onChange={(e) => {
+                setDenialReason(e.target.value);
+                if (e.target.value.trim() !== "") {
+                  setDenialReasonError(false);
+                }
+              }}
+              className={denialReasonError ? "border-red-500" : ""}
+            />
+            {denialReasonError && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" />
+                A reason is required for denying a submission
+              </p>
+            )}
+          </div>
+        )}
         
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} className="bg-primary" disabled={isProcessing}>
-            {isProcessing ? (
-              <>Processing...</>
-            ) : (
-              <>
-                <DollarSign className="mr-2 h-4 w-4" />
-                Confirm Payment
-              </>
-            )}
-          </AlertDialogAction>
+          {isDenial ? (
+            <AlertDialogAction 
+              onClick={handleDeny} 
+              className="bg-destructive hover:bg-destructive/90" 
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Processing..." : "Deny Submission"}
+            </AlertDialogAction>
+          ) : (
+            <AlertDialogAction 
+              onClick={handleConfirm} 
+              className="bg-primary" 
+              disabled={isProcessing}
+            >
+              {isProcessing ? (
+                <>Processing...</>
+              ) : (
+                <>
+                  <DollarSign className="mr-2 h-4 w-4" />
+                  Confirm Payment
+                </>
+              )}
+            </AlertDialogAction>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
