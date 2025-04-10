@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +17,6 @@ import CampaignApplicationsList from "@/components/dashboard/CampaignApplication
 import { Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { toast } from "sonner";
 
-// Enhanced mock creators data with more details
 const mockCreators = [{
   id: 1,
   name: "Sarah Johnson",
@@ -61,7 +59,6 @@ const mockCreators = [{
   status: "active"
 }];
 
-// Enhanced mock applications data
 const mockApplications = [{
   id: 101,
   name: "Tyler Rodriguez",
@@ -119,18 +116,15 @@ const mockApplications = [{
   status: "pending"
 }];
 
-// Create functions to generate different submission date timestamps for variety
 const generateSubmissionDate = (daysAgo) => {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
-  // Add random hours, minutes, and seconds
   date.setHours(Math.floor(Math.random() * 24));
   date.setMinutes(Math.floor(Math.random() * 60));
   date.setSeconds(Math.floor(Math.random() * 60));
   return date;
 };
 
-// Enhanced mock submissions data with more variety in dates and statuses
 const generateMockSubmissions = (campaignId) => {
   return [
     {
@@ -249,7 +243,6 @@ export default function CampaignDetailPage() {
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState<string>("1000");
   
-  // Create mock submissions specific to this campaign ID
   const mockSubmissions = id ? generateMockSubmissions(id) : [];
   
   const {
@@ -388,7 +381,6 @@ export default function CampaignDetailPage() {
                   submissions={mockSubmissions}
                   onApprove={handleApproveSubmission}
                   onDeny={handleDenySubmission}
-                  campaignId={id}
                   campaign={campaign}
                 />
               </CardContent>
@@ -419,7 +411,6 @@ export default function CampaignDetailPage() {
         </Tabs>
       </Card>
 
-      {/* Add Budget Dialog */}
       <Dialog open={budgetDialogOpen} onOpenChange={setBudgetDialogOpen}>
         <DialogContent>
           <DialogHeader>

@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Campaign, Submission } from "@/lib/campaign-types";
+import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
 import { PlusCircle, ChevronDown, CalendarDays, CircleDollarSign, Filter, LayoutGrid, LayoutList } from "lucide-react";

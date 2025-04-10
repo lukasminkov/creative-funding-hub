@@ -5,7 +5,8 @@ import {
   Submission, 
   RetainerCampaign, 
   PayPerViewCampaign, 
-  ChallengeCampaign
+  ChallengeCampaign,
+  Campaign
 } from "@/lib/campaign-types";
 import RetainerSubmissionsTable from "./RetainerSubmissionsTable";
 import PayPerViewSubmissionsTable from "./PayPerViewSubmissionsTable";
@@ -120,12 +121,14 @@ interface CampaignSubmissionsProps {
   submissions: Submission[];
   onApprove: (submission: Submission) => Promise<void>;
   onDeny: (submission: Submission, reason: string) => Promise<void>;
+  campaign?: Campaign; // Make campaign optional
 }
 
 const CampaignSubmissions: React.FC<CampaignSubmissionsProps> = ({ 
   submissions,
   onApprove,
-  onDeny
+  onDeny,
+  campaign
 }) => {
   const [activeTab, setActiveTab] = useState("retainer");
   
