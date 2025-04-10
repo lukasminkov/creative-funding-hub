@@ -11,7 +11,10 @@ import {
   AlertCircle, 
   ChevronDown,
   Layers,
-  FileText
+  FileText,
+  DollarSign,
+  Trophy,
+  HandCoins
 } from "lucide-react";
 import { format, formatDistanceToNow, isAfter, isBefore, addHours } from "date-fns";
 import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
@@ -47,6 +50,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { SocialIcon } from "@/components/icons/SocialIcons";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface CampaignSubmissionsProps {
   submissions: Submission[];
@@ -68,6 +72,7 @@ export default function CampaignSubmissions({
   const [platformFilter, setPlatformFilter] = useState<string>("all");
   const [campaignFilter, setCampaignFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date-desc");
+  const [activeCampaignType, setActiveCampaignType] = useState<string>("all");
   const [denyDialogOpen, setDenyDialogOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [denyReason, setDenyReason] = useState("");
@@ -76,7 +81,6 @@ export default function CampaignSubmissions({
   const [campaignSubmissionsDialogOpen, setCampaignSubmissionsDialogOpen] = useState(false);
 
   const platforms = Array.from(new Set(submissions.map(s => s.platform)));
-  // Get unique campaign titles for filtering
   const campaigns = Array.from(new Set(submissions.map(s => s.campaign_title))).map(title => ({ 
     title, 
     id: submissions.find(s => s.campaign_title === title)?.campaign_id || ""
@@ -90,6 +94,11 @@ export default function CampaignSubmissions({
     acc[submission.campaign_id].push(submission);
     return acc;
   }, {} as Record<string, Submission[]>);
+
+  // Filter submissions by campaign type
+  const retainerSubmissions = submissions.filter(s => s.campaign_type === 'retainer');
+  const payPerViewSubmissions = submissions.filter(s => s.campaign_type === 'payPerView');
+  const challengeSubmissions = submissions.filter(s => s.campaign_type === 'challenge');
 
   const handleDenyClick = (submission: Submission) => {
     setSelectedSubmission(submission);
@@ -117,11 +126,11 @@ export default function CampaignSubmissions({
   };
   
   const handleViewCampaignSubmissions = (campaignId: string, campaignTitle: string) => {
-    setSelectedSubmission({
-      ...submissions.find(s => s.campaign_id === campaignId) as Submission,
-      campaign_title: campaignTitle
-    });
-    setCampaignSubmissionsDialogOpen(true);
+    const campaignSubmission = submissions.find(s => s.campaign_id === campaignId);
+    if (campaignSubmission) {
+      setSelectedSubmission(campaignSubmission);
+      setCampaignSubmissionsDialogOpen(true);
+    }
   };
 
   const getDeadlineInfo = (submission: Submission) => {
@@ -146,28 +155,6 @@ export default function CampaignSubmissions({
     };
   };
   
-  // Function to determine campaign type based on submission
-  const getCampaignType = (submission: Submission): string => {
-    // In a real app, this would come from the campaign data
-    // For now, we'll use a simple approach based on the submission properties
-    
-    // If this is a campaign that has multiple deliverables and fixed payment, it's likely a retainer
-    const campaignSubmissions = submissionsByCampaign[submission.campaign_id] || [];
-    const hasMultipleSubmissions = campaignSubmissions.length > 1;
-    
-    if (hasMultipleSubmissions) {
-      return "Retainer";
-    }
-    
-    // If the payment depends on views, it's likely a pay-per-view
-    if (submission.views > 0 && submission.payment_amount > 0) {
-      return "Pay-Per-View";
-    }
-    
-    // If there's only one submission and fixed payment, could be a challenge
-    return "Challenge";
-  };
-  
   // For retainer campaigns, track X/Y submissions
   const getRetainerProgress = (campaignId: string) => {
     const campaignSubmissions = submissionsByCampaign[campaignId] || [];
@@ -179,22 +166,20 @@ export default function CampaignSubmissions({
     };
   };
 
-  const filteredSubmissions = submissions
-    .filter(submission => {
+  // Apply filters to submissions based on active campaign type
+  const applySubmissionFilters = (submissionList: Submission[]) => {
+    return submissionList.filter(submission => {
       const matchesSearch = 
         submission.creator_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         submission.campaign_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         submission.content.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = statusFilter === "all" || submission.status === statusFilter;
-      
       const matchesPlatform = platformFilter === "all" || submission.platform === platformFilter;
-      
       const matchesCampaign = campaignFilter === "all" || submission.campaign_id === campaignFilter;
       
       return matchesSearch && matchesStatus && matchesPlatform && matchesCampaign;
-    })
-    .sort((a, b) => {
+    }).sort((a, b) => {
       switch (sortBy) {
         case "date-asc":
           return new Date(a.submitted_date).getTime() - new Date(b.submitted_date).getTime();
@@ -212,252 +197,192 @@ export default function CampaignSubmissions({
           return new Date(b.submitted_date).getTime() - new Date(a.submitted_date).getTime();
       }
     });
+  };
+
+  const filteredRetainerSubmissions = applySubmissionFilters(retainerSubmissions);
+  const filteredPayPerViewSubmissions = applySubmissionFilters(payPerViewSubmissions);
+  const filteredChallengeSubmissions = applySubmissionFilters(challengeSubmissions);
+  const filteredAllSubmissions = applySubmissionFilters(submissions);
+
+  const activeSubmissions = activeCampaignType === 'all' 
+    ? filteredAllSubmissions 
+    : activeCampaignType === 'retainer' 
+      ? filteredRetainerSubmissions 
+      : activeCampaignType === 'payPerView' 
+        ? filteredPayPerViewSubmissions 
+        : filteredChallengeSubmissions;
 
   return (
     <div className="space-y-4">
-      <div className="bg-muted/30 p-4 rounded-md text-sm">
-        <div className="font-medium mb-1">Campaign Types and Submission Rules</div>
-        <ul className="list-disc ml-5 text-muted-foreground space-y-1">
-          <li><strong>Pay-per-view:</strong> Submissions have 10 days to accumulate views and are paid based on the views after this period. Submissions auto-accept after 240 hours (10 days) if not reviewed.</li>
-          <li><strong>Retainer:</strong> Fixed payment after all deliverables are successfully submitted. All submissions must be accepted to receive payment.</li>
-          <li><strong>Challenge:</strong> Paid out after the campaign ends. Winners are selected from approved submissions.</li>
-        </ul>
-      </div>
-      
-      <div className="flex flex-col md:flex-row gap-4 items-end md:items-center">
-        <div className="relative w-full md:w-1/3">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search submissions..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-2/3">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-            </SelectContent>
-          </Select>
+      <Tabs 
+        defaultValue="all" 
+        value={activeCampaignType} 
+        onValueChange={setActiveCampaignType}
+        className="w-full"
+      >
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center gap-2 justify-between">
+            <TabsList className="h-10">
+              <TabsTrigger value="all" className="flex items-center gap-1">
+                <Layers className="h-4 w-4" />
+                All Types
+                <Badge variant="secondary" className="ml-1">{submissions.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="retainer" className="flex items-center gap-1">
+                <HandCoins className="h-4 w-4" />
+                Retainer
+                <Badge variant="secondary" className="ml-1">{retainerSubmissions.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="payPerView" className="flex items-center gap-1">
+                <DollarSign className="h-4 w-4" />
+                Pay-Per-View
+                <Badge variant="secondary" className="ml-1">{payPerViewSubmissions.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="challenge" className="flex items-center gap-1">
+                <Trophy className="h-4 w-4" />
+                Challenge
+                <Badge variant="secondary" className="ml-1">{challengeSubmissions.length}</Badge>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4 items-end md:items-center">
+            <div className="relative w-full md:w-1/3">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search submissions..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-2/3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Platforms</SelectItem>
+                  {platforms.map(platform => (
+                    <SelectItem key={platform} value={platform}>
+                      {platform}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={campaignFilter} onValueChange={setCampaignFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by campaign" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Campaigns</SelectItem>
+                  {campaigns.map(campaign => (
+                    <SelectItem key={campaign.id} value={campaign.id}>
+                      {campaign.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-desc">Newest First</SelectItem>
+                  <SelectItem value="date-asc">Oldest First</SelectItem>
+                  <SelectItem value="views-desc">Most Views</SelectItem>
+                  <SelectItem value="views-asc">Least Views</SelectItem>
+                  <SelectItem value="payment-desc">Highest Payment</SelectItem>
+                  <SelectItem value="payment-asc">Lowest Payment</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Campaign Type Rules Banner */}
+          <TabsContent value="all" className="mt-0">
+            <div className="bg-muted/30 p-4 rounded-md text-sm">
+              <div className="font-medium mb-1">Campaign Types and Submission Rules</div>
+              <ul className="list-disc ml-5 text-muted-foreground space-y-1">
+                <li><strong>Pay-per-view:</strong> Submissions have 10 days to accumulate views and are paid based on the views after this period. Submissions auto-accept after 240 hours (10 days) if not reviewed.</li>
+                <li><strong>Retainer:</strong> Fixed payment after all deliverables are successfully submitted. All submissions must be accepted to receive payment.</li>
+                <li><strong>Challenge:</strong> Paid out after the campaign ends. Winners are selected from approved submissions.</li>
+              </ul>
+            </div>
+          </TabsContent>
           
-          <Select value={platformFilter} onValueChange={setPlatformFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by platform" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Platforms</SelectItem>
-              {platforms.map(platform => (
-                <SelectItem key={platform} value={platform}>
-                  {platform}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <TabsContent value="retainer" className="mt-0">
+            <div className="bg-purple-50 border border-purple-200 p-4 rounded-md text-sm">
+              <div className="font-medium mb-1 text-purple-800">Retainer Campaign Rules</div>
+              <ul className="list-disc ml-5 text-purple-700 space-y-1">
+                <li>Fixed payment per tier/contract</li>
+                <li>All submissions must be approved to receive full payment</li>
+                <li>Deliverables are tracked across multiple submissions</li>
+                <li>Manual review required for all submissions</li>
+              </ul>
+            </div>
+          </TabsContent>
           
-          <Select value={campaignFilter} onValueChange={setCampaignFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by campaign" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Campaigns</SelectItem>
-              {campaigns.map(campaign => (
-                <SelectItem key={campaign.id} value={campaign.id}>
-                  {campaign.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <TabsContent value="payPerView" className="mt-0">
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-md text-sm">
+              <div className="font-medium mb-1 text-blue-800">Pay-Per-View Campaign Rules</div>
+              <ul className="list-disc ml-5 text-blue-700 space-y-1">
+                <li>Admin has 240 hours (10 days) to approve/reject</li>
+                <li>Auto-approved if not reviewed within deadline</li>
+                <li>Views accumulate for 10 days after posting</li>
+                <li>Payment calculated based on final view count</li>
+                <li>Cannot exceed max payout per submission</li>
+              </ul>
+            </div>
+          </TabsContent>
           
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date-desc">Newest First</SelectItem>
-              <SelectItem value="date-asc">Oldest First</SelectItem>
-              <SelectItem value="views-desc">Most Views</SelectItem>
-              <SelectItem value="views-asc">Least Views</SelectItem>
-              <SelectItem value="payment-desc">Highest Payment</SelectItem>
-              <SelectItem value="payment-asc">Lowest Payment</SelectItem>
-            </SelectContent>
-          </Select>
+          <TabsContent value="challenge" className="mt-0">
+            <div className="bg-orange-50 border border-orange-200 p-4 rounded-md text-sm">
+              <div className="font-medium mb-1 text-orange-800">Challenge Campaign Rules</div>
+              <ul className="list-disc ml-5 text-orange-700 space-y-1">
+                <li>All submissions must be approved to be eligible</li>
+                <li>Judging occurs after campaign end date</li>
+                <li>Winners paid based on prize pool structure</li>
+                <li>No auto-approval - admin must review each submission</li>
+              </ul>
+            </div>
+          </TabsContent>
+
+          {/* Tables for each campaign type */}
+          <TabsContent value="all" className="mt-0">
+            {renderSubmissionsTable(activeSubmissions)}
+          </TabsContent>
+          
+          <TabsContent value="retainer" className="mt-0">
+            {renderRetainerTable(filteredRetainerSubmissions)}
+          </TabsContent>
+          
+          <TabsContent value="payPerView" className="mt-0">
+            {renderPayPerViewTable(filteredPayPerViewSubmissions)}
+          </TabsContent>
+          
+          <TabsContent value="challenge" className="mt-0">
+            {renderChallengeTable(filteredChallengeSubmissions)}
+          </TabsContent>
         </div>
-      </div>
-      
-      {filteredSubmissions.length > 0 ? (
-        <div className="overflow-x-auto border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="min-w-[200px]">Creator</TableHead>
-                <TableHead>Campaign</TableHead>
-                <TableHead>Campaign Type</TableHead>
-                <TableHead>Platform</TableHead>
-                <TableHead>Views</TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    <span>Submitted</span>
-                  </div>
-                </TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>Review Deadline</span>
-                  </div>
-                </TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSubmissions.map((submission) => {
-                const { deadline, isExpired, timeLeft, shouldAutoAccept, timePercentage } = getDeadlineInfo(submission);
-                const displayStatus = shouldAutoAccept ? "approved" : submission.status;
-                const campaignType = getCampaignType(submission);
-                const isRetainer = campaignType === "Retainer";
-                const progress = isRetainer ? getRetainerProgress(submission.campaign_id) : null;
-                
-                return (
-                  <TableRow key={submission.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={submission.creator_avatar} alt={submission.creator_name} />
-                          <AvatarFallback>{submission.creator_name.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{submission.creator_name}</div>
-                          <div className="text-xs text-muted-foreground truncate max-w-[120px]">
-                            {submission.content}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{submission.campaign_title}</div>
-                      {isRetainer && progress && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                          <Progress value={progress.percentage} className="h-1 w-24" />
-                          <span>{progress.approved}/{progress.total} approved</span>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-5 p-0 text-xs underline"
-                            onClick={() => handleViewCampaignSubmissions(submission.campaign_id, submission.campaign_title)}
-                          >
-                            View all
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={
-                        campaignType === "Retainer" 
-                          ? "bg-purple-50 text-purple-700 border-purple-200" 
-                          : campaignType === "Pay-Per-View" 
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : "bg-orange-50 text-orange-700 border-orange-200"
-                      }>
-                        {campaignType}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="bg-secondary/50 p-1 rounded-full">
-                          <SocialIcon platform={submission.platform.toLowerCase().split(' ')[0]} />
-                        </div>
-                        <span className="text-sm">{submission.platform}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm font-medium">{submission.views.toLocaleString()}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-sm">{format(new Date(submission.submitted_date), "MMM d, yyyy")}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(submission.submitted_date), "h:mm:ss a")}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {displayStatus === "pending" ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className={isExpired ? "text-destructive" : "text-muted-foreground"}>
-                              {isExpired ? "Expired" : timeLeft}
-                            </span>
-                            <span className="text-xs">{timePercentage}%</span>
-                          </div>
-                          <Progress value={timePercentage} className="h-1" />
-                        </div>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          {displayStatus === "approved" ? "Approved" : "Rejected/Completed"}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 justify-end">
-                        {displayStatus === "pending" && (
-                          <>
-                            <StatusBadge status={displayStatus} />
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => onApprove(submission)}
-                              className="h-8 gap-1"
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                              <span className="sr-only md:not-sr-only md:inline">Approve</span>
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleDenyClick(submission)}
-                              className="h-8 gap-1"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                              <span className="sr-only md:not-sr-only md:inline">Deny</span>
-                            </Button>
-                          </>
-                        )}
-                        {displayStatus !== "pending" && (
-                          <StatusBadge status={displayStatus} />
-                        )}
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleViewDetails(submission)}
-                          className="h-8"
-                        >
-                          View
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="text-center py-8 bg-muted/20 border rounded-lg">
-          <div className="text-lg font-medium mb-2">No submissions found</div>
-          <p className="text-muted-foreground mb-4">Try changing your filters or check back later</p>
-        </div>
-      )}
+      </Tabs>
       
       {/* Denial dialog */}
       <Dialog open={denyDialogOpen} onOpenChange={setDenyDialogOpen}>
@@ -519,7 +444,9 @@ export default function CampaignSubmissions({
                   </div>
                   <div>
                     <div className="text-sm font-medium text-muted-foreground mb-1">Campaign Type</div>
-                    <div>{getCampaignType(selectedSubmission)}</div>
+                    <div>
+                      <CampaignTypeBadge type={selectedSubmission.campaign_type} />
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm font-medium text-muted-foreground mb-1">Views</div>
@@ -675,8 +602,524 @@ export default function CampaignSubmissions({
       </Dialog>
     </div>
   );
+
+  // Helper function to render the appropriate submission table based on type
+  function renderSubmissionsTable(submissions: Submission[]) {
+    if (submissions.length === 0) {
+      return (
+        <div className="text-center py-8 bg-muted/20 border rounded-lg">
+          <div className="text-lg font-medium mb-2">No submissions found</div>
+          <p className="text-muted-foreground mb-4">Try changing your filters or check back later</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="overflow-x-auto border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[200px]">Creator</TableHead>
+              <TableHead>Campaign</TableHead>
+              <TableHead>Campaign Type</TableHead>
+              <TableHead>Platform</TableHead>
+              <TableHead>Views</TableHead>
+              <TableHead>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  <span>Submitted</span>
+                </div>
+              </TableHead>
+              <TableHead>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>Deadline/Status</span>
+                </div>
+              </TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {submissions.map((submission) => {
+              const { deadline, isExpired, timeLeft, shouldAutoAccept, timePercentage } = getDeadlineInfo(submission);
+              const displayStatus = shouldAutoAccept ? "approved" : submission.status;
+              const progress = submission.campaign_type === 'retainer' ? getRetainerProgress(submission.campaign_id) : null;
+              
+              return (
+                <TableRow key={submission.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={submission.creator_avatar} alt={submission.creator_name} />
+                        <AvatarFallback>{submission.creator_name.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{submission.creator_name}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[120px]">
+                          {submission.content}
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-medium">{submission.campaign_title}</div>
+                    {submission.campaign_type === 'retainer' && progress && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <Progress value={progress.percentage} className="h-1 w-24" />
+                        <span>{progress.approved}/{progress.total} approved</span>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-5 p-0 text-xs underline"
+                          onClick={() => handleViewCampaignSubmissions(submission.campaign_id, submission.campaign_title)}
+                        >
+                          View all
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <CampaignTypeBadge type={submission.campaign_type} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-secondary/50 p-1 rounded-full">
+                        <SocialIcon platform={submission.platform.toLowerCase().split(' ')[0]} className="h-4 w-4" />
+                      </div>
+                      <span className="text-sm">{submission.platform}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm font-medium">{submission.views.toLocaleString()}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="text-sm">{format(new Date(submission.submitted_date), "MMM d, yyyy")}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(submission.submitted_date), "h:mm a")}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {displayStatus === "pending" && submission.campaign_type === 'payPerView' ? (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={isExpired ? "text-destructive" : "text-muted-foreground"}>
+                            {isExpired ? "Expired" : timeLeft}
+                          </span>
+                          <span className="text-xs">{timePercentage}%</span>
+                        </div>
+                        <Progress value={timePercentage} className="h-1" />
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        {getRulesByType(submission.campaign_type, displayStatus)}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={displayStatus} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center gap-2 justify-end">
+                      {displayStatus === "pending" && (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => onApprove(submission)}
+                            className="h-8 gap-1"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            <span className="sr-only md:not-sr-only md:inline">Approve</span>
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDenyClick(submission)}
+                            className="h-8 gap-1"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                            <span className="sr-only md:not-sr-only md:inline">Deny</span>
+                          </Button>
+                        </>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleViewDetails(submission)}
+                        className="h-8"
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
+  // Render specific tables for different campaign types
+  function renderRetainerTable(submissions: Submission[]) {
+    if (submissions.length === 0) {
+      return (
+        <div className="text-center py-8 bg-muted/20 border rounded-lg">
+          <div className="text-lg font-medium mb-2">No retainer submissions found</div>
+          <p className="text-muted-foreground mb-4">Try changing your filters or check back later</p>
+        </div>
+      );
+    }
+
+    // Group submissions by campaign
+    const byCampaign = submissions.reduce<Record<string, Submission[]>>((acc, sub) => {
+      if (!acc[sub.campaign_id]) acc[sub.campaign_id] = [];
+      acc[sub.campaign_id].push(sub);
+      return acc;
+    }, {});
+
+    return (
+      <div className="space-y-6">
+        {Object.entries(byCampaign).map(([campaignId, campaignSubmissions]) => {
+          const progress = getRetainerProgress(campaignId);
+          const campaignTitle = campaignSubmissions[0].campaign_title;
+          
+          return (
+            <div key={campaignId} className="border rounded-lg overflow-hidden">
+              <div className="bg-purple-50 border-b border-purple-200 p-3 flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-purple-900">{campaignTitle}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Progress value={progress.percentage} className="h-1.5 w-32" />
+                    <span className="text-xs text-purple-800">{progress.approved}/{progress.total} approved</span>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-white border-purple-200 text-purple-700 hover:bg-purple-50"
+                  onClick={() => handleViewCampaignSubmissions(campaignId, campaignTitle)}
+                >
+                  View All Submissions
+                </Button>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Creator</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {campaignSubmissions.map(submission => (
+                    <TableRow key={submission.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={submission.creator_avatar} alt={submission.creator_name} />
+                            <AvatarFallback>{submission.creator_name.substring(0, 2)}</AvatarFallback>
+                          </Avatar>
+                          <span>{submission.creator_name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <SocialIcon platform={submission.platform.toLowerCase().split(' ')[0]} className="h-4 w-4" />
+                          <span>{submission.platform}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{format(new Date(submission.submitted_date), "MMM d, yyyy")}</TableCell>
+                      <TableCell><StatusBadge status={submission.status} /></TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center gap-2 justify-end">
+                          {submission.status === "pending" && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => onApprove(submission)}
+                                className="h-8 gap-1"
+                              >
+                                <Check className="h-3.5 w-3.5" />
+                                Approve
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleDenyClick(submission)}
+                                className="h-8 gap-1"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                                Deny
+                              </Button>
+                            </>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleViewDetails(submission)}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function renderPayPerViewTable(submissions: Submission[]) {
+    if (submissions.length === 0) {
+      return (
+        <div className="text-center py-8 bg-muted/20 border rounded-lg">
+          <div className="text-lg font-medium mb-2">No pay-per-view submissions found</div>
+          <p className="text-muted-foreground mb-4">Try changing your filters or check back later</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="overflow-x-auto border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Creator</TableHead>
+              <TableHead>Campaign</TableHead>
+              <TableHead>Platform</TableHead>
+              <TableHead>Views</TableHead>
+              <TableHead>Submitted</TableHead>
+              <TableHead>Review Deadline</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {submissions.map((submission) => {
+              const { deadline, isExpired, timeLeft, shouldAutoAccept, timePercentage } = getDeadlineInfo(submission);
+              const displayStatus = shouldAutoAccept ? "approved" : submission.status;
+              
+              return (
+                <TableRow key={submission.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={submission.creator_avatar} alt={submission.creator_name} />
+                        <AvatarFallback>{submission.creator_name.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <span>{submission.creator_name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{submission.campaign_title}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <SocialIcon platform={submission.platform.toLowerCase().split(' ')[0]} className="h-4 w-4" />
+                      <span>{submission.platform}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-medium">{submission.views.toLocaleString()}</div>
+                    {displayStatus === "approved" && (
+                      <div className="text-xs text-blue-600">
+                        Accumulating views
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>{format(new Date(submission.submitted_date), "MMM d, yyyy")}</TableCell>
+                  <TableCell>
+                    {displayStatus === "pending" ? (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={isExpired ? "text-destructive" : "text-muted-foreground"}>
+                            {isExpired ? "Expired" : timeLeft}
+                          </span>
+                          <span className="text-xs">{timePercentage}%</span>
+                        </div>
+                        <Progress value={timePercentage} className="h-1" />
+                      </div>
+                    ) : (
+                      <span className="text-sm text-blue-600">
+                        Views count for 10 days
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell><StatusBadge status={displayStatus} /></TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center gap-2 justify-end">
+                      {displayStatus === "pending" && (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => onApprove(submission)}
+                            className="h-8 gap-1"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            Approve
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDenyClick(submission)}
+                            className="h-8 gap-1"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                            Deny
+                          </Button>
+                        </>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleViewDetails(submission)}
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
+  function renderChallengeTable(submissions: Submission[]) {
+    if (submissions.length === 0) {
+      return (
+        <div className="text-center py-8 bg-muted/20 border rounded-lg">
+          <div className="text-lg font-medium mb-2">No challenge submissions found</div>
+          <p className="text-muted-foreground mb-4">Try changing your filters or check back later</p>
+        </div>
+      );
+    }
+
+    // Group submissions by campaign
+    const byCampaign = submissions.reduce<Record<string, Submission[]>>((acc, sub) => {
+      if (!acc[sub.campaign_id]) acc[sub.campaign_id] = [];
+      acc[sub.campaign_id].push(sub);
+      return acc;
+    }, {});
+
+    return (
+      <div className="space-y-6">
+        {Object.entries(byCampaign).map(([campaignId, campaignSubmissions]) => {
+          const campaignTitle = campaignSubmissions[0].campaign_title;
+          const approvedSubmissions = campaignSubmissions.filter(s => s.status === "approved").length;
+          const totalSubmissions = campaignSubmissions.length;
+          
+          return (
+            <div key={campaignId} className="border rounded-lg overflow-hidden">
+              <div className="bg-orange-50 border-b border-orange-200 p-3 flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-orange-900">{campaignTitle}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-orange-800">{approvedSubmissions} approved / {totalSubmissions} total entries</span>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-white border-orange-200 text-orange-700 hover:bg-orange-50"
+                  onClick={() => handleViewCampaignSubmissions(campaignId, campaignTitle)}
+                >
+                  View All Entries
+                </Button>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Creator</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead>Views</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {campaignSubmissions.map(submission => (
+                    <TableRow key={submission.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={submission.creator_avatar} alt={submission.creator_name} />
+                            <AvatarFallback>{submission.creator_name.substring(0, 2)}</AvatarFallback>
+                          </Avatar>
+                          <span>{submission.creator_name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <SocialIcon platform={submission.platform.toLowerCase().split(' ')[0]} className="h-4 w-4" />
+                          <span>{submission.platform}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{format(new Date(submission.submitted_date), "MMM d, yyyy")}</TableCell>
+                      <TableCell>{submission.views.toLocaleString()}</TableCell>
+                      <TableCell><StatusBadge status={submission.status} /></TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center gap-2 justify-end">
+                          {submission.status === "pending" && (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => onApprove(submission)}
+                                className="h-8 gap-1"
+                              >
+                                <Check className="h-3.5 w-3.5" />
+                                Approve
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleDenyClick(submission)}
+                                className="h-8 gap-1"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                                Deny
+                              </Button>
+                            </>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleViewDetails(submission)}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 }
 
+// Helper components
 function StatusBadge({ status }: { status: SubmissionStatusType }) {
   switch (status) {
     case "pending":
@@ -705,5 +1148,45 @@ function StatusBadge({ status }: { status: SubmissionStatusType }) {
       );
     default:
       return null;
+  }
+}
+
+function CampaignTypeBadge({ type }: { type: 'retainer' | 'payPerView' | 'challenge' }) {
+  switch (type) {
+    case 'retainer':
+      return (
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+          <HandCoins className="h-3 w-3 mr-1" /> Retainer
+        </Badge>
+      );
+    case 'payPerView':
+      return (
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <DollarSign className="h-3 w-3 mr-1" /> Pay-Per-View
+        </Badge>
+      );
+    case 'challenge':
+      return (
+        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+          <Trophy className="h-3 w-3 mr-1" /> Challenge
+        </Badge>
+      );
+    default:
+      return null;
+  }
+}
+
+function getRulesByType(type: 'retainer' | 'payPerView' | 'challenge', status: SubmissionStatusType) {
+  if (status !== 'pending') return status === 'approved' ? 'Approved' : 'Rejected';
+  
+  switch (type) {
+    case 'retainer':
+      return 'Manual approval required';
+    case 'payPerView':
+      return '10 days for approval';
+    case 'challenge':
+      return 'Judged after end date';
+    default:
+      return 'Pending approval';
   }
 }
