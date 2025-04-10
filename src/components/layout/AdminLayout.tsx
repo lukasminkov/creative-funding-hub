@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
 import { ViewAsButton } from "@/components/admin/ViewAsButton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -128,58 +129,60 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {state === "expanded" && <SidebarToggle />}
         </SidebarHeader>
         
-        <SidebarContent>
-          <SidebarMenu className="pt-4 px-[16px] py-[150px]">
-            {menuItems.map(item => {
-              const isActive = location.pathname === item.path || 
-                (item.path !== "/admin" && location.pathname.startsWith(item.path));
-                
-              return (
-                <SidebarMenuItem key={item.title} className="mb-2">
-                  <SidebarMenuButton 
-                    tooltip={item.title} 
-                    asChild 
-                    isActive={isActive} 
-                    className={cn(
-                      "transition-all duration-200 h-10 rounded-md flex items-center", 
-                      isActive ? "bg-red-600 text-white font-medium" : "hover:bg-accent", 
-                      "group-data-[collapsible=icon]:h-10",
-                      "group-data-[collapsible=icon]:w-10",
-                      "group-data-[collapsible=icon]:flex",
-                      "group-data-[collapsible=icon]:items-center",
-                      "group-data-[collapsible=icon]:justify-center",
-                      "dark:hover:bg-zinc-800"
-                    )}
-                  >
-                    <Link 
-                      to={item.path} 
+        <SidebarContent className="flex flex-col h-[calc(100%-11rem)]">
+          <ScrollArea className="flex-1">
+            <SidebarMenu className="pt-4 px-[16px]">
+              {menuItems.map(item => {
+                const isActive = location.pathname === item.path || 
+                  (item.path !== "/admin" && location.pathname.startsWith(item.path));
+                  
+                return (
+                  <SidebarMenuItem key={item.title} className="mb-2">
+                    <SidebarMenuButton 
+                      tooltip={item.title} 
+                      asChild 
+                      isActive={isActive} 
                       className={cn(
-                        "w-full flex items-center", 
-                        state === "collapsed" ? "justify-center" : "justify-start"
+                        "transition-all duration-200 h-10 rounded-md flex items-center", 
+                        isActive ? "bg-red-600 text-white font-medium" : "hover:bg-accent", 
+                        "group-data-[collapsible=icon]:h-10",
+                        "group-data-[collapsible=icon]:w-10",
+                        "group-data-[collapsible=icon]:flex",
+                        "group-data-[collapsible=icon]:items-center",
+                        "group-data-[collapsible=icon]:justify-center",
+                        "dark:hover:bg-zinc-800"
                       )}
                     >
-                      <item.icon className={cn(
-                        "h-7 w-7", 
-                        state === "collapsed" ? "mx-auto" : "ml-3 mr-3"
-                      )} />
-                      <span className={cn(state === "collapsed" ? "sr-only" : "ml-2")}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
+                      <Link 
+                        to={item.path} 
+                        className={cn(
+                          "w-full flex items-center", 
+                          state === "collapsed" ? "justify-center" : "justify-start"
+                        )}
+                      >
+                        <item.icon className={cn(
+                          "h-7 w-7", 
+                          state === "collapsed" ? "mx-auto" : "ml-3 mr-3"
+                        )} />
+                        <span className={cn(state === "collapsed" ? "sr-only" : "ml-2")}>
+                          {item.title}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </ScrollArea>
           
           {state === "expanded" && (
-            <div className="px-4 mb-6">
+            <div className="px-4 mb-4 mt-auto">
               <ViewAsButton />
             </div>
           )}
         </SidebarContent>
         
-        <SidebarFooter className="p-2 space-y-2 border-t border-border/10 mt-auto">
+        <SidebarFooter className="p-2 space-y-2 border-t border-border/10">
           <div className="flex items-center justify-between w-full px-2">
             <div className={cn(
               "flex items-center gap-3", 
