@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Activity, Eye, FileCheck, Plus, Users } from "lucide-react";
@@ -6,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign } from "@/lib/campaign-types";
 import { Progress } from "@/components/ui/progress";
+import NotificationCenter from "@/components/dashboard/NotificationCenter";
+
 export default function DashboardHome() {
   // For demo purposes, we'll load from localStorage
   const {
@@ -20,6 +23,7 @@ export default function DashboardHome() {
       return storedCampaigns ? JSON.parse(storedCampaigns) : [];
     }
   });
+  
   const stats = {
     totalSpent: campaigns.reduce((sum: number, c: Campaign) => {
       // For payPerView, we'll simulate a spend of 20% of the budget
@@ -34,6 +38,7 @@ export default function DashboardHome() {
     // Simulated submission count
     totalCreators: campaigns.length * 3 // Simulated creator count
   };
+  
   return <div className="container py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -50,60 +55,69 @@ export default function DashboardHome() {
         </Link>
       </div>
 
-      {/* Analytics Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${stats.totalSpent.toLocaleString('en-US', {
-              maximumFractionDigits: 2
-            })}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Across all active campaigns
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalViews.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              From creator content
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Submissions</CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalSubmissions}</div>
-            <p className="text-xs text-muted-foreground">
-              Content submissions received
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Creators</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCreators}</div>
-            <p className="text-xs text-muted-foreground">
-              Working on your campaigns
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-8 md:grid-cols-3 mb-8">
+        {/* Notification Section - Takes 1/3 of the screen on desktop */}
+        <div className="md:col-span-1">
+          <NotificationCenter />
+        </div>
+
+        {/* Analytics Cards - Takes 2/3 of the screen on desktop */}
+        <div className="md:col-span-2">
+          <div className="grid gap-6 md:grid-cols-2 mb-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ${stats.totalSpent.toLocaleString('en-US', {
+                  maximumFractionDigits: 2
+                })}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Across all active campaigns
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                <Eye className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalViews.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">
+                  From creator content
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Submissions</CardTitle>
+                <FileCheck className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalSubmissions}</div>
+                <p className="text-xs text-muted-foreground">
+                  Content submissions received
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Creators</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalCreators}</div>
+                <p className="text-xs text-muted-foreground">
+                  Working on your campaigns
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* Recent Campaigns */}

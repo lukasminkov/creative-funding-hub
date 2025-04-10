@@ -8,7 +8,7 @@ export const QUESTION_TYPES = ["text", "image", "number", "link"] as const;
 export const COUNTRY_OPTIONS = ["worldwide", "usa", "mexico", "canada", "dach"] as const;
 export const OFFER_OPTIONS = ["MediaLabs Creator", "MediaLabs Campus", "Brez Clipping", "GROWTH Clippers", "Freezertarps Clipping", "Banks Interns"] as const;
 export const STATUS_OPTIONS = ["active", "draft", "completed", "paused"] as const;
-export const SUBMISSION_STATUS_OPTIONS = ["pending", "approved", "rejected", "paid"] as const;
+export const SUBMISSION_STATUS_OPTIONS = ["pending", "approved", "denied"] as const;
 export const CAMPAIGN_TYPES = ["retainer", "payPerView", "challenge"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
@@ -135,14 +135,14 @@ export interface Submission {
   creator_avatar?: string;
   campaign_id: string;
   campaign_title: string;
-  campaign_type: CampaignType;
+  campaign_type: "retainer" | "payPerView" | "challenge";
   submitted_date: Date;
-  platform: string;
-  content: string;
   payment_amount: number;
   views: number;
   status: SubmissionStatusType;
-  platform_account?: string;
+  platform: string;
+  platformUsername?: string;
+  content: string;
 }
 
 export interface RetainerProgress {
