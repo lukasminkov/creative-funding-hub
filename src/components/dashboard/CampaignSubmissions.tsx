@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Clock, 
@@ -8,7 +9,9 @@ import {
   Hourglass, 
   Calendar, 
   AlertCircle, 
-  ChevronDown 
+  ChevronDown,
+  Layers,
+  FileText
 } from "lucide-react";
 import { format, formatDistanceToNow, isAfter, isBefore, addHours } from "date-fns";
 import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
@@ -63,14 +66,30 @@ export default function CampaignSubmissions({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [platformFilter, setPlatformFilter] = useState<string>("all");
+  const [campaignFilter, setCampaignFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date-desc");
   const [denyDialogOpen, setDenyDialogOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [denyReason, setDenyReason] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [campaignSubmissionsDialogOpen, setCampaignSubmissionsDialogOpen] = useState(false);
 
   const platforms = Array.from(new Set(submissions.map(s => s.platform)));
+  // Get unique campaign titles for filtering
+  const campaigns = Array.from(new Set(submissions.map(s => s.campaign_title))).map(title => ({ 
+    title, 
+    id: submissions.find(s => s.campaign_title === title)?.campaign_id || ""
+  }));
+  
+  // Group submissions by campaign for retainer tracking
+  const submissionsByCampaign = submissions.reduce((acc, submission) => {
+    if (!acc[submission.campaign_id]) {
+      acc[submission.campaign_id] = [];
+    }
+    acc[submission.campaign_id].push(submission);
+    return acc;
+  }, {} as Record<string, Submission[]>);
 
   const handleDenyClick = (submission: Submission) => {
     setSelectedSubmission(submission);
@@ -96,6 +115,14 @@ export default function CampaignSubmissions({
     setSelectedSubmission(submission);
     setDetailsDialogOpen(true);
   };
+  
+  const handleViewCampaignSubmissions = (campaignId: string, campaignTitle: string) => {
+    setSelectedSubmission({
+      ...submissions.find(s => s.campaign_id === campaignId) as Submission,
+      campaign_title: campaignTitle
+    });
+    setCampaignSubmissionsDialogOpen(true);
+  };
 
   const getDeadlineInfo = (submission: Submission) => {
     const submittedDate = new Date(submission.submitted_date);
@@ -118,6 +145,39 @@ export default function CampaignSubmissions({
       timePercentage
     };
   };
+  
+  // Function to determine campaign type based on submission
+  const getCampaignType = (submission: Submission): string => {
+    // In a real app, this would come from the campaign data
+    // For now, we'll use a simple approach based on the submission properties
+    
+    // If this is a campaign that has multiple deliverables and fixed payment, it's likely a retainer
+    const campaignSubmissions = submissionsByCampaign[submission.campaign_id] || [];
+    const hasMultipleSubmissions = campaignSubmissions.length > 1;
+    
+    if (hasMultipleSubmissions) {
+      return "Retainer";
+    }
+    
+    // If the payment depends on views, it's likely a pay-per-view
+    if (submission.views > 0 && submission.payment_amount > 0) {
+      return "Pay-Per-View";
+    }
+    
+    // If there's only one submission and fixed payment, could be a challenge
+    return "Challenge";
+  };
+  
+  // For retainer campaigns, track X/Y submissions
+  const getRetainerProgress = (campaignId: string) => {
+    const campaignSubmissions = submissionsByCampaign[campaignId] || [];
+    const approved = campaignSubmissions.filter(s => s.status === "approved").length;
+    return {
+      total: campaignSubmissions.length,
+      approved,
+      percentage: campaignSubmissions.length ? Math.round((approved / campaignSubmissions.length) * 100) : 0
+    };
+  };
 
   const filteredSubmissions = submissions
     .filter(submission => {
@@ -130,7 +190,9 @@ export default function CampaignSubmissions({
       
       const matchesPlatform = platformFilter === "all" || submission.platform === platformFilter;
       
-      return matchesSearch && matchesStatus && matchesPlatform;
+      const matchesCampaign = campaignFilter === "all" || submission.campaign_id === campaignFilter;
+      
+      return matchesSearch && matchesStatus && matchesPlatform && matchesCampaign;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -174,7 +236,7 @@ export default function CampaignSubmissions({
           />
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full md:w-2/3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-2/3">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by status" />
@@ -202,6 +264,20 @@ export default function CampaignSubmissions({
             </SelectContent>
           </Select>
           
+          <Select value={campaignFilter} onValueChange={setCampaignFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by campaign" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Campaigns</SelectItem>
+              {campaigns.map(campaign => (
+                <SelectItem key={campaign.id} value={campaign.id}>
+                  {campaign.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger>
               <SelectValue placeholder="Sort by" />
@@ -224,6 +300,8 @@ export default function CampaignSubmissions({
             <TableHeader>
               <TableRow>
                 <TableHead className="min-w-[200px]">Creator</TableHead>
+                <TableHead>Campaign</TableHead>
+                <TableHead>Campaign Type</TableHead>
                 <TableHead>Platform</TableHead>
                 <TableHead>Views</TableHead>
                 <TableHead>
@@ -245,8 +323,10 @@ export default function CampaignSubmissions({
             <TableBody>
               {filteredSubmissions.map((submission) => {
                 const { deadline, isExpired, timeLeft, shouldAutoAccept, timePercentage } = getDeadlineInfo(submission);
-                
                 const displayStatus = shouldAutoAccept ? "approved" : submission.status;
+                const campaignType = getCampaignType(submission);
+                const isRetainer = campaignType === "Retainer";
+                const progress = isRetainer ? getRetainerProgress(submission.campaign_id) : null;
                 
                 return (
                   <TableRow key={submission.id}>
@@ -263,6 +343,34 @@ export default function CampaignSubmissions({
                           </div>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium">{submission.campaign_title}</div>
+                      {isRetainer && progress && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <Progress value={progress.percentage} className="h-1 w-24" />
+                          <span>{progress.approved}/{progress.total} approved</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-5 p-0 text-xs underline"
+                            onClick={() => handleViewCampaignSubmissions(submission.campaign_id, submission.campaign_title)}
+                          >
+                            View all
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={
+                        campaignType === "Retainer" 
+                          ? "bg-purple-50 text-purple-700 border-purple-200" 
+                          : campaignType === "Pay-Per-View" 
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : "bg-orange-50 text-orange-700 border-orange-200"
+                      }>
+                        {campaignType}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -351,6 +459,7 @@ export default function CampaignSubmissions({
         </div>
       )}
       
+      {/* Denial dialog */}
       <Dialog open={denyDialogOpen} onOpenChange={setDenyDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -378,6 +487,7 @@ export default function CampaignSubmissions({
         </DialogContent>
       </Dialog>
       
+      {/* Submission details dialog */}
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           {selectedSubmission && (
@@ -406,6 +516,10 @@ export default function CampaignSubmissions({
                   <div>
                     <div className="text-sm font-medium text-muted-foreground mb-1">Campaign</div>
                     <div>{selectedSubmission.campaign_title}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Campaign Type</div>
+                    <div>{getCampaignType(selectedSubmission)}</div>
                   </div>
                   <div>
                     <div className="text-sm font-medium text-muted-foreground mb-1">Views</div>
@@ -467,6 +581,94 @@ export default function CampaignSubmissions({
                   </div>
                 )}
               </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Campaign Submissions Dialog */}
+      <Dialog open={campaignSubmissionsDialogOpen} onOpenChange={setCampaignSubmissionsDialogOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          {selectedSubmission && (
+            <>
+              <DialogHeader>
+                <DialogTitle>All Submissions for {selectedSubmission.campaign_title}</DialogTitle>
+                <DialogDescription>
+                  View all submissions for this campaign
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="py-4">
+                <div className="rounded-md border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Creator</TableHead>
+                        <TableHead>Platform</TableHead>
+                        <TableHead>Submitted</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {submissionsByCampaign[selectedSubmission.campaign_id]?.map(sub => (
+                        <TableRow key={sub.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={sub.creator_avatar} />
+                                <AvatarFallback>{sub.creator_name.substring(0, 2)}</AvatarFallback>
+                              </Avatar>
+                              <span>{sub.creator_name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <SocialIcon platform={sub.platform.toLowerCase().split(' ')[0]} className="h-4 w-4" />
+                              <span className="text-xs">{sub.platform}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{format(new Date(sub.submitted_date), "MMM d, yyyy")}</TableCell>
+                          <TableCell><StatusBadge status={sub.status} /></TableCell>
+                          <TableCell className="text-right">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-7 text-xs" 
+                              onClick={() => {
+                                setCampaignSubmissionsDialogOpen(false);
+                                setTimeout(() => {
+                                  handleViewDetails(sub);
+                                }, 100);
+                              }}
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                
+                <div className="mt-4 bg-muted/30 p-3 rounded-md">
+                  <div className="text-sm font-medium mb-1">Campaign Summary</div>
+                  <div className="grid grid-cols-3 gap-4 mt-2">
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground">Total Submissions</div>
+                      <div className="text-lg font-medium">{submissionsByCampaign[selectedSubmission.campaign_id]?.length || 0}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground">Approved</div>
+                      <div className="text-lg font-medium">{submissionsByCampaign[selectedSubmission.campaign_id]?.filter(s => s.status === "approved").length || 0}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground">Pending</div>
+                      <div className="text-lg font-medium">{submissionsByCampaign[selectedSubmission.campaign_id]?.filter(s => s.status === "pending").length || 0}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </DialogContent>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
@@ -45,11 +44,11 @@ const generateSampleSubmissions = () => {
   ];
   
   const campaigns = [
-    { id: "campaign-1", title: "Summer Fashion Collection" },
-    { id: "campaign-2", title: "Tech Gadget Review" },
-    { id: "campaign-3", title: "Fitness Challenge" },
-    { id: "campaign-4", title: "Cooking Tutorial" },
-    { id: "campaign-5", title: "Beauty Product Showcase" }
+    { id: "campaign-1", title: "Summer Fashion Collection", type: "retainer" },
+    { id: "campaign-2", title: "Tech Gadget Review", type: "payPerView" },
+    { id: "campaign-3", title: "Fitness Challenge", type: "challenge" },
+    { id: "campaign-4", title: "Cooking Tutorial", type: "retainer" },
+    { id: "campaign-5", title: "Beauty Product Showcase", type: "payPerView" }
   ];
   
   // Generate date function
@@ -71,7 +70,7 @@ const generateSampleSubmissions = () => {
     const campaign = campaigns[Math.floor(Math.random() * campaigns.length)];
     const platform = platforms[Math.floor(Math.random() * platforms.length)];
     // Weighted status - more pending than others
-    const status = i < 10 ? "pending" as SubmissionStatusType : statuses[Math.floor(Math.random() * statuses.length)];
+    const status = i < 10 ? "pending" : statuses[Math.floor(Math.random() * statuses.length)];
     // Generate a date between now and 14 days ago
     const daysAgo = Math.random() * 14;
     
@@ -82,11 +81,61 @@ const generateSampleSubmissions = () => {
       creator_avatar: creator.avatar,
       campaign_id: campaign.id,
       campaign_title: campaign.title,
+      campaign_type: campaign.type,
       submitted_date: generateDate(daysAgo),
       platform,
       content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/video${i + 100}`,
       payment_amount: Math.floor(Math.random() * 200) + 100,
       views: Math.floor(Math.random() * 50000) + 1000,
+      status
+    });
+  }
+  
+  // Add some grouped submissions for retainer campaigns to test progress tracking
+  // For campaign-1 (Summer Fashion Collection)
+  for (let i = 0; i < 3; i++) {
+    const creator = creators[0]; // Same creator for all submissions in this retainer
+    const platform = platforms[i % platforms.length];
+    const status = i < 2 ? "approved" : "pending";
+    const daysAgo = i * 2; // Spaced out over days
+    
+    submissions.push({
+      id: `retainer-1-${i}`,
+      creator_id: creator.id,
+      creator_name: creator.name,
+      creator_avatar: creator.avatar,
+      campaign_id: "campaign-1",
+      campaign_title: "Summer Fashion Collection",
+      campaign_type: "retainer",
+      submitted_date: generateDate(daysAgo),
+      platform,
+      content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/retainer${i}`,
+      payment_amount: 500, // Fixed payment for retainer
+      views: Math.floor(Math.random() * 10000) + 500,
+      status
+    });
+  }
+  
+  // For campaign-4 (Cooking Tutorial)
+  for (let i = 0; i < 4; i++) {
+    const creator = creators[3]; // Same creator for all submissions in this retainer
+    const platform = platforms[i % platforms.length];
+    const status = i < 1 ? "approved" : "pending";
+    const daysAgo = i + 1; // More recent submissions
+    
+    submissions.push({
+      id: `retainer-2-${i}`,
+      creator_id: creator.id,
+      creator_name: creator.name,
+      creator_avatar: creator.avatar,
+      campaign_id: "campaign-4",
+      campaign_title: "Cooking Tutorial",
+      campaign_type: "retainer",
+      submitted_date: generateDate(daysAgo),
+      platform,
+      content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/cooking${i}`,
+      payment_amount: 750, // Fixed payment for retainer
+      views: Math.floor(Math.random() * 15000) + 1000,
       status
     });
   }
