@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CampaignCreator from "@/components/CampaignCreator";
 import BrandSelector, { Brand } from "@/components/BrandSelector";
@@ -13,8 +12,8 @@ const Dashboard = () => {
   const [showBrandSelector, setShowBrandSelector] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const navigate = useNavigate();
 
-  // Load campaigns from localStorage on component mount
   useEffect(() => {
     const storedCampaigns = localStorage.getItem("campaigns");
     if (storedCampaigns) {
@@ -26,7 +25,6 @@ const Dashboard = () => {
     }
   }, []);
 
-  // Save campaigns to localStorage when they change
   useEffect(() => {
     if (campaigns.length > 0) {
       localStorage.setItem("campaigns", JSON.stringify(campaigns));
@@ -40,7 +38,6 @@ const Dashboard = () => {
   };
 
   const handleSubmitCampaign = (campaign: Campaign) => {
-    // Convert File objects to URLs for storage and display
     const preparedCampaign = {
       ...campaign,
       id: crypto.randomUUID(),
@@ -48,7 +45,6 @@ const Dashboard = () => {
       brandName: selectedBrand?.name
     };
     
-    // Create an object URL if we have a video file
     if (campaign.instructionVideoFile) {
       preparedCampaign.instructionVideo = URL.createObjectURL(campaign.instructionVideoFile);
     }
@@ -64,9 +60,19 @@ const Dashboard = () => {
     if (showBrandSelector) {
       setIsCreating(false);
     } else {
-      // Go back to brand selection
       setShowBrandSelector(true);
     }
+  };
+
+  const handleMessageBrand = (brandId: string | number, brandName: string) => {
+    toast.success(`Opening message with ${brandName}`);
+    navigate("/dashboard/messages", { 
+      state: { 
+        brandId, 
+        brandName,
+        initiateMessage: true 
+      } 
+    });
   };
 
   return (
@@ -152,9 +158,22 @@ const Dashboard = () => {
                         }).format(campaign.totalBudget || 0)}</span></div>
                       </div>
                       
-                      <Button variant="outline" className="w-full">
-                        View Details
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1">
+                          View Details
+                        </Button>
+                        {campaign.brandId && campaign.brandName && (
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="flex-none"
+                            onClick={() => handleMessageBrand(campaign.brandId!, campaign.brandName!)}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="sr-only">Message {campaign.brandName}</span>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
