@@ -1,11 +1,14 @@
+
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search } from "lucide-react";
+import { Search, MessageSquare } from "lucide-react";
 import { SocialIcon } from "@/components/icons/SocialIcons";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 // Mock creators data
 const mockAllCreators = [
@@ -67,11 +70,23 @@ const mockAllCreators = [
 
 export default function CreatorsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   
   // Filter creators based on search
   const filteredCreators = mockAllCreators.filter(
     creator => creator.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleMessageCreator = (creatorId: number, creatorName: string) => {
+    toast.success(`Opening message with ${creatorName}`);
+    navigate("/dashboard/messages", { 
+      state: { 
+        creatorId, 
+        creatorName,
+        initiateMessage: true 
+      } 
+    });
+  };
 
   return (
     <div className="container py-8">
@@ -140,7 +155,17 @@ export default function CreatorsPage() {
                       <TableCell>{creator.totalCampaigns}</TableCell>
                       <TableCell>{creator.totalViews.toLocaleString()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">View Profile</Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => handleMessageCreator(creator.id, creator.name)}
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="sr-only">Message {creator.name}</span>
+                          </Button>
+                          <Button variant="ghost" size="sm">View Profile</Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
