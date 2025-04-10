@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { 
   TrendingUp, Users, Building2, DollarSign, Calendar, 
-  Download, ArrowUpCircle, ArrowDownCircle, PercentCircle,
+  Download, ArrowUpCircle, ArrowDownCircle,
   Activity, ArrowRight
 } from "lucide-react";
 
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
-              <PercentCircle className="h-5 w-5 text-muted-foreground mr-2" />
+              <PercentIcon className="h-5 w-5 text-muted-foreground mr-2" />
               <div className="text-2xl font-bold">24.8%</div>
             </div>
             <div className="flex items-center text-xs text-red-600 mt-1">
@@ -425,7 +425,7 @@ export default function AnalyticsPage() {
 }
 
 // Helper component for percent circle icon
-const PercentCircle = (props: any) => (
+const PercentIcon = (props: any) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
@@ -444,3 +444,4 @@ const PercentCircle = (props: any) => (
     <path d="M15 15h.01" />
   </svg>
 );
+
