@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { SocialIcon } from "@/components/icons/SocialIcons";
 import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Campaign, Submission, RetainerCampaign, getRetainerProgress } from "@/lib/campaign-types";
-import { Search, ChevronUpDown } from "lucide-react";
+import { Search, ChevronsUpDown } from "lucide-react";
 
 interface Creator {
   id: number;
@@ -28,7 +27,6 @@ interface CampaignCreatorsListProps {
 export default function CampaignCreatorsList({ creators, campaign, submissions = [] }: CampaignCreatorsListProps) {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   
-  // Generate mock submissions for demo purposes if none provided
   const mockSubmissions = submissions.length > 0 ? submissions : creators.flatMap(creator => {
     return Array(creator.submissions).fill(0).map((_, i) => ({
       id: `sub-${creator.id}-${i}`,
@@ -48,12 +46,10 @@ export default function CampaignCreatorsList({ creators, campaign, submissions =
     }));
   });
   
-  // Function to filter submissions by creator
   const getCreatorSubmissions = (creatorId: number) => {
     return mockSubmissions.filter(sub => sub.creator_id === creatorId.toString());
   };
   
-  // Calculate progress for retainer campaigns
   const getProgress = (creatorId: number) => {
     if (campaign?.type === "retainer") {
       const creatorSubs = getCreatorSubmissions(creatorId);
@@ -122,7 +118,7 @@ export default function CampaignCreatorsList({ creators, campaign, submissions =
                       <PopoverTrigger asChild>
                         <Button variant="outline" size="sm" className="flex items-center">
                           <span className="mr-1">Submissions</span>
-                          <ChevronUpDown className="h-3 w-3" />
+                          <ChevronsUpDown className="h-3 w-3" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[350px] p-0">
@@ -144,7 +140,6 @@ export default function CampaignCreatorsList({ creators, campaign, submissions =
   );
 }
 
-// Component to display creator submissions in a popover
 function CreatorSubmissionsPopover({ 
   creator, 
   submissions 
