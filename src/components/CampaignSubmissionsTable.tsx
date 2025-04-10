@@ -19,7 +19,9 @@ import {
   Filter,
   X,
   Calendar,
-  User
+  User,
+  Clock,
+  AlertTriangle
 } from "lucide-react";
 import { 
   DropdownMenu,
@@ -42,7 +44,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Platform } from "@/lib/campaign-types";
-import { format } from "date-fns";
+import { format, differenceInHours, differenceInDays, addHours } from "date-fns";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Sample submission type for the table
 export interface CampaignSubmission {
@@ -56,6 +59,9 @@ export interface CampaignSubmission {
   postDate: Date;
   status: "pending" | "approved" | "rejected";
   contentUrl: string;
+  campaignType: "payPerView" | "retainer" | "challenge";
+  maxPayoutPerSubmission?: number;
+  paymentAmount?: number;
 }
 
 interface CampaignSubmissionsTableProps {
@@ -160,6 +166,104 @@ const CampaignSubmissionsTable: React.FC<CampaignSubmissionsTableProps> = ({
     );
   };
 
+  // Function to get deadline information for each campaign type
+  const getDeadlineInfo = (submission: CampaignSubmission) => {
+    const now = new Date();
+    
+    if (submission.campaignType === "payPerView") {
+      // For pay-per-view: 240 hours (10 days) deadline to approve/reject
+      const deadlineForApproval = addHours(submission.postDate, 240);
+      const hoursRemaining = differenceInHours(deadlineForApproval, now);
+      
+      // For view accumulation: 10 days
+      const viewDeadline = addHours(submission.postDate, 240);
+      const daysForViews = differenceInDays(viewDeadline, now);
+
+      if (submission.status === "pending") {
+        if (hoursRemaining <= 0) {
+          return (
+            <div className="flex items-center text-orange-600">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              <span>Auto-approved</span>
+            </div>
+          );
+        } else if (hoursRemaining <= 48) {
+          return (
+            <div className="flex items-center text-orange-600">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              <span>{hoursRemaining}h left to review</span>
+            </div>
+          );
+        } else {
+          return (
+            <div className="flex items-center text-gray-600">
+              <Clock className="h-4 w-4 mr-1" />
+              <span>{Math.floor(hoursRemaining)}h to review</span>
+            </div>
+          );
+        }
+      } else if (submission.status === "approved" && daysForViews > 0) {
+        return (
+          <div className="flex items-center text-blue-600">
+            <Clock className="h-4 w-4 mr-1" />
+            <span>{daysForViews}d left for views</span>
+          </div>
+        );
+      }
+    } else if (submission.campaignType === "retainer") {
+      if (submission.status === "pending") {
+        return (
+          <div className="flex items-center text-gray-600">
+            <Clock className="h-4 w-4 mr-1" />
+            <span>Needs review</span>
+          </div>
+        );
+      }
+    } else if (submission.campaignType === "challenge") {
+      if (submission.status === "pending") {
+        return (
+          <div className="flex items-center text-gray-600">
+            <Clock className="h-4 w-4 mr-1" />
+            <span>Judged after end date</span>
+          </div>
+        );
+      }
+    }
+    
+    return null;
+  };
+
+  const getPaymentInfo = (submission: CampaignSubmission) => {
+    if (submission.status !== "approved") {
+      return null;
+    }
+    
+    if (submission.campaignType === "payPerView") {
+      if (submission.paymentAmount && submission.maxPayoutPerSubmission) {
+        const isMaxed = submission.paymentAmount >= submission.maxPayoutPerSubmission;
+        return (
+          <div className={`text-sm ${isMaxed ? "text-green-600" : "text-blue-600"}`}>
+            {isMaxed ? "Maximum payout reached" : "Accumulating views"}
+          </div>
+        );
+      }
+    } else if (submission.campaignType === "retainer") {
+      return (
+        <div className="text-sm text-green-600">
+          Fixed payment
+        </div>
+      );
+    } else if (submission.campaignType === "challenge") {
+      return (
+        <div className="text-sm text-purple-600">
+          Paid after judging
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <div className="space-y-4">
       {/* Filter Controls */}
@@ -261,7 +365,8 @@ const CampaignSubmissionsTable: React.FC<CampaignSubmissionsTableProps> = ({
               <TableHead>Platform</TableHead>
               <TableHead>Username</TableHead>
               <TableHead>Views</TableHead>
-              <TableHead>Post Date</TableHead>
+              <TableHead>Post Date & Time</TableHead>
+              <TableHead>Deadline</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -269,7 +374,7 @@ const CampaignSubmissionsTable: React.FC<CampaignSubmissionsTableProps> = ({
           <TableBody>
             {filteredSubmissions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
                   {submissions.length === 0 ? "No submissions yet" : "No results match your filters"}
                 </TableCell>
               </TableRow>
@@ -297,7 +402,27 @@ const CampaignSubmissionsTable: React.FC<CampaignSubmissionsTableProps> = ({
                   <TableCell>{getPlatformBadge(submission.platform)}</TableCell>
                   <TableCell>@{submission.platformUsername}</TableCell>
                   <TableCell>{submission.views.toLocaleString()}</TableCell>
-                  <TableCell>{format(submission.postDate, 'MMM d, yyyy')}</TableCell>
+                  <TableCell>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="cursor-help">
+                            <div>{format(submission.postDate, 'MMM d, yyyy')}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {format(submission.postDate, 'HH:mm:ss')}
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Posted: {format(submission.postDate, 'PPpp')}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
+                  <TableCell>
+                    {getDeadlineInfo(submission)}
+                    {getPaymentInfo(submission)}
+                  </TableCell>
                   <TableCell>{getStatusBadge(submission.status)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -362,6 +487,41 @@ const CampaignSubmissionsTable: React.FC<CampaignSubmissionsTableProps> = ({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Campaign Type Explanation */}
+      <div className="p-4 bg-muted/30 rounded-md border">
+        <h4 className="font-medium mb-2">Submission Rules by Campaign Type</h4>
+        <div className="grid md:grid-cols-3 gap-4 text-sm">
+          <div className="space-y-1">
+            <h5 className="font-medium">Pay-Per-View</h5>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>Admin has 240 hours (10 days) to approve/reject</li>
+              <li>Auto-approved if not reviewed within deadline</li>
+              <li>Views accumulate for 10 days after posting</li>
+              <li>Payment calculated based on final view count</li>
+              <li>Cannot exceed max payout per submission</li>
+            </ul>
+          </div>
+          <div className="space-y-1">
+            <h5 className="font-medium">Retainer</h5>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>All submissions must be approved</li>
+              <li>Fixed payment per tier</li>
+              <li>Paid after all deliverables are submitted successfully</li>
+              <li>No auto-approval - admin must review each submission</li>
+            </ul>
+          </div>
+          <div className="space-y-1">
+            <h5 className="font-medium">Challenge</h5>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>All submissions must be approved</li>
+              <li>Judging occurs after campaign end date</li>
+              <li>Winners paid based on prize pool structure</li>
+              <li>No auto-approval - admin must review each submission</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
