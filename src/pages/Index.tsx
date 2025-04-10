@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShieldAlert } from "lucide-react";
 
 const Index = () => {
   return (
@@ -61,6 +61,12 @@ const Index = () => {
               <Button size="lg" className="group">
                 Open Dashboard
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link to="/admin">
+              <Button size="lg" variant="outline" className="group">
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                Admin Dashboard
               </Button>
             </Link>
           </div>

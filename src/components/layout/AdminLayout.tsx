@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
+import { ViewAsButton } from "@/components/admin/ViewAsButton";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -170,6 +171,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               );
             })}
           </SidebarMenu>
+          
+          {state === "expanded" && (
+            <div className="px-4 mb-6">
+              <ViewAsButton />
+            </div>
+          )}
         </SidebarContent>
         
         <SidebarFooter className="p-2 space-y-2 border-t border-border/10 mt-auto">
@@ -223,6 +230,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {state === "collapsed" && <SidebarToggle />}
       
       <div className="flex-1 flex flex-col overflow-auto">
+        <header className="border-b border-border p-4 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-10">
+          <h1 className="text-xl font-semibold">Admin Portal</h1>
+          
+          {state === "collapsed" && (
+            <div className="flex items-center gap-2">
+              <ViewAsButton />
+            </div>
+          )}
+        </header>
+        
         <main className="flex-1">
           {children}
         </main>
