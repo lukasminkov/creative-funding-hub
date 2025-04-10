@@ -95,13 +95,13 @@ export default function AdminCampaignsPage() {
     }
   };
   
-  // Helper for status badge variant
+  // Helper for status badge variant - Updated to use only allowed variants
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "active": return "default";
-      case "completed": return "success";
-      case "draft": return "secondary";
-      case "paused": return "warning";
+      case "completed": return "secondary"; // Changed from "success" to "secondary"
+      case "draft": return "outline";       // Changed from "secondary" to "outline"
+      case "paused": return "destructive";  // Changed from "warning" to "destructive"
       default: return "outline";
     }
   };
