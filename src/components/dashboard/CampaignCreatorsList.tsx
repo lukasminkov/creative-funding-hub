@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,9 @@ import { SocialIcon } from "@/components/icons/SocialIcons";
 import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Campaign, Submission, RetainerCampaign, getRetainerProgress } from "@/lib/campaign-types";
-import { Search, ChevronsUpDown } from "lucide-react";
+import { Search, ChevronsUpDown, MessageSquare } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Creator {
   id: number;
@@ -26,6 +29,7 @@ interface CampaignCreatorsListProps {
 
 export default function CampaignCreatorsList({ creators, campaign, submissions = [] }: CampaignCreatorsListProps) {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
+  const navigate = useNavigate();
   
   const mockSubmissions = submissions.length > 0 ? submissions : creators.flatMap(creator => {
     return Array(creator.submissions).fill(0).map((_, i) => ({
@@ -57,6 +61,17 @@ export default function CampaignCreatorsList({ creators, campaign, submissions =
       return getRetainerProgress(creatorSubs, retainerCampaign, creatorId.toString());
     }
     return { completion_percentage: 0, approved: 0, total_required: 0 };
+  };
+
+  const handleMessageCreator = (creatorId: number, creatorName: string) => {
+    toast.success(`Opening message with ${creatorName}`);
+    navigate("/dashboard/messages", { 
+      state: { 
+        creatorId, 
+        creatorName,
+        initiateMessage: true 
+      } 
+    });
   };
 
   return (
@@ -114,6 +129,14 @@ export default function CampaignCreatorsList({ creators, campaign, submissions =
                 
                 <TableCell className="text-right">
                   <div className="flex justify-end space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => handleMessageCreator(creator.id, creator.name)}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      <span className="sr-only">Message {creator.name}</span>
+                    </Button>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button variant="outline" size="sm" className="flex items-center">
