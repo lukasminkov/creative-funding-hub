@@ -8,7 +8,7 @@ export const QUESTION_TYPES = ["text", "image", "number", "link"] as const;
 export const COUNTRY_OPTIONS = ["worldwide", "usa", "mexico", "canada", "dach"] as const;
 export const OFFER_OPTIONS = ["MediaLabs Creator", "MediaLabs Campus", "Brez Clipping", "GROWTH Clippers", "Freezertarps Clipping", "Banks Interns"] as const;
 export const STATUS_OPTIONS = ["active", "draft", "completed", "paused"] as const;
-export const SUBMISSION_STATUS_OPTIONS = ["pending", "approved", "denied"] as const;
+export const SUBMISSION_STATUS_OPTIONS = ["pending", "approved", "denied", "paid"] as const;
 export const CAMPAIGN_TYPES = ["retainer", "payPerView", "challenge"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
@@ -231,7 +231,7 @@ export const getRetainerProgress = (submissions: Submission[], campaign: Retaine
   
   const submitted = creatorSubmissions.length;
   const approved = creatorSubmissions.filter(s => s.status === "approved" || s.status === "paid").length;
-  const rejected = creatorSubmissions.filter(s => s.status === "rejected").length;
+  const rejected = creatorSubmissions.filter(s => s.status === "denied").length;
   const pending = creatorSubmissions.filter(s => s.status === "pending").length;
   const completionPercentage = totalRequired > 0 ? Math.round((approved / totalRequired) * 100) : 0;
   

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Table,
@@ -79,7 +78,6 @@ const RetainerSubmissionsTable = ({
     }
   };
 
-  // Group submissions by creator to show progress
   const submissionsByCreator = submissions.reduce((acc, submission) => {
     if (!acc[submission.creator_id]) {
       acc[submission.creator_id] = [];
@@ -114,7 +112,6 @@ const RetainerSubmissionsTable = ({
           {submissions.map((submission) => {
             const campaign = campaigns.find(c => c.id === submission.campaign_id);
             
-            // Get creator progress if campaign exists
             const creatorSubmissions = submissionsByCreator[submission.creator_id] || [];
             const progress = campaign ? 
               getRetainerProgress(creatorSubmissions, campaign, submission.creator_id) : 
@@ -148,14 +145,14 @@ const RetainerSubmissionsTable = ({
                   <Badge variant="outline">{submission.platform}</Badge>
                 </TableCell>
                 <TableCell>
-                  {submission.platform_account || "-"}
+                  {submission.platformUsername || "-"}
                 </TableCell>
                 <TableCell>{format(new Date(submission.submitted_date), 'MMM d, yyyy')}</TableCell>
                 <TableCell>
                   <Badge 
                     className={
                       submission.status === "approved" ? "bg-green-100 text-green-800 hover:bg-green-100" :
-                      submission.status === "rejected" ? "bg-red-100 text-red-800 hover:bg-red-100" :
+                      submission.status === "denied" ? "bg-red-100 text-red-800 hover:bg-red-100" :
                       submission.status === "pending" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" :
                       submission.status === "paid" ? "bg-blue-100 text-blue-800 hover:bg-blue-100" :
                       ""

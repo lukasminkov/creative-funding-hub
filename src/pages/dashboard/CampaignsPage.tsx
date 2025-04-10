@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Campaign, Submission, SubmissionStatusType } from "@/lib/campaign-types";
@@ -28,7 +27,7 @@ import {
 
 const generateSampleSubmissions = () => {
   const platforms = ["TikTok", "Instagram Reels", "YouTube Shorts"];
-  const statuses: SubmissionStatusType[] = ["pending", "approved", "rejected", "paid"];
+  const statuses = ["pending", "approved", "denied", "paid"];
   const creators = [
     { name: "Sarah Johnson", id: "1001", avatar: "https://i.pravatar.cc/150?u=sarah" },
     { name: "Mike Peters", id: "1002", avatar: "https://i.pravatar.cc/150?u=mike" },
@@ -59,7 +58,7 @@ const generateSampleSubmissions = () => {
     return date;
   };
   
-  const submissions: Submission[] = [];
+  const submissions = [];
   
   for (let i = 0; i < 20; i++) {
     const creator = creators[Math.floor(Math.random() * creators.length)];
@@ -78,6 +77,7 @@ const generateSampleSubmissions = () => {
       campaign_type: campaign.type as 'retainer' | 'payPerView' | 'challenge',
       submitted_date: generateDate(daysAgo),
       platform,
+      platformUsername: `@${creator.name.toLowerCase().replace(' ', '')}`,
       content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/video${i + 100}`,
       payment_amount: Math.floor(Math.random() * 200) + 100,
       views: Math.floor(Math.random() * 50000) + 1000,
@@ -101,6 +101,7 @@ const generateSampleSubmissions = () => {
       campaign_type: "retainer",
       submitted_date: generateDate(daysAgo),
       platform,
+      platformUsername: `@${creator.name.toLowerCase().replace(' ', '')}`,
       content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/retainer${i}`,
       payment_amount: 500,
       views: Math.floor(Math.random() * 10000) + 500,
@@ -124,6 +125,7 @@ const generateSampleSubmissions = () => {
       campaign_type: "retainer",
       submitted_date: generateDate(daysAgo),
       platform,
+      platformUsername: `@${creator.name.toLowerCase().replace(' ', '')}`,
       content: `https://example.com/${platform.toLowerCase().replace(' ', '')}/cooking${i}`,
       payment_amount: 750,
       views: Math.floor(Math.random() * 15000) + 1000,

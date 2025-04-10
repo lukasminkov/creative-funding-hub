@@ -207,7 +207,7 @@ const PayPerViewSubmissionsTable = ({
                 <Badge variant="outline">{submission.platform}</Badge>
               </TableCell>
               <TableCell>
-                {submission.platform_account || "-"}
+                {submission.platformUsername || "-"}
               </TableCell>
               <TableCell>
                 <TooltipProvider>
@@ -228,7 +228,7 @@ const PayPerViewSubmissionsTable = ({
                 <Badge 
                   className={
                     submission.status === "approved" ? "bg-green-100 text-green-800 hover:bg-green-100" :
-                    submission.status === "rejected" ? "bg-red-100 text-red-800 hover:bg-red-100" :
+                    submission.status === "denied" ? "bg-red-100 text-red-800 hover:bg-red-100" :
                     submission.status === "pending" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" :
                     submission.status === "paid" ? "bg-blue-100 text-blue-800 hover:bg-blue-100" :
                     ""
