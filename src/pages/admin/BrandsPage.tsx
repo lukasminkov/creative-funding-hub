@@ -10,10 +10,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, MoreHorizontal, ChevronDown, Filter, Building2, Plus } from "lucide-react";
+import { Search, MoreHorizontal, ChevronDown, Filter, Building2, Plus, MessageSquare } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function BrandsPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
   
   // Mock brands data
   const brands = [
@@ -69,6 +72,17 @@ export default function BrandsPage() {
     brand.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     brand.industry.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleMessageBrand = (brandId: number, brandName: string) => {
+    toast.success(`Opening message with ${brandName}`);
+    navigate("/admin/messages", { 
+      state: { 
+        brandId, 
+        brandName,
+        initiateMessage: true 
+      } 
+    });
+  };
   
   return (
     <div className="p-8">
@@ -150,22 +164,34 @@ export default function BrandsPage() {
                   </TableCell>
                   <TableCell>{brand.createdAt}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Brand</DropdownMenuItem>
-                        <DropdownMenuItem>View Campaigns</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Brand</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          Deactivate Brand
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleMessageBrand(brand.id, brand.name)}
+                        className="gap-1"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5" />
+                        <span>Message</span>
+                      </Button>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View Brand</DropdownMenuItem>
+                          <DropdownMenuItem>View Campaigns</DropdownMenuItem>
+                          <DropdownMenuItem>Edit Brand</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600">
+                            Deactivate Brand
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

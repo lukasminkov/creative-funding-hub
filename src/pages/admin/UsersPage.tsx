@@ -10,10 +10,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, MoreHorizontal, ChevronDown, Filter, UserPlus } from "lucide-react";
+import { Search, MoreHorizontal, ChevronDown, Filter, UserPlus, MessageSquare } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
   
   // Mock user data - in a real app, this would come from your database
   const users = [
@@ -70,6 +73,17 @@ export default function UsersPage() {
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleMessageUser = (userId: number, userName: string) => {
+    toast.success(`Opening message with ${userName}`);
+    navigate("/admin/messages", { 
+      state: { 
+        userId,
+        userName,
+        initiateMessage: true
+      } 
+    });
+  };
   
   return (
     <div className="p-8">
@@ -154,21 +168,33 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>{user.createdAt}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Edit User</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          Deactivate User
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleMessageUser(user.id, user.name)}
+                        className="gap-1"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5" />
+                        <span>Message</span>
+                      </Button>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View Profile</DropdownMenuItem>
+                          <DropdownMenuItem>Edit User</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600">
+                            Deactivate User
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

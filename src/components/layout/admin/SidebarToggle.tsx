@@ -13,7 +13,7 @@ export function SidebarToggle() {
       size="icon" 
       onClick={toggleSidebar} 
       className={cn(
-        "h-8 w-8 z-50", 
+        "h-8 w-8 z-10", 
         state === "expanded" 
           ? "absolute top-4 right-3" // Inside when expanded
           : "fixed left-[calc(var(--sidebar-width-icon)+0.25rem)] top-5" // Moved down to align with logo
