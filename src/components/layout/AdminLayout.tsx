@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   BarChart3, Users, Building2, Layers, Settings, LogOut, 
-  Moon, Sun, ChevronLeft, ChevronRight, ShieldAlert, Database
+  Moon, Sun, ChevronLeft, ChevronRight, ShieldAlert, CreditCard,
+  Bell, MessageSquare, TrendingUp
 } from "lucide-react";
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
@@ -26,6 +27,11 @@ const menuItems = [
     icon: BarChart3
   }, 
   {
+    title: "Analytics",
+    path: "/admin/analytics",
+    icon: TrendingUp
+  },
+  {
     title: "Users",
     path: "/admin/users",
     icon: Users
@@ -40,6 +46,21 @@ const menuItems = [
     path: "/admin/campaigns",
     icon: Layers
   }, 
+  {
+    title: "Payments",
+    path: "/admin/payments",
+    icon: CreditCard
+  },
+  {
+    title: "Notifications",
+    path: "/admin/notifications",
+    icon: Bell
+  },
+  {
+    title: "Messages",
+    path: "/admin/messages",
+    icon: MessageSquare
+  },
   {
     title: "Settings",
     path: "/admin/settings",
