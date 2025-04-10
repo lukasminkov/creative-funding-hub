@@ -121,7 +121,7 @@ interface CampaignSubmissionsProps {
   submissions: Submission[];
   onApprove: (submission: Submission) => Promise<void>;
   onDeny: (submission: Submission, reason: string) => Promise<void>;
-  campaign?: Campaign; // Make campaign optional
+  campaign?: Campaign; // Optional campaign
 }
 
 const CampaignSubmissions: React.FC<CampaignSubmissionsProps> = ({ 
@@ -130,6 +130,7 @@ const CampaignSubmissions: React.FC<CampaignSubmissionsProps> = ({
   onDeny,
   campaign
 }) => {
+  // Only set activeTab if viewing all campaigns; otherwise use campaign type
   const [activeTab, setActiveTab] = useState("retainer");
   
   // Filter submissions by campaign type
@@ -137,6 +138,42 @@ const CampaignSubmissions: React.FC<CampaignSubmissionsProps> = ({
   const payPerViewSubmissions = submissions.filter(s => s.campaign_type === "payPerView");
   const challengeSubmissions = submissions.filter(s => s.campaign_type === "challenge");
   
+  // If we have a specific campaign, only show the relevant tab
+  if (campaign) {
+    return (
+      <div className="space-y-4">
+        {campaign.type === "retainer" && (
+          <RetainerSubmissionsTable 
+            submissions={retainerSubmissions}
+            campaigns={mockRetainerCampaigns}
+            onApprove={onApprove}
+            onDeny={onDeny}
+          />
+        )}
+        
+        {campaign.type === "payPerView" && (
+          <PayPerViewSubmissionsTable 
+            submissions={payPerViewSubmissions}
+            campaigns={mockPayPerViewCampaigns}
+            onApprove={onApprove}
+            onDeny={onDeny}
+          />
+        )}
+        
+        {campaign.type === "challenge" && (
+          <div className="text-center py-6 text-muted-foreground">
+            {challengeSubmissions.length === 0 ? (
+              "No challenge submissions yet"
+            ) : (
+              "Challenge submissions view will be implemented soon"
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  // If no specific campaign is provided, show the tabbed interface
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>

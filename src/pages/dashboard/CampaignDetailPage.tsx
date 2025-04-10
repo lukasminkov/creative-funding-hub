@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -137,6 +138,7 @@ const generateMockSubmissions = (campaignId) => {
       campaign_type: "retainer" as const,
       submitted_date: generateSubmissionDate(1),
       platform: "TikTok",
+      platform_account: "@sarahjreview",
       content: "https://tiktok.com/video123",
       payment_amount: 150,
       views: 8500,
@@ -152,6 +154,7 @@ const generateMockSubmissions = (campaignId) => {
       campaign_type: "payPerView" as const,
       submitted_date: generateSubmissionDate(5),
       platform: "YouTube Shorts",
+      platform_account: "@MikeTech",
       content: "https://youtube.com/shorts/video456",
       payment_amount: 200,
       views: 12300,
@@ -167,6 +170,7 @@ const generateMockSubmissions = (campaignId) => {
       campaign_type: "retainer" as const,
       submitted_date: generateSubmissionDate(2),
       platform: "Instagram Reels",
+      platform_account: "@jessicacraft",
       content: "https://instagram.com/reel789",
       payment_amount: 175,
       views: 5600,
@@ -182,6 +186,7 @@ const generateMockSubmissions = (campaignId) => {
       campaign_type: "payPerView" as const,
       submitted_date: generateSubmissionDate(9),
       platform: "TikTok",
+      platform_account: "@davidtechreviews",
       content: "https://tiktok.com/video789",
       payment_amount: 125,
       views: 3200,
@@ -197,6 +202,7 @@ const generateMockSubmissions = (campaignId) => {
       campaign_type: "challenge" as const,
       submitted_date: generateSubmissionDate(0.5),
       platform: "Instagram Reels",
+      platform_account: "@emmalifestyle",
       content: "https://instagram.com/reel987",
       payment_amount: 220,
       views: 9800,
@@ -212,6 +218,7 @@ const generateMockSubmissions = (campaignId) => {
       campaign_type: "payPerView" as const,
       submitted_date: generateSubmissionDate(11),
       platform: "TikTok",
+      platform_account: "@alexreviews",
       content: "https://tiktok.com/video654",
       payment_amount: 180,
       views: 15200,
@@ -227,6 +234,7 @@ const generateMockSubmissions = (campaignId) => {
       campaign_type: "challenge" as const,
       submitted_date: generateSubmissionDate(0.1),
       platform: "YouTube Shorts",
+      platform_account: "@TaylorTalks",
       content: "https://youtube.com/shorts/video321",
       payment_amount: 195,
       views: 7200,
