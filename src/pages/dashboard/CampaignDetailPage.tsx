@@ -401,7 +401,11 @@ export default function CampaignDetailPage() {
                 <CardTitle>Active Creators</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <CampaignCreatorsList creators={mockCreators} />
+                <CampaignCreatorsList 
+                  creators={mockCreators} 
+                  campaign={campaign}
+                  submissions={mockSubmissions}
+                />
               </CardContent>
             </Card>
           </TabsContent>
