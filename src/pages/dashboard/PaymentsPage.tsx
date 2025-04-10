@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { CheckCircle2, DollarSign, Filter, MoreHorizontal, Search, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,7 +66,6 @@ export default function PaymentsPage() {
     submission: null
   });
   
-  // Search state for each tab
   const [pendingPayoutsSearch, setPendingPayoutsSearch] = useState("");
   const [pendingApprovalsSearch, setPendingApprovalsSearch] = useState("");
   const [paymentHistorySearch, setPaymentHistorySearch] = useState("");
@@ -91,7 +89,7 @@ export default function PaymentsPage() {
       
       return data.map(item => ({
         ...item,
-        submitted_date: new Date(item.submitted_date),
+        submitted_date: item.submitted_date ? new Date(item.submitted_date) : new Date(),
       })) as Submission[];
     }
   });
@@ -115,12 +113,11 @@ export default function PaymentsPage() {
       
       return data.map(item => ({
         ...item,
-        payment_date: new Date(item.payment_date),
+        payment_date: item.payment_date ? new Date(item.payment_date) : new Date(),
       })) as Payment[];
     }
   });
   
-  // Filter the data based on search terms
   const filteredPendingPayouts = (submissions.filter(s => s.status === 'approved') || []).filter(payout => {
     if (!pendingPayoutsSearch) return true;
     const searchLower = pendingPayoutsSearch.toLowerCase();
@@ -135,7 +132,6 @@ export default function PaymentsPage() {
   const pendingPayouts = submissions.filter(s => s.status === 'approved');
   
   const filteredSubmissions = submissions.filter(submission => {
-    // First apply the filter type
     if (filterType === "all") {
       if (submission.status !== 'pending') return false;
     } else {
@@ -163,7 +159,6 @@ export default function PaymentsPage() {
       }
     }
     
-    // Then apply the search term
     if (!pendingApprovalsSearch) return true;
     const searchLower = pendingApprovalsSearch.toLowerCase();
     return (
