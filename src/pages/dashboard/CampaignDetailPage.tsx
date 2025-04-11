@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +9,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 import CampaignSubmissions from "@/components/dashboard/CampaignSubmissions";
 import CampaignStatusCard from "@/components/dashboard/CampaignStatusCard";
@@ -243,6 +244,33 @@ const generateMockSubmissions = (campaignId) => {
   ];
 };
 
+const getTopCreators = () => {
+  const creatorMap = new Map();
+  
+  mockSubmissions.forEach(submission => {
+    const creatorId = submission.creator_id;
+    if (!creatorMap.has(creatorId)) {
+      creatorMap.set(creatorId, {
+        id: creatorId,
+        name: submission.creator_name,
+        avatar: submission.creator_avatar,
+        platform: submission.platform,
+        views: submission.views,
+        submissions: 1
+      });
+    } else {
+      const creator = creatorMap.get(creatorId);
+      creator.views += submission.views;
+      creator.submissions += 1;
+      creator.platform = submission.platform;
+    }
+  });
+  
+  return Array.from(creatorMap.values())
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 5);
+};
+
 export default function CampaignDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -369,12 +397,68 @@ export default function CampaignDetailPage() {
         </div>
       </div>
 
-      <CampaignStatusCard 
-        campaign={campaign} 
-        onAddBudget={() => setBudgetDialogOpen(true)} 
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <CampaignStatusCard 
+          campaign={campaign} 
+          onAddBudget={() => setBudgetDialogOpen(true)} 
+        />
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Accounts</CardTitle>
+            <CardDescription>Best performing creators for this campaign</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {getTopCreators().map((creator) => (
+                <div 
+                  key={creator.id} 
+                  className="flex items-center justify-between border-b pb-3 last:border-0"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Avatar>
+                      <AvatarImage src={creator.avatar} alt={creator.name} />
+                      <AvatarFallback>{creator.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium line-clamp-1">{creator.name}</div>
+                      <div className="text-xs text-muted-foreground flex items-center">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 mr-1.5">
+                          {creator.platform}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="font-medium text-sm">{creator.views.toLocaleString()} views</div>
+                    <div className="text-xs text-muted-foreground">
+                      {creator.submissions} submission{creator.submissions !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {getTopCreators().length === 0 && (
+                <div className="text-center py-6 text-muted-foreground">
+                  No creator data available yet
+                </div>
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs w-full hover:bg-primary/5"
+              onClick={() => setActiveTab("creators")}
+            >
+              View All Creators
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
       
-      <Card className="mb-8 mt-8">
+      <Card className="mb-8">
         <Tabs defaultValue="submissions" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
