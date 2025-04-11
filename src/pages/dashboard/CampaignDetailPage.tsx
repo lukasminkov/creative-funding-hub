@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +18,7 @@ import CampaignCreatorsList from "@/components/dashboard/CampaignCreatorsList";
 import CampaignApplicationsList from "@/components/dashboard/CampaignApplicationsList";
 import { Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { toast } from "sonner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const mockCreators = [{
   id: 1,
@@ -266,6 +266,7 @@ export default function CampaignDetailPage() {
           name: submission.creator_name,
           avatar: submission.creator_avatar,
           platform: submission.platform,
+          platformUsername: submission.platform_account,
           views: submission.views,
           submissions: 1
         });
@@ -274,6 +275,7 @@ export default function CampaignDetailPage() {
         creator.views += submission.views;
         creator.submissions += 1;
         creator.platform = submission.platform;
+        creator.platformUsername = submission.platform_account;
       }
     });
     
@@ -410,41 +412,48 @@ export default function CampaignDetailPage() {
             <CardDescription>Best performing creators for this campaign</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {getTopCreators().map((creator) => (
-                <div 
-                  key={creator.id} 
-                  className="flex items-center justify-between border-b pb-3 last:border-0"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarImage src={creator.avatar} alt={creator.name} />
-                      <AvatarFallback>{creator.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium line-clamp-1">{creator.name}</div>
-                      <div className="text-xs text-muted-foreground flex items-center">
-                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 mr-1.5">
-                          {creator.platform}
-                        </Badge>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Platform</TableHead>
+                  <TableHead>Username</TableHead>
+                  <TableHead className="text-right">Views</TableHead>
+                  <TableHead className="text-right">Submissions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {getTopCreators().map((creator) => (
+                  <TableRow key={creator.id}>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={creator.avatar} alt={creator.name} />
+                          <AvatarFallback>{creator.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{creator.name}</span>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <div className="font-medium text-sm">{creator.views.toLocaleString()} views</div>
-                    <div className="text-xs text-muted-foreground">
-                      {creator.submissions} submission{creator.submissions !== 1 ? 's' : ''}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {getTopCreators().length === 0 && (
-                <div className="text-center py-6 text-muted-foreground">
-                  No creator data available yet
-                </div>
-              )}
-            </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        {creator.platform}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{creator.platformUsername}</TableCell>
+                    <TableCell className="text-right">{creator.views.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">{creator.submissions}</TableCell>
+                  </TableRow>
+                ))}
+                
+                {getTopCreators().length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                      No creator data available yet
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
           <CardFooter className="border-t pt-4">
             <Button 
