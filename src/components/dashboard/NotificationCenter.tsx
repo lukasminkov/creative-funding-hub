@@ -8,7 +8,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Campaign, Submission } from "@/lib/campaign-types";
 import { toast } from "sonner";
 
-const NotificationCenter = () => {
+interface NotificationCenterProps {
+  glass?: boolean;
+  className?: string;
+}
+
+const NotificationCenter = ({ glass, className }: NotificationCenterProps) => {
   // In a real app, we would fetch this data from an API
   // For demo purposes, we'll simulate with stored data
   const { data: submissions = [], isLoading: isLoadingSubmissions } = useQuery({
@@ -97,7 +102,7 @@ const NotificationCenter = () => {
   }
 
   return (
-    <Card className="bg-card border border-border shadow-sm overflow-hidden">
+    <Card className="bg-card border border-border shadow-sm overflow-hidden" glass={glass}>
       <CardHeader className="pb-2 bg-gradient-to-r from-primary/10 to-transparent">
         <CardTitle className="text-lg flex items-center gap-2">
           <Bell className="h-5 w-5 text-primary" />
