@@ -1,11 +1,10 @@
-
 import { useMemo } from "react";
 import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Check, X, Calendar, DollarSign, Clock, Percentage, BadgePercent, BadgeDollarSign, Info, Flag } from "lucide-react";
+import { Check, X, Calendar, DollarSign, Clock, Percent, BadgePercent, BadgeDollarSign, Info, Flag } from "lucide-react";
 
 interface CampaignStatusCardProps {
   campaign: Campaign;
@@ -54,15 +53,12 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
       progressText = `${Math.round(progress)}% complete`;
     }
     
-    // Calculate days remaining
     const daysRemaining = Math.max(0, Math.floor((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
     
-    // Calculate remaining budget for pay-per-view
     const remainingBudget = campaign.type === "payPerView" 
       ? campaign.totalBudget - (campaign.totalBudget * (progress / 100)) 
       : campaign.totalBudget;
     
-    // Calculate random metrics for visual display
     const views = Math.floor(Math.random() * 50000) + 10000;
     const submissions = Math.floor(Math.random() * 10) + 5;
     const cpm = Number(((campaign.totalBudget * 0.3) / (views / 1000)).toFixed(4));
@@ -82,7 +78,6 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
     };
   }, [campaign]);
 
-  // Banner image with overlay
   const renderBanner = () => {
     if (!campaign.bannerImage) return null;
     
@@ -104,7 +99,6 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
     );
   };
 
-  // Render guidelines section
   const renderGuidelines = () => {
     if (!campaign.guidelines || (!campaign.guidelines.dos?.length && !campaign.guidelines.donts?.length)) {
       return null;
@@ -157,7 +151,6 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
     );
   };
 
-  // Render Pay-Per-View specific content
   const renderPayPerViewInfo = () => {
     if (campaign.type !== "payPerView") return null;
     
@@ -201,7 +194,6 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
     );
   };
 
-  // Render Retainer specific content
   const renderRetainerInfo = () => {
     if (campaign.type !== "retainer") return null;
     
@@ -262,7 +254,6 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
     );
   };
 
-  // Render Challenge specific content
   const renderChallengeInfo = () => {
     if (campaign.type !== "challenge") return null;
     
