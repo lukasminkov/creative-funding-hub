@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -244,33 +245,6 @@ const generateMockSubmissions = (campaignId) => {
   ];
 };
 
-const getTopCreators = () => {
-  const creatorMap = new Map();
-  
-  mockSubmissions.forEach(submission => {
-    const creatorId = submission.creator_id;
-    if (!creatorMap.has(creatorId)) {
-      creatorMap.set(creatorId, {
-        id: creatorId,
-        name: submission.creator_name,
-        avatar: submission.creator_avatar,
-        platform: submission.platform,
-        views: submission.views,
-        submissions: 1
-      });
-    } else {
-      const creator = creatorMap.get(creatorId);
-      creator.views += submission.views;
-      creator.submissions += 1;
-      creator.platform = submission.platform;
-    }
-  });
-  
-  return Array.from(creatorMap.values())
-    .sort((a, b) => b.views - a.views)
-    .slice(0, 5);
-};
-
 export default function CampaignDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -280,6 +254,33 @@ export default function CampaignDetailPage() {
   const [budgetAmount, setBudgetAmount] = useState<string>("1000");
   
   const mockSubmissions = id ? generateMockSubmissions(id) : [];
+  
+  const getTopCreators = () => {
+    const creatorMap = new Map();
+    
+    mockSubmissions.forEach(submission => {
+      const creatorId = submission.creator_id;
+      if (!creatorMap.has(creatorId)) {
+        creatorMap.set(creatorId, {
+          id: creatorId,
+          name: submission.creator_name,
+          avatar: submission.creator_avatar,
+          platform: submission.platform,
+          views: submission.views,
+          submissions: 1
+        });
+      } else {
+        const creator = creatorMap.get(creatorId);
+        creator.views += submission.views;
+        creator.submissions += 1;
+        creator.platform = submission.platform;
+      }
+    });
+    
+    return Array.from(creatorMap.values())
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 5);
+  };
   
   const {
     data: campaign,
