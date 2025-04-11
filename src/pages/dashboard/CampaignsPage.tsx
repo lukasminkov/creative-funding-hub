@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { convertDatabaseCampaign } from "@/lib/campaign-utils";
 import { PlusCircle, ChevronDown, CalendarDays, CircleDollarSign, Filter, LayoutGrid, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 import CampaignSummaryCard from "@/components/dashboard/CampaignSummaryCard";
 import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";

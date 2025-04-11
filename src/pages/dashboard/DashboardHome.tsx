@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Activity, Eye, FileCheck, Plus, Users, TrendingUp, Target, ChevronRight, ArrowUpRight, Clock, Award, BarChart2 } from "lucide-react";
@@ -254,7 +253,7 @@ export default function DashboardHome() {
           </Card>
           
           {/* Notifications/Activity Card */}
-          <NotificationCenter className="glass-card" />
+          <NotificationCenter glass className="glass-card" />
           
           {/* Upcoming Deadlines Card */}
           <Card glass className="overflow-hidden">
