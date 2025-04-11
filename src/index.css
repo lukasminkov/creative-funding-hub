@@ -121,6 +121,35 @@
     @apply bg-black/50 backdrop-blur-md border border-white/10;
   }
 
+  /* Interactive elements */
+  .interactive-hover {
+    @apply transition-all duration-200 ease-in-out hover:scale-102 hover:shadow-md;
+  }
+  
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:border-primary/30;
+  }
+  
+  .button-hover {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+
+  /* Fade animations */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* Form focus styles */
   input:focus, 
   select:focus, 
@@ -136,6 +165,27 @@
   /* Placeholder animation */
   .placeholder-animate::placeholder {
     @apply animate-pulse-soft;
+  }
+  
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .badge-error {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .badge-info {
+    @apply bg-blue-100 text-blue-800;
   }
 }
 
@@ -192,4 +242,40 @@
 
 .progress-fill {
   @apply h-full bg-green-500 rounded-full transition-all duration-500 ease-out;
+}
+
+/* Modern card styles */
+.modern-card {
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 dark:border-gray-700;
+}
+
+/* Dashboard grid layout */
+.dashboard-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+/* Improved table styles */
+.modern-table {
+  @apply w-full border-collapse;
+}
+
+.modern-table th {
+  @apply bg-muted/50 text-muted-foreground font-medium text-sm px-4 py-3 text-left;
+}
+
+.modern-table td {
+  @apply border-t border-gray-100 dark:border-gray-800 px-4 py-3;
+}
+
+.modern-table tr:hover {
+  @apply bg-muted/30 transition-colors;
+}
+
+/* Pull-to-refresh animation */
+.ptr-element {
+  @apply h-12 absolute top-0 left-0 w-full overflow-hidden flex items-center justify-center;
+}
+
+.ptr-spinner {
+  @apply animate-spin h-8 w-8 border-4 border-primary/20 rounded-full border-t-primary;
 }

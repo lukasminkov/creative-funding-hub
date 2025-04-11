@@ -7,9 +7,10 @@ import { SocialIcon } from "@/components/icons/SocialIcons";
 import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Campaign, Submission, RetainerCampaign, getRetainerProgress } from "@/lib/campaign-types";
-import { Search, ChevronsUpDown, MessageSquare } from "lucide-react";
+import { Search, ChevronsUpDown, MessageSquare, Eye, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface Creator {
   id: number;
@@ -63,7 +64,8 @@ export default function CampaignCreatorsList({ creators, campaign, submissions =
     return { completion_percentage: 0, approved: 0, total_required: 0 };
   };
 
-  const handleMessageCreator = (creatorId: number, creatorName: string) => {
+  const handleMessageCreator = (creatorId: number, creatorName: string, event: React.MouseEvent) => {
+    event.stopPropagation();
     toast.success(`Opening message with ${creatorName}`);
     navigate("/dashboard/messages", { 
       state: { 
@@ -74,91 +76,151 @@ export default function CampaignCreatorsList({ creators, campaign, submissions =
     });
   };
 
+  const handleViewProfile = (creatorId: number) => {
+    toast.info(`Viewing profile for creator #${creatorId}`);
+    // In a real implementation, we would navigate to the creator's profile page
+    // navigate(`/dashboard/creators/${creatorId}`);
+  };
+
   return (
     <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Creator</TableHead>
-            <TableHead>Platforms</TableHead>
-            <TableHead>Submissions</TableHead>
-            <TableHead>Views</TableHead>
-            {campaign?.type === "retainer" && <TableHead>Progress</TableHead>}
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {creators.map(creator => {
-            const progress = getProgress(creator.id);
-            
-            return (
-              <TableRow key={creator.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={creator.avatar} alt={creator.name} />
-                      <AvatarFallback>{creator.name.substring(0, 2)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{creator.name}</div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {creator.platforms.map(platform => (
-                      <div key={platform} className="bg-secondary/50 p-1 rounded-full">
-                        <SocialIcon platform={platform} />
-                      </div>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>{creator.submissions}</TableCell>
-                <TableCell>{creator.views.toLocaleString()}</TableCell>
-                
-                {campaign?.type === "retainer" && (
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          {creators.length} active creator{creators.length !== 1 ? 's' : ''}
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              type="search"
+              placeholder="Search creators..."
+              className="h-9 rounded-md border border-input pl-8 pr-3 text-sm focus:ring-1 focus:ring-ring"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-md border shadow-sm">
+        <Table>
+          <TableHeader className="bg-muted/40">
+            <TableRow>
+              <TableHead>Creator</TableHead>
+              <TableHead>Platforms</TableHead>
+              <TableHead>Submissions</TableHead>
+              <TableHead>Views</TableHead>
+              {campaign?.type === "retainer" && <TableHead>Progress</TableHead>}
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {creators.map(creator => {
+              const progress = getProgress(creator.id);
+              
+              return (
+                <TableRow 
+                  key={creator.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => handleViewProfile(creator.id)}
+                >
                   <TableCell>
-                    <div className="w-32 space-y-1">
-                      <Progress value={progress.completion_percentage} className="h-2" />
-                      <div className="text-xs text-muted-foreground">
-                        {progress.approved} of {progress.total_required} ({progress.completion_percentage}%)
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={creator.avatar} alt={creator.name} />
+                        <AvatarFallback>{creator.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{creator.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {creator.status === "active" ? (
+                            <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50 border-green-200">
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 hover:bg-yellow-50 border-yellow-200">
+                              {creator.status}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </TableCell>
-                )}
-                
-                <TableCell className="text-right">
-                  <div className="flex justify-end space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      onClick={() => handleMessageCreator(creator.id, creator.name)}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      <span className="sr-only">Message {creator.name}</span>
-                    </Button>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex items-center">
-                          <span className="mr-1">Submissions</span>
-                          <ChevronsUpDown className="h-3 w-3" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[350px] p-0">
-                        <CreatorSubmissionsPopover 
-                          creator={creator} 
-                          submissions={getCreatorSubmissions(creator.id)}
+                  <TableCell>
+                    <div className="flex gap-1">
+                      {creator.platforms.map(platform => (
+                        <div key={platform} className="bg-secondary/80 p-1 rounded-full" title={platform}>
+                          <SocialIcon platform={platform} />
+                        </div>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">{creator.submissions}</TableCell>
+                  <TableCell>{creator.views.toLocaleString()}</TableCell>
+                  
+                  {campaign?.type === "retainer" && (
+                    <TableCell>
+                      <div className="w-32 space-y-1">
+                        <Progress 
+                          value={progress.completion_percentage} 
+                          className="h-2" 
+                          indicatorClassName={progress.completion_percentage >= 100 ? "bg-green-500" : ""}
                         />
-                      </PopoverContent>
-                    </Popover>
-                    <Button variant="ghost" size="sm">View Profile</Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                        <div className="text-xs text-muted-foreground">
+                          {progress.approved} of {progress.total_required} ({progress.completion_percentage}%)
+                        </div>
+                      </div>
+                    </TableCell>
+                  )}
+                  
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={(e) => handleMessageCreator(creator.id, creator.name, e)}
+                        className="hover:bg-primary/10 hover:text-primary"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="sr-only">Message {creator.name}</span>
+                      </Button>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="mr-1">Submissions</span>
+                            <ChevronsUpDown className="h-3 w-3" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[350px] p-0">
+                          <CreatorSubmissionsPopover 
+                            creator={creator} 
+                            submissions={getCreatorSubmissions(creator.id)}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="hover:bg-primary/10 hover:text-primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProfile(creator.id);
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
@@ -176,7 +238,7 @@ function CreatorSubmissionsPopover({
         <div className="flex items-center gap-3">
           <Avatar>
             <AvatarImage src={creator.avatar} alt={creator.name} />
-            <AvatarFallback>{creator.name.substring(0, 2)}</AvatarFallback>
+            <AvatarFallback>{creator.name.substring(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
             <h4 className="font-medium">{creator.name}</h4>
@@ -189,11 +251,11 @@ function CreatorSubmissionsPopover({
         {submissions.length > 0 ? (
           <div className="space-y-2">
             {submissions.map(submission => (
-              <div key={submission.id} className="p-3 border rounded-md">
+              <div key={submission.id} className="p-3 border rounded-md hover:border-primary/30 hover:bg-primary/5 transition-colors">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-1 mb-1">
-                      <div className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full">
+                      <div className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
                         {submission.platform}
                       </div>
                       <div className="text-xs text-muted-foreground">
@@ -209,22 +271,24 @@ function CreatorSubmissionsPopover({
                       </div>
                       <div>
                         <span className="text-muted-foreground">Status:</span>{" "}
-                        <span className={
-                          submission.status === "approved" ? "text-green-600" :
-                          submission.status === "denied" ? "text-red-600" :
-                          submission.status === "paid" ? "text-blue-600" :
-                          "text-yellow-600"
+                        <Badge variant="outline" className={
+                          submission.status === "approved" ? "bg-green-50 text-green-700 hover:bg-green-50 border-green-200" :
+                          submission.status === "denied" ? "bg-red-50 text-red-700 hover:bg-red-50 border-red-200" :
+                          submission.status === "paid" ? "bg-blue-50 text-blue-700 hover:bg-blue-50 border-blue-200" :
+                          "bg-yellow-50 text-yellow-700 hover:bg-yellow-50 border-yellow-200"
                         }>
                           {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   </div>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm" 
+                    className="gap-1 border-primary/20 hover:border-primary/40 hover:bg-primary/5"
                     onClick={() => window.open(submission.content, '_blank')}
                   >
+                    <ExternalLink className="h-3.5 w-3.5" />
                     View
                   </Button>
                 </div>

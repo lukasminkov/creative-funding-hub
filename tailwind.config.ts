@@ -101,6 +101,10 @@ export default {
 				'pulse-soft': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.7' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' }
 				}
 			},
 			animation: {
@@ -110,7 +114,17 @@ export default {
 				'fade-out': 'fade-out 0.5s ease-out',
 				'slide-in-right': 'slide-in-right 0.3s ease-out',
 				'slide-in-up': 'slide-in-up 0.5s ease-out',
-				'pulse-soft': 'pulse-soft 2s infinite'
+				'pulse-soft': 'pulse-soft 2s infinite',
+				'float': 'float 3s ease-in-out infinite'
+			},
+			scale: {
+				'102': '1.02',
+			},
+			boxShadow: {
+				'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+				'button': '0 2px 5px 0 rgba(0, 0, 0, 0.1)',
+				'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+				'dropdown': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
 			}
 		}
 	},
