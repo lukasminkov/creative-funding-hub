@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +37,7 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
       progressText = `${Math.round(totalVideos * (progress / 100))}/${totalVideos} deliverables`;
     } else if (campaign.type === "payPerView") {
       progress = status === "Ended" ? 100 : 30;
-      progressText = `$${(campaign.totalBudget * (progress / 100)).toFixed(2)}/$${campaign.totalBudget} spent`;
+      progressText = `$${(campaign.totalBudget * (progress / 100)).toFixed(2)}/$${campaign.totalBudget} claimed`;
     } else if (campaign.type === "challenge") {
       const submitDeadline = new Date(campaign.submissionDeadline);
       if (submitDeadline < now) {
