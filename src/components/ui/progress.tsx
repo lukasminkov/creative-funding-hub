@@ -21,7 +21,7 @@ const Progress = React.forwardRef<
     {...props}
   >
     <div
-      className={cn("h-full w-full flex-1 bg-green-500 transition-all", color, indicatorClassName)}
+      className={cn("h-full w-full flex-1 bg-primary transition-all", color, indicatorClassName)}
       style={{ transform: `translateX(-${100 - ((value || 0) / max) * 100}%)` }}
     />
   </div>
