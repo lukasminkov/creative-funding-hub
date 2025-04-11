@@ -1,10 +1,11 @@
+
 import { useMemo } from "react";
 import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Check, X, Calendar, DollarSign, Clock, Percent, BadgePercent, BadgeDollarSign, Info, Flag } from "lucide-react";
+import { Check, X, Calendar, DollarSign, Clock, Percent, BadgePercent, BadgeDollarSign, Info, Flag, Flame } from "lucide-react";
 
 interface CampaignStatusCardProps {
   campaign: Campaign;
@@ -186,8 +187,17 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
         </div>
         
         <div className="mt-4">
-          <Button variant="outline" className="w-full text-sm" onClick={onAddBudget}>
-            <DollarSign className="h-4 w-4 mr-1" /> Add Budget
+          <Button 
+            variant="outline" 
+            className="w-full text-sm relative group overflow-hidden" 
+            onClick={onAddBudget}
+          >
+            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-500 via-red-500 to-orange-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-400 to-red-500 opacity-0 group-hover:opacity-70 animate-pulse-soft"></span>
+            <span className="relative flex items-center justify-center">
+              <Flame className="h-4 w-4 mr-1 group-hover:text-white transition-colors duration-200" /> 
+              <span className="group-hover:text-white transition-colors duration-200">Add Budget</span>
+            </span>
           </Button>
         </div>
       </>
