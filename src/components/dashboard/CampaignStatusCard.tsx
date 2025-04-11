@@ -62,7 +62,20 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
     
     const views = Math.floor(Math.random() * 50000) + 10000;
     const submissions = Math.floor(Math.random() * 10) + 5;
-    const cpm = Number(((campaign.totalBudget * 0.3) / (views / 1000)).toFixed(4));
+    
+    // Calculate the effective CPM based on max payout restriction
+    let cpm = campaign.type === "payPerView" ? (campaign.ratePerThousand || 0) : 
+      Number(((campaign.totalBudget * 0.3) / (views / 1000)).toFixed(4));
+    
+    // Calculate effective CPM if there's a max payout per submission
+    let effectiveCpm = cpm;
+    if (campaign.type === "payPerView" && campaign.maxPayoutPerSubmission) {
+      const viewsNeededForMaxPayout = Math.floor(campaign.maxPayoutPerSubmission / cpm * 1000);
+      if (views > viewsNeededForMaxPayout) {
+        effectiveCpm = Number((campaign.maxPayoutPerSubmission / (views / 1000)).toFixed(4));
+      }
+    }
+    
     const approvalRate = Math.floor(Math.random() * 10) + 90; // 90-100%
     
     return {
@@ -75,6 +88,7 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
       views,
       submissions,
       cpm,
+      effectiveCpm, // Added effective CPM calculation
       approvalRate
     };
   }, [campaign]);
@@ -160,19 +174,22 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <div className="flex items-center text-sm text-muted-foreground">
-              <DollarSign className="h-3.5 w-3.5 mr-1 opacity-70" /> Cost Per View
+              <DollarSign className="h-3.5 w-3.5 mr-1 opacity-70" /> Payout Per 1000 Views
             </div>
             <div className="font-medium">
-              ${campaign.ratePerThousand?.toFixed(4) || statusInfo.cpm.toFixed(4)} <span className="text-xs text-muted-foreground">/ 1000 views</span>
+              ${campaign.ratePerThousand?.toFixed(4) || statusInfo.cpm.toFixed(4)}
             </div>
           </div>
           
           <div className="space-y-1">
             <div className="flex items-center text-sm text-muted-foreground">
-              <BadgeDollarSign className="h-3.5 w-3.5 mr-1 opacity-70" /> Remaining Budget
+              <BadgeDollarSign className="h-3.5 w-3.5 mr-1 opacity-70" /> Effective CPM
             </div>
             <div className="font-medium">
-              {formatCurrency(statusInfo.remainingBudget, campaign.currency)}
+              ${statusInfo.effectiveCpm.toFixed(4)}
+              {statusInfo.effectiveCpm < statusInfo.cpm && (
+                <span className="text-xs ml-1 text-muted-foreground">(limited by max payout)</span>
+              )}
             </div>
           </div>
         </div>
@@ -183,6 +200,15 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
           </div>
           <div className="font-medium">
             {formatCurrency(campaign.maxPayoutPerSubmission || 0, campaign.currency)}
+          </div>
+        </div>
+        
+        <div className="mt-4 space-y-1">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <BadgeDollarSign className="h-3.5 w-3.5 mr-1 opacity-70" /> Remaining Budget
+          </div>
+          <div className="font-medium">
+            {formatCurrency(statusInfo.remainingBudget, campaign.currency)}
           </div>
         </div>
         
