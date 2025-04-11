@@ -114,11 +114,19 @@
 
   /* Glass morphism */
   .glass {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm;
+    @apply bg-white/80 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-sm;
   }
-
-  .dark .glass {
-    @apply bg-black/50 backdrop-blur-md border border-white/10;
+  
+  .glass-card {
+    @apply bg-white/90 dark:bg-black/50 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-md rounded-xl;
+  }
+  
+  .glass-card-highlight {
+    @apply bg-gradient-to-br from-purple-500/90 to-indigo-700/80 backdrop-blur-md border border-white/20 text-white shadow-md rounded-xl;
+  }
+  
+  .glass-card-accent {
+    @apply bg-gradient-to-br from-amber-500/80 to-orange-600/70 backdrop-blur-md border border-white/20 text-white shadow-md rounded-xl;
   }
 
   /* Interactive elements */

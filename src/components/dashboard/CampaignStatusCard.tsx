@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -110,13 +111,13 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
         
         <div className="space-y-2">
           {campaign.guidelines.dos && campaign.guidelines.dos.length > 0 && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-xs font-medium text-green-800 flex items-center mb-1">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/30 rounded-lg p-3">
+              <p className="text-xs font-medium text-green-800 dark:text-green-400 flex items-center mb-1">
                 <Check className="h-3 w-3 mr-1" /> Do's
               </p>
               <ul className="space-y-1">
                 {campaign.guidelines.dos.slice(0, 3).map((item, index) => (
-                  <li key={index} className="text-xs text-gray-700 flex">
+                  <li key={index} className="text-xs text-gray-700 dark:text-gray-300 flex">
                     <span className="text-green-500 mr-1">•</span>
                     <span>{item}</span>
                   </li>
@@ -129,13 +130,13 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
           )}
           
           {campaign.guidelines.donts && campaign.guidelines.donts.length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-xs font-medium text-red-800 flex items-center mb-1">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 rounded-lg p-3">
+              <p className="text-xs font-medium text-red-800 dark:text-red-400 flex items-center mb-1">
                 <X className="h-3 w-3 mr-1" /> Don'ts
               </p>
               <ul className="space-y-1">
                 {campaign.guidelines.donts.slice(0, 3).map((item, index) => (
-                  <li key={index} className="text-xs text-gray-700 flex">
+                  <li key={index} className="text-xs text-gray-700 dark:text-gray-300 flex">
                     <span className="text-red-500 mr-1">•</span>
                     <span>{item}</span>
                   </li>
@@ -323,7 +324,7 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card glass className="overflow-hidden">
       {renderBanner()}
       <CardHeader className={campaign.bannerImage ? "pt-3" : undefined}>
         <div className="flex justify-between items-center">

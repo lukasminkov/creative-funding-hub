@@ -274,127 +274,133 @@ export default function CampaignsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="campaigns" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <TabsList className="w-full md:w-auto">
-            <TabsTrigger value="campaigns" className="flex items-center">
-              <CalendarDays className="h-4 w-4 mr-2" />
-              Campaigns
-            </TabsTrigger>
-            <TabsTrigger value="submissions" className="flex items-center">
-              <CircleDollarSign className="h-4 w-4 mr-2" />
-              Submissions
-            </TabsTrigger>
-          </TabsList>
-          
-          {activeTab === "campaigns" && (
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
-              <Select value={campaignTypeFilter} onValueChange={setCampaignTypeFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Campaign Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="retainer">Retainer</SelectItem>
-                  <SelectItem value="payPerView">Pay Per View</SelectItem>
-                  <SelectItem value="challenge">Challenge</SelectItem>
-                </SelectContent>
-              </Select>
+      <Card glass className="overflow-hidden mb-6">
+        <CardContent className="p-4">
+          <Tabs defaultValue="campaigns" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+              <TabsList className="w-full md:w-auto bg-secondary/50 backdrop-blur-sm">
+                <TabsTrigger value="campaigns" className="flex items-center">
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Campaigns
+                </TabsTrigger>
+                <TabsTrigger value="submissions" className="flex items-center">
+                  <CircleDollarSign className="h-4 w-4 mr-2" />
+                  Submissions
+                </TabsTrigger>
+              </TabsList>
               
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="ended">Ended</SelectItem>
-                  <SelectItem value="application">Application Phase</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-10 w-10">
-                    {viewMode === "grid" ? (
-                      <LayoutGrid className="h-4 w-4" />
-                    ) : (
-                      <LayoutList className="h-4 w-4" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setViewMode("grid")}>
-                    <LayoutGrid className="h-4 w-4 mr-2" />
-                    Grid View
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setViewMode("list")}>
-                    <LayoutList className="h-4 w-4 mr-2" />
-                    List View
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {activeTab === "campaigns" && (
+                <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                  <Select value={campaignTypeFilter} onValueChange={setCampaignTypeFilter}>
+                    <SelectTrigger className="w-full md:w-[180px] bg-background/80 backdrop-blur-sm">
+                      <SelectValue placeholder="Campaign Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="retainer">Retainer</SelectItem>
+                      <SelectItem value="payPerView">Pay Per View</SelectItem>
+                      <SelectItem value="challenge">Challenge</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full md:w-[180px] bg-background/80 backdrop-blur-sm">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="ended">Ended</SelectItem>
+                      <SelectItem value="application">Application Phase</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-10 w-10 bg-background/80 backdrop-blur-sm">
+                        {viewMode === "grid" ? (
+                          <LayoutGrid className="h-4 w-4" />
+                        ) : (
+                          <LayoutList className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setViewMode("grid")}>
+                        <LayoutGrid className="h-4 w-4 mr-2" />
+                        Grid View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setViewMode("list")}>
+                        <LayoutList className="h-4 w-4 mr-2" />
+                        List View
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        
-        <TabsContent value="campaigns" className="mt-6">
-          {campaigns && campaigns.length > 0 && activeTab === "campaigns" && (
-            <CampaignAnalytics campaigns={campaigns} />
-          )}
-          
-          <div className="grid gap-6 mt-6">
-            {filteredCampaigns && filteredCampaigns.length > 0 ? (
-              <div className={
-                viewMode === "grid" 
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-                  : "space-y-4"
-              }>
-                {filteredCampaigns.map((campaign) => (
-                  <CampaignSummaryCard 
-                    key={campaign.id} 
-                    campaign={campaign}
-                    onDelete={handleDeleteCampaign} 
+            
+            <TabsContent value="campaigns" className="mt-6">
+              {campaigns && campaigns.length > 0 && activeTab === "campaigns" && (
+                <CampaignAnalytics campaigns={campaigns} />
+              )}
+              
+              <div className="grid gap-6 mt-6">
+                {filteredCampaigns && filteredCampaigns.length > 0 ? (
+                  <div className={
+                    viewMode === "grid" 
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                      : "space-y-4"
+                  }>
+                    {filteredCampaigns.map((campaign) => (
+                      <CampaignSummaryCard 
+                        key={campaign.id} 
+                        campaign={campaign}
+                        onDelete={handleDeleteCampaign} 
+                      />
+                    ))}
+                  </div>
+                ) : campaigns && campaigns.length > 0 ? (
+                  <Card glass className="text-center p-8">
+                    <h2 className="text-2xl font-bold mb-4">No matching campaigns</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Try changing your filters to see more results
+                    </p>
+                    <Button variant="outline" onClick={() => {
+                      setCampaignTypeFilter("all");
+                      setStatusFilter("all");
+                    }}>
+                      Clear Filters
+                    </Button>
+                  </Card>
+                ) : (
+                  <Card glass className="text-center p-8">
+                    <h2 className="text-2xl font-bold mb-4">No campaigns found</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Create your first campaign to get started
+                    </p>
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                      Create Campaign
+                    </Button>
+                  </Card>
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="submissions" className="mt-6">
+              <Card glass className="border-0">
+                <CardContent className="p-4">
+                  <CampaignSubmissions 
+                    submissions={mockSubmissions}
+                    onApprove={handleApproveSubmission}
+                    onDeny={handleDenySubmission}
                   />
-                ))}
-              </div>
-            ) : campaigns && campaigns.length > 0 ? (
-              <div className="bg-card border border-border rounded-lg p-8 text-center">
-                <h2 className="text-2xl font-bold mb-4">No matching campaigns</h2>
-                <p className="text-muted-foreground mb-6">
-                  Try changing your filters to see more results
-                </p>
-                <Button variant="outline" onClick={() => {
-                  setCampaignTypeFilter("all");
-                  setStatusFilter("all");
-                }}>
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              <div className="bg-card border border-border rounded-lg p-8 text-center">
-                <h2 className="text-2xl font-bold mb-4">No campaigns found</h2>
-                <p className="text-muted-foreground mb-6">
-                  Create your first campaign to get started
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  Create Campaign
-                </Button>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="submissions" className="mt-6">
-          <div className="bg-card border border-border rounded-lg p-6">
-            <CampaignSubmissions 
-              submissions={mockSubmissions}
-              onApprove={handleApproveSubmission}
-              onDeny={handleDenySubmission}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
       
       <CampaignFormDialog
         open={createDialogOpen}

@@ -1,15 +1,23 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & {
+    glass?: boolean;
+    highlight?: boolean;
+    accent?: boolean;
+  }
+>(({ className, glass, highlight, accent, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "rounded-lg border bg-card text-card-foreground shadow-sm",
+      glass && "glass-card",
+      highlight && "glass-card-highlight",
+      accent && "glass-card-accent",
       className
     )}
     {...props}

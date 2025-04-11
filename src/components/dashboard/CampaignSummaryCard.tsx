@@ -50,7 +50,7 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
     progressText = `${Math.round(totalVideos * (progress / 100))}/${totalVideos} deliverables`;
   } else if (campaign.type === "payPerView") {
     progress = status === "Ended" ? 100 : 30;
-    progressText = `$${(campaign.totalBudget * (progress / 100)).toFixed(2)}/$${campaign.totalBudget} spent`;
+    progressText = `$${(campaign.totalBudget * (progress / 100)).toFixed(2)}/$${campaign.totalBudget} claimed`;
   } else if (campaign.type === "challenge") {
     const submitDeadline = new Date(campaign.submissionDeadline);
     if (submitDeadline < now) {
@@ -82,7 +82,7 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
   };
 
   return (
-    <Card className="overflow-hidden h-full transition-all hover:shadow-md flex flex-col">
+    <Card glass className="overflow-hidden h-full transition-all hover:shadow-md flex flex-col">
       {campaign.bannerImage ? (
         <div className="h-40 relative">
           <img src={campaign.bannerImage} alt={campaign.title} className="w-full h-full object-cover" />
@@ -157,7 +157,7 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
         </div>
       )}
       
-      <div className="p-4 flex-grow flex flex-col">
+      <div className="p-4 flex-grow flex flex-col backdrop-blur-sm">
         <div className="mb-4">
           <div className="flex justify-between text-sm mb-1">
             <span className="text-muted-foreground">{progressText}</span>
