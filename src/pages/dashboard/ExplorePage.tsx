@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Campaign } from "@/lib/campaign-types";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Users, TrendingUp, Eye, Heart, Star, Crown, Search, X } from "lucide-react";
+import { Users, TrendingUp, Eye, Heart, Star, Crown, Search, X, DollarSign, Activity } from "lucide-react";
 import { useState } from "react";
 
 export default function ExplorePage() {
@@ -81,7 +82,7 @@ export default function ExplorePage() {
   const { data: discoveredCreators = [], isLoading: creatorsLoading } = useQuery({
     queryKey: ['discover-creators'],
     queryFn: () => {
-      // Simulated creator discovery data
+      // Simulated creator discovery data with enhanced information
       return [
         {
           id: "creator-1",
@@ -93,6 +94,9 @@ export default function ExplorePage() {
           engagement: "8.5%",
           platforms: ["TikTok", "Instagram"],
           recentViews: "2.1M",
+          campaigns: 12,
+          earned: "$4,200",
+          viewsGenerated: "850K",
           isTop: true
         },
         {
@@ -105,6 +109,9 @@ export default function ExplorePage() {
           engagement: "12.3%",
           platforms: ["Instagram", "YouTube"],
           recentViews: "1.8M",
+          campaigns: 8,
+          earned: "$3,100",
+          viewsGenerated: "620K",
           isTop: true
         },
         {
@@ -117,6 +124,9 @@ export default function ExplorePage() {
           engagement: "6.7%",
           platforms: ["TikTok", "Instagram"],
           recentViews: "3.2M",
+          campaigns: 15,
+          earned: "$5,800",
+          viewsGenerated: "1.2M",
           isTop: false
         },
         {
@@ -129,6 +139,9 @@ export default function ExplorePage() {
           engagement: "9.8%",
           platforms: ["Instagram", "TikTok"],
           recentViews: "2.7M",
+          campaigns: 10,
+          earned: "$4,500",
+          viewsGenerated: "980K",
           isTop: false
         }
       ];
@@ -222,7 +235,9 @@ export default function ExplorePage() {
             ))}
           </div>
         </div>
-        <Button className="w-full">View Details</Button>
+        <Link to={`/dashboard/campaigns/${campaign.id}`}>
+          <Button className="w-full">View Campaign</Button>
+        </Link>
       </CardContent>
     </Card>
   );
@@ -248,27 +263,41 @@ export default function ExplorePage() {
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-          <div>
+        <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+          <div className="text-center">
             <div className="flex items-center justify-center gap-1">
               <Users className="h-3 w-3" />
-              <span className="text-sm font-medium">{creator.followers}</span>
+              <span className="font-medium">{creator.followers}</span>
             </div>
             <p className="text-xs text-muted-foreground">Followers</p>
           </div>
-          <div>
+          <div className="text-center">
             <div className="flex items-center justify-center gap-1">
               <Heart className="h-3 w-3" />
-              <span className="text-sm font-medium">{creator.engagement}</span>
+              <span className="font-medium">{creator.engagement}</span>
             </div>
             <p className="text-xs text-muted-foreground">Engagement</p>
           </div>
-          <div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Activity className="h-3 w-3" />
+              <span className="font-medium">{creator.campaigns}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Campaigns</p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              <span className="font-medium">{creator.earned}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Earned</p>
+          </div>
+          <div className="text-center col-span-2">
             <div className="flex items-center justify-center gap-1">
               <Eye className="h-3 w-3" />
-              <span className="text-sm font-medium">{creator.recentViews}</span>
+              <span className="font-medium">{creator.viewsGenerated}</span>
             </div>
-            <p className="text-xs text-muted-foreground">Recent Views</p>
+            <p className="text-xs text-muted-foreground">Views Generated</p>
           </div>
         </div>
         
@@ -280,7 +309,9 @@ export default function ExplorePage() {
           ))}
         </div>
         
-        <Button className="w-full" variant="outline">View Profile</Button>
+        <Link to={`/dashboard/creators/${creator.id}`}>
+          <Button className="w-full" variant="outline">View Profile</Button>
+        </Link>
       </CardContent>
     </Card>
   );
