@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Filter } from "lucide-react";
 import CampaignSummaryCard from "@/components/dashboard/CampaignSummaryCard";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
+import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { toast } from "sonner";
 
@@ -90,6 +91,9 @@ export default function CampaignsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Campaign Analytics Section */}
+      <CampaignAnalytics campaigns={campaigns} />
 
       {filteredCampaigns.length === 0 ? (
         <div className="text-center py-8">
