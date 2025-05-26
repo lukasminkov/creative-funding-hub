@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
-  BarChart3, Compass, Home, Layers, MessageSquare, Settings, 
-  LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell
+  BarChart3, Compass, Home, Layers, MessageSquare, 
+  LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell, Settings
 } from "lucide-react";
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
@@ -26,8 +26,7 @@ const menuItems = [
   { title: "Explore", path: "/dashboard/explore", icon: Compass },
   { title: "Campaigns", path: "/dashboard/campaigns", icon: Layers },
   { title: "Finances", path: "/dashboard/finances", icon: CreditCard },
-  { title: "Messages", path: "/dashboard/messages", icon: MessageSquare },
-  { title: "Settings", path: "/dashboard/settings", icon: Settings }
+  { title: "Messages", path: "/dashboard/messages", icon: MessageSquare }
 ];
 
 const ModernSidebarToggle = () => {
@@ -182,6 +181,16 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
             
             {state === "expanded" && (
               <>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  asChild
+                  className="h-9 w-9 rounded-lg hover:bg-accent/50"
+                >
+                  <Link to="/dashboard/settings">
+                    <Settings className="h-4 w-4" />
+                  </Link>
+                </Button>
                 <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-accent/50">
                   <Bell className="h-4 w-4" />
                 </Button>
