@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +57,9 @@ export default function CampaignManagement({
   // Filter and sort submissions
   const filteredSubmissions = submissions
     .filter(submission => {
-      const matchesSearch = submission.creator_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // Get creator username for search
+      const creatorUsername = getCreatorUsername(submission.creator_name);
+      const matchesSearch = creatorUsername.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            submission.platform.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === "all" || submission.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -74,8 +77,8 @@ export default function CampaignManagement({
           bValue = b.payment_amount;
           break;
         case "creator":
-          aValue = a.creator_name;
-          bValue = b.creator_name;
+          aValue = getCreatorUsername(a.creator_name);
+          bValue = getCreatorUsername(b.creator_name);
           break;
         case "date":
         default:
@@ -104,6 +107,7 @@ export default function CampaignManagement({
       acc.push({
         creator_id: submission.creator_id,
         creator_name: submission.creator_name,
+        creator_username: getCreatorUsername(submission.creator_name),
         creator_avatar: submission.creator_avatar,
         submissions: 1,
         approvedSubmissions: submission.status === 'approved' || submission.status === 'paid' ? 1 : 0,
@@ -148,8 +152,8 @@ export default function CampaignManagement({
     setSelectedCreator({
       id: submission.creator_id,
       name: submission.creator_name,
+      username: getCreatorUsername(submission.creator_name),
       avatar: submission.creator_avatar,
-      // Add more creator data as needed
       submissions: submissions.filter(s => s.creator_id === submission.creator_id),
       totalViews: submissions
         .filter(s => s.creator_id === submission.creator_id)
@@ -169,6 +173,24 @@ export default function CampaignManagement({
                           platform.toLowerCase().includes('youtube') ? '_yt' :
                           platform.toLowerCase().includes('twitter') ? '_tw' : '';
     return `@${cleanName}${platformSuffix}`;
+  };
+
+  // Extract username from creator name (assuming format like "@username" or "Full Name (@username)")
+  const getCreatorUsername = (creatorName: string) => {
+    // Check if name contains username in parentheses like "John Doe (@johndoe)"
+    const usernameMatch = creatorName.match(/\(@([^)]+)\)/);
+    if (usernameMatch) {
+      return `@${usernameMatch[1]}`;
+    }
+    
+    // Check if name starts with @ (already a username)
+    if (creatorName.startsWith('@')) {
+      return creatorName;
+    }
+    
+    // Generate username from name as fallback
+    const cleanName = creatorName.toLowerCase().replace(/\s+/g, '');
+    return `@${cleanName}`;
   };
 
   return (
@@ -260,14 +282,14 @@ export default function CampaignManagement({
                               {submission.creator_avatar ? (
                                 <AvatarImage src={submission.creator_avatar} alt={submission.creator_name} />
                               ) : (
-                                <AvatarFallback>{submission.creator_name.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>{getCreatorUsername(submission.creator_name).charAt(1)}</AvatarFallback>
                               )}
                             </Avatar>
                             <button
                               onClick={() => handleCreatorClick(submission)}
                               className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
                             >
-                              {submission.creator_name}
+                              {getCreatorUsername(submission.creator_name)}
                             </button>
                           </div>
                         </TableCell>
@@ -359,10 +381,10 @@ export default function CampaignManagement({
                                 {creator.creator_avatar ? (
                                   <AvatarImage src={creator.creator_avatar} alt={creator.creator_name} />
                                 ) : (
-                                  <AvatarFallback>{creator.creator_name.charAt(0)}</AvatarFallback>
+                                  <AvatarFallback>{creator.creator_username.charAt(1)}</AvatarFallback>
                                 )}
                               </Avatar>
-                              <span className="font-medium">{creator.creator_name}</span>
+                              <span className="font-medium">{creator.creator_username}</span>
                             </div>
                           </TableCell>
                           <TableCell>{creator.submissions}</TableCell>

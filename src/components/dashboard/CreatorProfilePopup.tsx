@@ -26,6 +26,7 @@ import { format } from "date-fns";
 interface Creator {
   id: string;
   name: string;
+  username?: string;
   avatar?: string;
   submissions: any[];
   totalViews: number;
@@ -79,6 +80,28 @@ const CreatorProfilePopup: React.FC<CreatorProfilePopupProps> = ({
     }
   };
 
+  // Extract username from creator name or use provided username
+  const getDisplayUsername = () => {
+    if (creator.username) return creator.username;
+    
+    // Check if name contains username in parentheses like "John Doe (@johndoe)"
+    const usernameMatch = creator.name.match(/\(@([^)]+)\)/);
+    if (usernameMatch) {
+      return `@${usernameMatch[1]}`;
+    }
+    
+    // Check if name starts with @ (already a username)
+    if (creator.name.startsWith('@')) {
+      return creator.name;
+    }
+    
+    // Generate username from name as fallback
+    const cleanName = creator.name.toLowerCase().replace(/\s+/g, '');
+    return `@${cleanName}`;
+  };
+
+  const displayUsername = getDisplayUsername();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -88,11 +111,11 @@ const CreatorProfilePopup: React.FC<CreatorProfilePopupProps> = ({
               {creator.avatar ? (
                 <AvatarImage src={creator.avatar} alt={creator.name} />
               ) : (
-                <AvatarFallback className="text-lg">{creator.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-lg">{displayUsername.charAt(1)}</AvatarFallback>
               )}
             </Avatar>
             <div>
-              <h2 className="text-2xl font-bold">{creator.name}</h2>
+              <h2 className="text-2xl font-bold">{displayUsername}</h2>
               <div className="flex items-center gap-2 mt-1">
                 {getPerformanceBadge()}
                 <Badge variant="outline">Creator ID: {creator.id.slice(0, 8)}...</Badge>
