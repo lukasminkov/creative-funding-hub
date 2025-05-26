@@ -216,7 +216,6 @@ const CampaignCreator = ({
 
   return (
     <div className="w-full space-y-8">
-      {/* Modern Progress Header */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -236,39 +235,40 @@ const CampaignCreator = ({
         <div className="space-y-4">
           <Progress value={progressPercentage} className="h-2" />
           
-          {/* Step Navigation */}
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {STEPS.map((step, index) => (
-              <button
-                key={step.id}
-                onClick={() => handleStepClick(index)}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 min-w-fit",
-                  index === currentStep
-                    ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg scale-[1.02]"
-                    : index < currentStep
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:scale-[1.02]"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:scale-[1.02]"
-                )}
-              >
-                <div className={cn(
-                  "h-6 w-6 rounded-full flex items-center justify-center text-xs",
-                  index <= currentStep ? "bg-white/20" : "bg-current/20"
-                )}>
-                  {index < currentStep ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <step.icon className="h-4 w-4" />
+            {STEPS.map((step, index) => {
+              const StepIcon = step.icon;
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => handleStepClick(index)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 min-w-fit",
+                    index === currentStep
+                      ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg scale-[1.02]"
+                      : index < currentStep
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:scale-[1.02]"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:scale-[1.02]"
                   )}
-                </div>
-                <span className="hidden sm:inline">{step.title}</span>
-              </button>
-            ))}
+                >
+                  <div className={cn(
+                    "h-6 w-6 rounded-full flex items-center justify-center text-xs",
+                    index <= currentStep ? "bg-white/20" : "bg-current/20"
+                  )}>
+                    {index < currentStep ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <StepIcon className="h-4 w-4" />
+                    )}
+                  </div>
+                  <span className="hidden sm:inline">{step.title}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Step Content */}
       <Card className="glass-card">
         <CardContent className="p-8">
           <AnimatePresence mode="wait">
@@ -286,7 +286,6 @@ const CampaignCreator = ({
         </CardContent>
       </Card>
 
-      {/* Modern Footer Navigation */}
       <div className="flex items-center justify-between pt-6 border-t">
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={onCancel} className="h-11 px-6">
