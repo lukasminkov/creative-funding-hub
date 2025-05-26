@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import DefaultCampaignBanner from "../DefaultCampaignBanner";
 
 interface CampaignSummaryCardProps {
   campaign: Campaign;
@@ -121,18 +122,17 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
           )}
         </div>
       ) : (
-        <div className="p-4 border-b border-border/60">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-medium">{campaign.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
-              </p>
-            </div>
-            {showActions && (
+        <div className="relative">
+          <DefaultCampaignBanner 
+            title={campaign.title}
+            type={campaign.type}
+            className="h-40"
+          />
+          {showActions && (
+            <div className="absolute top-2 right-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/40 text-white">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -152,8 +152,8 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
       
