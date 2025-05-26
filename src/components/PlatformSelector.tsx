@@ -27,6 +27,25 @@ const PlatformSelector = ({
     }
   };
 
+  const handlePlatformClick = (platform: string) => {
+    // Special handling for TikTok Shop - it can only be selected alone
+    if (platform === 'TikTok Shop') {
+      // If TikTok Shop is clicked, clear other selections and select only TikTok Shop
+      onChange(platform);
+      return;
+    }
+
+    // If any other platform is clicked and TikTok Shop is currently selected, replace it
+    if (selectedPlatforms.includes('TikTok Shop') && platform !== 'TikTok Shop') {
+      // Clear TikTok Shop and select the new platform
+      onChange(platform);
+      return;
+    }
+
+    // Normal platform selection logic
+    onChange(platform);
+  };
+
   const getPlatformLogo = (platform: string) => {
     switch (platform) {
       case 'TikTok':
@@ -84,6 +103,13 @@ const PlatformSelector = ({
     }
   };
 
+  const getWarningMessage = () => {
+    if (selectedPlatforms.includes('TikTok Shop')) {
+      return "TikTok Shop can only be selected alone and cannot be combined with other platforms.";
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-3">
       {showLabel && (
@@ -91,34 +117,52 @@ const PlatformSelector = ({
           Platforms {singleSelection ? "(select one)" : "(select multiple)"}
         </label>
       )}
+      
+      {getWarningMessage() && (
+        <div className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2">
+          ⚠️ {getWarningMessage()}
+        </div>
+      )}
+      
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-        {PLATFORMS.map((platform) => (
-          <div
-            key={platform}
-            onClick={() => onChange(platform)}
-            className={cn(
-              "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all cursor-pointer",
-              isSelected(platform)
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-muted-foreground/20 hover:border-muted-foreground/40"
-            )}
-          >
-            <div className="relative">
-              <div className={cn(
-                "flex items-center justify-center w-12 h-12 rounded-full mb-2",
-                isSelected(platform) ? "text-primary" : "text-muted-foreground"
-              )}>
-                {getPlatformLogo(platform)}
-              </div>
-              {isSelected(platform) && (
-                <div className="absolute -top-1.5 -right-1.5 bg-primary text-white rounded-full p-0.5">
-                  <Check className="h-3 w-3" />
-                </div>
+        {PLATFORMS.map((platform) => {
+          const platformIsSelected = isSelected(platform);
+          const isDisabled = !singleSelection && 
+            selectedPlatforms.includes('TikTok Shop') && 
+            platform !== 'TikTok Shop' && 
+            selectedPlatforms.length > 0;
+          
+          return (
+            <div
+              key={platform}
+              onClick={() => !isDisabled && handlePlatformClick(platform)}
+              className={cn(
+                "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all",
+                isDisabled 
+                  ? "border-muted-foreground/10 opacity-50 cursor-not-allowed"
+                  : "cursor-pointer",
+                platformIsSelected
+                  ? "border-primary bg-primary/10 text-primary"
+                  : !isDisabled && "border-muted-foreground/20 hover:border-muted-foreground/40"
               )}
+            >
+              <div className="relative">
+                <div className={cn(
+                  "flex items-center justify-center w-12 h-12 rounded-full mb-2",
+                  platformIsSelected ? "text-primary" : "text-muted-foreground"
+                )}>
+                  {getPlatformLogo(platform)}
+                </div>
+                {platformIsSelected && (
+                  <div className="absolute -top-1.5 -right-1.5 bg-primary text-white rounded-full p-0.5">
+                    <Check className="h-3 w-3" />
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-center font-medium mt-1">{platform}</span>
             </div>
-            <span className="text-xs text-center font-medium mt-1">{platform}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 import { Campaign, formatCurrency } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, DollarSign, Eye, Users, MapPin, Tag } from "lucide-react";
+import { Calendar, DollarSign, Eye, Users, MapPin, Tag, Video } from "lucide-react";
 
 interface CampaignStepReviewProps {
   campaign: Campaign;
@@ -123,11 +123,16 @@ export default function CampaignStepReview({ campaign }: CampaignStepReviewProps
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Max payout per submission:</span>
-              <span className="font-medium">{formatCurrency(campaign.maxPayoutPerSubmission || 0, campaign.currency)}</span>
+              <span className="font-medium">
+                {campaign.maxPayoutPerSubmission === null 
+                  ? "Unlimited" 
+                  : formatCurrency(campaign.maxPayoutPerSubmission || 0, campaign.currency)
+                }
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">View validation period:</span>
-              <span className="font-medium">{campaign.viewValidationPeriod} days</span>
+              <span className="font-medium">10 days</span>
             </div>
           </CardContent>
         </Card>
@@ -167,6 +172,30 @@ export default function CampaignStepReview({ campaign }: CampaignStepReviewProps
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Application deadline:</span>
               <span className="font-medium">{new Date(campaign.applicationDeadline).toLocaleDateString()}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Instruction Video */}
+      {campaign.instructionVideo && (
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Video className="h-5 w-5" />
+              Instruction Video
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+              <video 
+                src={campaign.instructionVideo} 
+                controls 
+                className="w-full h-full object-cover"
+                preload="metadata"
+              >
+                Your browser does not support the video tag.
+              </video>
             </div>
           </CardContent>
         </Card>

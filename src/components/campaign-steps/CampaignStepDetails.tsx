@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import PlatformSelector from "@/components/PlatformSelector";
 import { DatePicker } from "@/components/ui/date-picker";
 import RequirementsList from "@/components/RequirementsList";
@@ -20,6 +21,18 @@ export default function CampaignStepDetails({ campaign, onChange }: CampaignStep
   const handlePlatformChange = (platform: string) => {
     const platformValue = platform as Platform;
     const currentPlatforms = [...(campaign.platforms || [])];
+    
+    // Handle TikTok Shop exclusive selection
+    if (platform === 'TikTok Shop') {
+      onChange({ platforms: ['TikTok Shop'] });
+      return;
+    }
+    
+    // If TikTok Shop is currently selected and user selects another platform, replace it
+    if (currentPlatforms.includes('TikTok Shop' as Platform)) {
+      onChange({ platforms: [platformValue] });
+      return;
+    }
     
     if (currentPlatforms.includes(platformValue)) {
       onChange({
@@ -38,6 +51,20 @@ export default function CampaignStepDetails({ campaign, onChange }: CampaignStep
       applicationQuestions,
       restrictedAccess
     });
+  };
+
+  const handlePayoutTypeChange = (value: string) => {
+    if (value === 'unlimited') {
+      onChange({ 
+        maxPayoutPerSubmission: null,
+        payoutType: 'unlimited'
+      });
+    } else {
+      onChange({ 
+        maxPayoutPerSubmission: 500, // Default recommended value
+        payoutType: 'limited'
+      });
+    }
   };
 
   return (
@@ -143,48 +170,58 @@ export default function CampaignStepDetails({ campaign, onChange }: CampaignStep
             <CardTitle className="text-lg">Pay Per View Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Rate per 1,000 Views <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={campaign.ratePerThousand || ""}
-                  onChange={(e) => onChange({ ratePerThousand: Number(e.target.value) })}
-                  placeholder="Amount per 1k views"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Max Payout per Submission <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={campaign.maxPayoutPerSubmission || ""}
-                  onChange={(e) => onChange({ maxPayoutPerSubmission: Number(e.target.value) })}
-                  placeholder="Maximum per submission"
-                />
-              </div>
-            </div>
-            
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                View Validation Period (days) <span className="text-destructive">*</span>
+                Rate per 1,000 Views <span className="text-destructive">*</span>
               </Label>
               <Input
                 type="number"
-                min="1"
-                value={campaign.viewValidationPeriod || ""}
-                onChange={(e) => onChange({ viewValidationPeriod: Number(e.target.value) })}
-                placeholder="Days to count views"
+                min="0"
+                step="0.01"
+                value={campaign.ratePerThousand || ""}
+                onChange={(e) => onChange({ ratePerThousand: Number(e.target.value) })}
+                placeholder="Amount per 1k views"
               />
+            </div>
+            
+            <div className="space-y-4">
+              <Label className="text-sm font-medium">
+                Maximum Payout per Submission <span className="text-destructive">*</span>
+              </Label>
+              
+              <RadioGroup 
+                value={campaign.payoutType || (campaign.maxPayoutPerSubmission === null ? 'unlimited' : 'limited')}
+                onValueChange={handlePayoutTypeChange}
+                className="space-y-3"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="limited" id="limited" />
+                  <Label htmlFor="limited" className="text-sm">Set maximum payout limit</Label>
+                </div>
+                
+                {(campaign.payoutType === 'limited' || (campaign.payoutType !== 'unlimited' && campaign.maxPayoutPerSubmission !== null)) && (
+                  <div className="ml-6 space-y-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      value={campaign.maxPayoutPerSubmission || ""}
+                      onChange={(e) => onChange({ maxPayoutPerSubmission: Number(e.target.value) })}
+                      placeholder="Enter maximum amount (recommended: 300-1000)"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended range: $300-$1000 per submission
+                    </p>
+                  </div>
+                )}
+                
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="unlimited" id="unlimited" />
+                  <Label htmlFor="unlimited" className="text-sm">Unlimited payout per submission</Label>
+                </div>
+              </RadioGroup>
+              
               <p className="text-xs text-muted-foreground">
-                How many days after posting to count views for payment
+                All submissions have 10 days to accumulate views before payment calculation
               </p>
             </div>
           </CardContent>
