@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -24,6 +23,7 @@ interface DashboardLayoutProps {
 const menuItems = [
   { title: "Home", path: "/dashboard", icon: Home },
   { title: "Explore", path: "/dashboard/explore", icon: Compass },
+  { title: "Tools", path: "/dashboard/tools", icon: Wrench },
   { title: "My Campaigns", path: "/dashboard/campaigns", icon: Layers },
   { title: "Chat", path: "/dashboard/messages", icon: MessageSquare },
   { title: "Finances", path: "/dashboard/finances", icon: CreditCard }
@@ -125,49 +125,6 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
                           )} />
                           {state === "expanded" && (
                             <span className="font-medium">{item.title}</span>
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* Tools Section */}
-          <SidebarGroup className="mt-6">
-            {state === "expanded" && (
-              <div className="flex items-center gap-2 px-2 py-2">
-                <Wrench className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-semibold text-muted-foreground">Tools</span>
-              </div>
-            )}
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-2">
-                {toolsItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton 
-                        tooltip={item.title}
-                        asChild
-                        isActive={isActive}
-                        className={cn(
-                          "h-12 rounded-xl transition-all duration-200 group",
-                          isActive 
-                            ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg scale-[1.02]" 
-                            : "hover:bg-accent/50 hover:scale-[1.02] hover:shadow-md"
-                        )}
-                      >
-                        <Link to={item.path} className="flex items-center gap-3 px-4">
-                          <item.icon className={cn(
-                            "h-5 w-5 transition-transform group-hover:scale-110",
-                            state === "collapsed" && "mx-auto"
-                          )} />
-                          {state === "expanded" && (
-                            <span className="font-medium text-sm">{item.title}</span>
                           )}
                         </Link>
                       </SidebarMenuButton>
