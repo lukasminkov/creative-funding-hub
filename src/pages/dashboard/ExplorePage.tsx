@@ -85,7 +85,7 @@ export default function ExplorePage() {
       // Simulated creator discovery data with enhanced information
       return [
         {
-          id: "creator-1",
+          id: "1",
           name: "Alex Thompson",
           username: "@alexthompson",
           avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
@@ -97,10 +97,22 @@ export default function ExplorePage() {
           campaigns: 12,
           earned: "$4,200",
           viewsGenerated: "850K",
-          isTop: true
+          isTop: true,
+          bio: "Lifestyle content creator passionate about fitness, travel, and authentic storytelling. I love creating content that inspires and connects with my audience.",
+          location: "Los Angeles, CA",
+          joinDate: "March 2022",
+          isVerified: true,
+          metrics: {
+            totalCampaigns: 12,
+            totalEarnings: 4200,
+            totalGmv: 4800,
+            avgEngagementRate: 8.5,
+            rating: 4.8
+          },
+          categories: ["Lifestyle", "Fitness", "Travel"]
         },
         {
-          id: "creator-2",
+          id: "2",
           name: "Sarah Kim",
           username: "@sarahkim_fit",
           avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b820?w=150&h=150&fit=crop&crop=face",
@@ -112,10 +124,22 @@ export default function ExplorePage() {
           campaigns: 8,
           earned: "$3,100",
           viewsGenerated: "620K",
-          isTop: true
+          isTop: true,
+          bio: "Fitness enthusiast and certified trainer helping others achieve their health goals through engaging workout content and nutrition tips.",
+          location: "Austin, TX",
+          joinDate: "January 2021",
+          isVerified: true,
+          metrics: {
+            totalCampaigns: 8,
+            totalEarnings: 3100,
+            totalGmv: 3400,
+            avgEngagementRate: 12.3,
+            rating: 4.9
+          },
+          categories: ["Fitness", "Health", "Nutrition"]
         },
         {
-          id: "creator-3",
+          id: "3",
           name: "Mike Chen",
           username: "@mikecooks",
           avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
@@ -127,10 +151,22 @@ export default function ExplorePage() {
           campaigns: 15,
           earned: "$5,800",
           viewsGenerated: "1.2M",
-          isTop: false
+          isTop: false,
+          bio: "Food lover and chef creating delicious recipes and cooking tutorials. Passionate about sharing culinary adventures with my community.",
+          location: "New York, NY",
+          joinDate: "June 2020",
+          isVerified: false,
+          metrics: {
+            totalCampaigns: 15,
+            totalEarnings: 5800,
+            totalGmv: 6200,
+            avgEngagementRate: 6.7,
+            rating: 4.6
+          },
+          categories: ["Food", "Cooking", "Recipes"]
         },
         {
-          id: "creator-4",
+          id: "4",
           name: "Emma Rodriguez",
           username: "@emmastyle",
           avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
@@ -142,7 +178,19 @@ export default function ExplorePage() {
           campaigns: 10,
           earned: "$4,500",
           viewsGenerated: "980K",
-          isTop: false
+          isTop: false,
+          bio: "Fashion stylist and trendsetter sharing the latest fashion finds and styling tips. Always on the hunt for the perfect outfit!",
+          location: "Miami, FL",
+          joinDate: "September 2021",
+          isVerified: true,
+          metrics: {
+            totalCampaigns: 10,
+            totalEarnings: 4500,
+            totalGmv: 5100,
+            avgEngagementRate: 9.8,
+            rating: 4.7
+          },
+          categories: ["Fashion", "Style", "Beauty"]
         }
       ];
     }
@@ -150,7 +198,7 @@ export default function ExplorePage() {
 
   const isLoading = campaignsLoading || creatorsLoading;
 
-  // Filter data based on search query
+  // Filter data based on search query - now searches across ALL categories
   const filteredCampaigns = discoveredCampaigns.filter((campaign: any) =>
     campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     campaign.brandName.toLowerCase().includes(searchQuery.toLowerCase())

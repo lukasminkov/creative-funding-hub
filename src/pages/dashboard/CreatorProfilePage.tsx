@@ -14,27 +14,27 @@ import { toast } from "sonner";
 const mockCreatorData = {
   "1": {
     id: 1,
-    name: "Sarah Johnson",
-    username: "@sarahjohnson",
-    avatar: "https://i.pravatar.cc/150?u=sarah",
-    bio: "Fashion & lifestyle content creator passionate about sustainable fashion and authentic storytelling. I love creating content that inspires and connects with my audience.",
+    name: "Alex Thompson",
+    username: "@alexthompson",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    bio: "Lifestyle content creator passionate about fitness, travel, and authentic storytelling. I love creating content that inspires and connects with my audience.",
     location: "Los Angeles, CA",
     joinDate: "March 2022",
     isVerified: true,
     platforms: ["instagram", "tiktok", "youtube"],
     followers: {
-      instagram: 245000,
-      tiktok: 180000,
-      youtube: 95000
+      instagram: 85000,
+      tiktok: 40000,
+      youtube: 0
     },
     metrics: {
-      totalCampaigns: 150,
-      totalEarnings: 32500,
-      totalGmv: 34400,
-      avgEngagementRate: 4.2,
+      totalCampaigns: 12,
+      totalEarnings: 4200,
+      totalGmv: 4800,
+      avgEngagementRate: 8.5,
       rating: 4.8
     },
-    categories: ["Fashion", "Lifestyle", "Beauty"],
+    categories: ["Lifestyle", "Fitness", "Travel"],
     recentWork: [
       { id: 1, title: "Summer Fashion Haul", thumbnail: "https://picsum.photos/300/300?random=1", views: 125000, platform: "instagram" },
       { id: 2, title: "Sustainable Brand Review", thumbnail: "https://picsum.photos/300/300?random=2", views: 89000, platform: "tiktok" },
@@ -44,41 +44,107 @@ const mockCreatorData = {
       { id: 6, title: "Fashion Week Vlog", thumbnail: "https://picsum.photos/300/300?random=6", views: 203000, platform: "youtube" }
     ],
     testimonials: [
-      { brand: "Nike", text: "Sarah delivered exceptional content that exceeded our expectations. Professional and creative!", rating: 5 },
-      { brand: "Sephora", text: "Amazing collaboration! Sarah's content drove incredible engagement for our campaign.", rating: 5 }
+      { brand: "Nike", text: "Alex delivered exceptional content that exceeded our expectations. Professional and creative!", rating: 5 },
+      { brand: "Sephora", text: "Amazing collaboration! Alex's content drove incredible engagement for our campaign.", rating: 5 }
     ]
   },
   "2": {
     id: 2,
-    name: "Mike Peters",
-    username: "@mikepeters",
-    avatar: "https://i.pravatar.cc/150?u=mike",
-    bio: "Tech enthusiast and gaming content creator. I review the latest gadgets and create entertaining gaming content for my community.",
+    name: "Sarah Kim",
+    username: "@sarahkim_fit",
+    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b820?w=150&h=150&fit=crop&crop=face",
+    bio: "Fitness enthusiast and certified trainer helping others achieve their health goals through engaging workout content and nutrition tips.",
     location: "Austin, TX",
     joinDate: "January 2021",
     isVerified: true,
-    platforms: ["tiktok", "youtube", "twitch"],
+    platforms: ["instagram", "youtube"],
     followers: {
-      tiktok: 320000,
-      youtube: 450000,
-      twitch: 125000
+      instagram: 65000,
+      youtube: 24000,
+      tiktok: 0
     },
     metrics: {
-      totalCampaigns: 98,
-      totalEarnings: 45200,
-      totalGmv: 48900,
-      avgEngagementRate: 5.1,
+      totalCampaigns: 8,
+      totalEarnings: 3100,
+      totalGmv: 3400,
+      avgEngagementRate: 12.3,
       rating: 4.9
     },
-    categories: ["Technology", "Gaming", "Reviews"],
+    categories: ["Fitness", "Health", "Nutrition"],
     recentWork: [
-      { id: 1, title: "iPhone 15 Review", thumbnail: "https://picsum.photos/300/300?random=7", views: 892000, platform: "youtube" },
-      { id: 2, title: "Gaming Setup Tour", thumbnail: "https://picsum.photos/300/300?random=8", views: 456000, platform: "tiktok" },
-      { id: 3, title: "Best Budget Tech 2024", thumbnail: "https://picsum.photos/300/300?random=9", views: 234000, platform: "youtube" }
+      { id: 1, title: "30 Day Fitness Challenge", thumbnail: "https://picsum.photos/300/300?random=7", views: 220000, platform: "instagram" },
+      { id: 2, title: "Healthy Meal Prep", thumbnail: "https://picsum.photos/300/300?random=8", views: 180000, platform: "youtube" },
+      { id: 3, title: "Morning Workout Routine", thumbnail: "https://picsum.photos/300/300?random=9", views: 340000, platform: "instagram" }
     ],
     testimonials: [
-      { brand: "Apple", text: "Mike's tech reviews are thorough and engaging. Great partnership!", rating: 5 },
-      { brand: "Samsung", text: "Professional creator with excellent audience engagement.", rating: 4 }
+      { brand: "Nike", text: "Sarah's fitness content is authentic and engaging. Great partnership!", rating: 5 },
+      { brand: "Protein World", text: "Professional creator with excellent audience engagement.", rating: 4 }
+    ]
+  },
+  "3": {
+    id: 3,
+    name: "Mike Chen",
+    username: "@mikecooks",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    bio: "Food lover and chef creating delicious recipes and cooking tutorials. Passionate about sharing culinary adventures with my community.",
+    location: "New York, NY",
+    joinDate: "June 2020",
+    isVerified: false,
+    platforms: ["tiktok", "instagram"],
+    followers: {
+      tiktok: 150000,
+      instagram: 53000,
+      youtube: 0
+    },
+    metrics: {
+      totalCampaigns: 15,
+      totalEarnings: 5800,
+      totalGmv: 6200,
+      avgEngagementRate: 6.7,
+      rating: 4.6
+    },
+    categories: ["Food", "Cooking", "Recipes"],
+    recentWork: [
+      { id: 1, title: "Easy Pasta Recipe", thumbnail: "https://picsum.photos/300/300?random=10", views: 450000, platform: "tiktok" },
+      { id: 2, title: "Kitchen Gadget Review", thumbnail: "https://picsum.photos/300/300?random=11", views: 280000, platform: "instagram" },
+      { id: 3, title: "5-Minute Breakfast", thumbnail: "https://picsum.photos/300/300?random=12", views: 380000, platform: "tiktok" }
+    ],
+    testimonials: [
+      { brand: "HelloFresh", text: "Mike's cooking content is entertaining and drives great engagement!", rating: 5 },
+      { brand: "Kitchen Aid", text: "Professional creator with authentic food content.", rating: 4 }
+    ]
+  },
+  "4": {
+    id: 4,
+    name: "Emma Rodriguez",
+    username: "@emmastyle",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    bio: "Fashion stylist and trendsetter sharing the latest fashion finds and styling tips. Always on the hunt for the perfect outfit!",
+    location: "Miami, FL",
+    joinDate: "September 2021",
+    isVerified: true,
+    platforms: ["instagram", "tiktok"],
+    followers: {
+      instagram: 120000,
+      tiktok: 47000,
+      youtube: 0
+    },
+    metrics: {
+      totalCampaigns: 10,
+      totalEarnings: 4500,
+      totalGmv: 5100,
+      avgEngagementRate: 9.8,
+      rating: 4.7
+    },
+    categories: ["Fashion", "Style", "Beauty"],
+    recentWork: [
+      { id: 1, title: "Fall Fashion Trends", thumbnail: "https://picsum.photos/300/300?random=13", views: 320000, platform: "instagram" },
+      { id: 2, title: "Get Ready With Me", thumbnail: "https://picsum.photos/300/300?random=14", views: 180000, platform: "tiktok" },
+      { id: 3, title: "Thrift Store Haul", thumbnail: "https://picsum.photos/300/300?random=15", views: 250000, platform: "instagram" }
+    ],
+    testimonials: [
+      { brand: "Zara", text: "Emma's fashion content is on-trend and drives amazing engagement!", rating: 5 },
+      { brand: "Sephora", text: "Great collaboration with authentic styling content.", rating: 5 }
     ]
   }
 };
@@ -125,11 +191,11 @@ export default function CreatorProfilePage() {
         <div className="container py-4">
           <Button 
             variant="ghost" 
-            onClick={() => navigate("/dashboard/creators")}
+            onClick={() => navigate("/dashboard/explore")}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Creators
+            Back to Explore
           </Button>
         </div>
       </div>
