@@ -78,7 +78,6 @@ export default function CreateCommunityDialog({
   });
 
   const watchedType = form.watch("type");
-  const watchedName = form.watch("name");
 
   // Auto-generate slug from name
   const generateSlug = (name: string) => {
@@ -111,17 +110,24 @@ export default function CreateCommunityDialog({
         return;
       }
 
+      // Prepare the data object for insertion
+      const communityData = {
+        name: values.name,
+        description: values.description || null,
+        slug: values.slug,
+        owner_id: user.id,
+        type: values.type,
+        price: values.price,
+        currency: values.currency,
+        is_private: values.is_private,
+        discord_server_id: values.discord_server_id || null,
+        discord_role_id: values.discord_role_id || null,
+        max_members: values.max_members || null,
+      };
+
       const { data, error } = await supabase
         .from("communities")
-        .insert([
-          {
-            ...values,
-            owner_id: user.id,
-            discord_server_id: values.discord_server_id || null,
-            discord_role_id: values.discord_role_id || null,
-            max_members: values.max_members || null,
-          },
-        ])
+        .insert(communityData)
         .select()
         .single();
 
