@@ -8,14 +8,15 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, Plus, Wallet, 
-  CreditCard, ArrowUpRight, ArrowDownLeft, Filter, Lock, TrendingDown
+  CreditCard, ArrowUpRight, ArrowDownLeft, Filter, Lock, TrendingDown, DollarSign
 } from "lucide-react";
 import { formatCurrency } from "@/lib/campaign-types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Mock financial data
 const mockFinancialData = {
-  accountBalance: 25000.00,
+  totalAccountBalance: 43500.00, // Total amount across all categories
+  available: 25000.00, // Available for new campaigns
   committed: 18500.00, // Money committed to active campaigns
   paidOut: 12750.00, // Money paid out to creators
   transactions: [
@@ -150,19 +151,34 @@ export default function FinancesPage() {
         </TabsList>
 
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Total Account Balance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-primary">
+                  {formatCurrency(mockFinancialData.totalAccountBalance, 'USD')}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Total across all funds</p>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Wallet className="h-4 w-4" />
-                  Account Balance
+                  Available
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(mockFinancialData.accountBalance, 'USD')}
+                  {formatCurrency(mockFinancialData.available, 'USD')}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Available for campaigns</p>
+                <p className="text-xs text-muted-foreground mt-1">Ready for campaigns</p>
               </CardContent>
             </Card>
 
