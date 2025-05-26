@@ -9,7 +9,7 @@ import {
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
   SidebarGroupContent, SidebarHeader, SidebarMenu, 
-  SidebarMenuButton, SidebarMenuItem, useSidebar 
+  SidebarMenuButton, SidebarMenuItem, SidebarProvider, useSidebar 
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,7 +52,7 @@ const AdminSidebarToggle = () => {
   );
 };
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+function AdminLayoutContent({ children }: AdminLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
@@ -190,5 +190,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  return (
+    <SidebarProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </SidebarProvider>
   );
 }

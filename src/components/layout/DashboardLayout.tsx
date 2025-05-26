@@ -8,7 +8,7 @@ import {
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
   SidebarGroupContent, SidebarHeader, SidebarMenu, 
-  SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar 
+  SidebarMenuButton, SidebarMenuItem, SidebarProvider, useSidebar 
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,7 +49,7 @@ const ModernSidebarToggle = () => {
   );
 };
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
@@ -206,5 +206,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  return (
+    <SidebarProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </SidebarProvider>
   );
 }
