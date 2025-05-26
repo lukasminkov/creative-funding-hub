@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, TrendingUp, Clock, Download, Search, Filter, CreditCard, Calendar, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { DollarSign, TrendingUp, Clock, Download, Search, Filter, CreditCard, Calendar, ArrowUpRight, ArrowDownLeft, ExternalLink } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function FinancesPage() {
@@ -34,7 +34,13 @@ export default function FinancesPage() {
             type: "incoming",
             from: "Fashion Brand Ltd",
             to: "Your Account",
-            transactionId: "TXN-2024-001"
+            transactionId: "TXN-2024-001",
+            reference: "FB-SUMMER-2024-001",
+            paymentMethod: "Bank Transfer",
+            processingFee: 8.50,
+            netAmount: 841.50,
+            campaignId: "CAMP-001",
+            brandContact: "sarah@fashionbrand.com"
           },
           {
             id: "2", 
@@ -47,7 +53,13 @@ export default function FinancesPage() {
             type: "incoming",
             from: "Tech Innovations Inc",
             to: "Your Account",
-            transactionId: "TXN-2024-002"
+            transactionId: "TXN-2024-002",
+            reference: "TI-LAUNCH-2024-002",
+            paymentMethod: "PayPal",
+            processingFee: 36.00,
+            netAmount: 1164.00,
+            campaignId: "CAMP-002",
+            brandContact: "mike@techinnovations.com"
           },
           {
             id: "3",
@@ -60,20 +72,52 @@ export default function FinancesPage() {
             type: "incoming",
             from: "Gaming Gear Co",
             to: "Your Account",
-            transactionId: "TXN-2024-003"
+            transactionId: "TXN-2024-003",
+            reference: "GGC-REVIEW-2024-003",
+            paymentMethod: "Wire Transfer",
+            processingFee: 25.00,
+            netAmount: 2475.00,
+            campaignId: "CAMP-003",
+            brandContact: "alex@gaminggear.com",
+            estimatedProcessing: "2-3 business days"
           },
           {
             id: "4",
             date: "2024-01-08",
-            description: "Platform Fee",
-            campaign: "Service Fee",
+            description: "Platform Service Fee",
+            campaign: "Monthly Platform Fee",
             platform: "Payper",
             status: "completed",
             amount: 45,
             type: "outgoing",
             from: "Your Account",
             to: "Payper Platform",
-            transactionId: "TXN-2024-004"
+            transactionId: "TXN-2024-004",
+            reference: "PAYPER-FEE-JAN-2024",
+            paymentMethod: "Auto-debit",
+            processingFee: 0,
+            netAmount: 45.00,
+            campaignId: null,
+            brandContact: "billing@payper.com"
+          },
+          {
+            id: "5",
+            date: "2024-01-05",
+            description: "Collaboration Payment - Food Review",
+            campaign: "Restaurant Chain Promotion",
+            platform: "Instagram",
+            status: "completed",
+            amount: 680,
+            type: "incoming",
+            from: "Tasty Treats Corp",
+            to: "Your Account",
+            transactionId: "TXN-2024-005",
+            reference: "TTC-PROMO-2024-005",
+            paymentMethod: "Stripe",
+            processingFee: 20.40,
+            netAmount: 659.60,
+            campaignId: "CAMP-005",
+            brandContact: "marketing@tastytreats.com"
           }
         ]
       };
@@ -100,7 +144,9 @@ export default function FinancesPage() {
       transaction.campaign.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.platform.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.to.toLowerCase().includes(searchTerm.toLowerCase());
+      transaction.to.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.transactionId.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (activeTab === "all") return matchesSearch;
     if (activeTab === "incoming") return matchesSearch && transaction.type === "incoming";
@@ -113,6 +159,10 @@ export default function FinancesPage() {
   return (
     <div className="p-8">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Finances</h1>
+          <p className="text-muted-foreground">Track your earnings, payments, and financial activity</p>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline">
             <Download className="h-4 w-4 mr-2" />
@@ -221,11 +271,15 @@ export default function FinancesPage() {
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Description</TableHead>
+                    <TableHead>Reference</TableHead>
                     <TableHead>From/To</TableHead>
                     <TableHead>Campaign</TableHead>
                     <TableHead>Platform</TableHead>
+                    <TableHead>Payment Method</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Gross Amount</TableHead>
+                    <TableHead className="text-right">Fee</TableHead>
+                    <TableHead className="text-right">Net Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -241,14 +295,37 @@ export default function FinancesPage() {
                         {transaction.description}
                       </TableCell>
                       <TableCell>
+                        <div className="flex items-center gap-2">
+                          <code className="text-xs bg-muted px-2 py-1 rounded">
+                            {transaction.reference}
+                          </code>
+                          <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         <div className="text-sm">
                           <div className="font-medium">From: {transaction.from}</div>
                           <div className="text-muted-foreground">To: {transaction.to}</div>
+                          {transaction.brandContact && (
+                            <div className="text-xs text-muted-foreground">{transaction.brandContact}</div>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell>{transaction.campaign}</TableCell>
+                      <TableCell>
+                        <div>
+                          {transaction.campaign}
+                          {transaction.campaignId && (
+                            <div className="text-xs text-muted-foreground">ID: {transaction.campaignId}</div>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{transaction.platform}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{transaction.paymentMethod}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge 
@@ -256,10 +333,23 @@ export default function FinancesPage() {
                         >
                           {transaction.status}
                         </Badge>
+                        {transaction.estimatedProcessing && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            ETA: {transaction.estimatedProcessing}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         <span className={transaction.type === "incoming" ? "text-green-600" : "text-red-600"}>
                           {transaction.type === "incoming" ? "+" : "-"}${transaction.amount.toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right text-red-600">
+                        {transaction.processingFee > 0 ? `-$${transaction.processingFee.toFixed(2)}` : '-'}
+                      </TableCell>
+                      <TableCell className="text-right font-bold">
+                        <span className={transaction.type === "incoming" ? "text-green-600" : "text-red-600"}>
+                          {transaction.type === "incoming" ? "+" : "-"}${transaction.netAmount.toFixed(2)}
                         </span>
                       </TableCell>
                     </TableRow>
