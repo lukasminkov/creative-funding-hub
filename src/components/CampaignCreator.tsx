@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Campaign, 
   RetainerCampaign, 
@@ -12,15 +13,17 @@ import {
   COUNTRY_OPTIONS 
 } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import RetainerForm from "./campaign-forms/RetainerForm";
-import PayPerViewForm from "./campaign-forms/PayPerViewForm";
-import ChallengeForm from "./campaign-forms/ChallengeForm";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import CampaignPaymentModal from "./CampaignPaymentModal";
-import { Save, Rocket } from "lucide-react";
+import { Save, Rocket, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
-import VisibilitySelector from "./VisibilitySelector";
+import CampaignStepBasics from "./campaign-steps/CampaignStepBasics";
+import CampaignStepType from "./campaign-steps/CampaignStepType";
+import CampaignStepDetails from "./campaign-steps/CampaignStepDetails";
+import CampaignStepCreatorInfo from "./campaign-steps/CampaignStepCreatorInfo";
+import CampaignStepReview from "./campaign-steps/CampaignStepReview";
 
 interface CampaignCreatorProps {
   onCancel: () => void;
@@ -28,12 +31,26 @@ interface CampaignCreatorProps {
   campaign?: Campaign;
   isEditing?: boolean;
   disableBudgetEdit?: boolean;
+  isModal?: boolean;
 }
 
-const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEditing = false, disableBudgetEdit = false }: CampaignCreatorProps) => {
-  const [campaignType, setCampaignType] = useState<"retainer" | "payPerView" | "challenge">(
-    initialCampaign?.type || "retainer"
-  );
+const STEPS = [
+  { id: 'basics', title: 'Campaign Basics', description: 'Name, description & budget' },
+  { id: 'type', title: 'Campaign Type', description: 'Choose your campaign model' },
+  { id: 'details', title: 'Campaign Details', description: 'Requirements & settings' },
+  { id: 'creator-info', title: 'Creator Information', description: 'Guidelines & resources' },
+  { id: 'review', title: 'Review & Launch', description: 'Final review before launch' }
+];
+
+const CampaignCreator = ({ 
+  onCancel, 
+  onSubmit, 
+  campaign: initialCampaign, 
+  isEditing = false, 
+  disableBudgetEdit = false,
+  isModal = false
+}: CampaignCreatorProps) => {
+  const [currentStep, setCurrentStep] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [campaign, setCampaign] = useState<Partial<Campaign>>(initialCampaign || {
     title: "",
@@ -42,16 +59,16 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
     category: CATEGORIES[0],
     totalBudget: 0,
     currency: "USD",
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     platforms: [],
     type: "retainer",
-    applicationDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now for application deadline
+    applicationDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     guidelines: { dos: [], donts: [] },
     trackingLink: "",
     requestedTrackingLink: false,
     exampleVideos: [],
     visibility: "public",
-    countryAvailability: COUNTRY_OPTIONS[0], // Default to worldwide
+    countryAvailability: COUNTRY_OPTIONS[0],
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
@@ -63,49 +80,60 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
     }
   };
 
-  const handleRetainerCampaignChange = (updatedCampaign: Partial<RetainerCampaign>) => {
-    handleCampaignChange(updatedCampaign as Partial<Campaign>);
-  };
-
-  const handlePayPerViewCampaignChange = (updatedCampaign: Partial<PayPerViewCampaign>) => {
-    handleCampaignChange(updatedCampaign as Partial<Campaign>);
-  };
-
-  const handleChallengeCampaignChange = (updatedCampaign: Partial<ChallengeCampaign>) => {
-    handleCampaignChange(updatedCampaign as Partial<Campaign>);
-  };
-
-  const handleVisibilityChange = (
-    visibility: any, 
-    applicationQuestions?: ApplicationQuestion[], 
-    restrictedAccess?: RestrictedAccess
-  ) => {
-    setCampaign({
-      ...campaign,
-      visibility,
-      applicationQuestions,
-      restrictedAccess
-    });
-  };
-
-  const validateCampaign = (): boolean => {
-    if (!campaign.title) {
-      toast.error("Please enter a campaign title");
-      return false;
+  const validateStep = (stepIndex: number): boolean => {
+    switch (stepIndex) {
+      case 0: // Basics
+        if (!campaign.title?.trim()) {
+          toast.error("Please enter a campaign title");
+          return false;
+        }
+        if (!campaign.description?.trim()) {
+          toast.error("Please enter a campaign description");
+          return false;
+        }
+        if (!campaign.totalBudget || campaign.totalBudget <= 0) {
+          toast.error("Please enter a valid budget");
+          return false;
+        }
+        return true;
+        
+      case 1: // Type
+        if (!campaign.type) {
+          toast.error("Please select a campaign type");
+          return false;
+        }
+        return true;
+        
+      case 2: // Details
+        if (!campaign.platforms || campaign.platforms.length === 0) {
+          toast.error("Please select at least one platform");
+          return false;
+        }
+        if (!campaign.contentType) {
+          toast.error("Please select a content type");
+          return false;
+        }
+        if (!campaign.category) {
+          toast.error("Please select a category");
+          return false;
+        }
+        return true;
+        
+      case 3: // Creator Info
+        return true;
+        
+      case 4: // Review
+        return validateAllSteps();
+        
+      default:
+        return true;
     }
+  };
 
-    if (!campaign.contentType) {
-      toast.error("Please select a content type");
-      return false;
-    }
-
-    if (!campaign.category) {
-      toast.error("Please select a category");
-      return false;
-    }
-
-    if (!campaign.totalBudget || campaign.totalBudget <= 0) {
-      toast.error("Please enter a valid budget");
+  const validateAllSteps = (): boolean => {
+    // Basic validation
+    if (!campaign.title || !campaign.description || !campaign.totalBudget || campaign.totalBudget <= 0) {
+      toast.error("Please complete all required basic information");
       return false;
     }
 
@@ -114,22 +142,18 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
       return false;
     }
 
-    if (!campaign.countryAvailability) {
-      toast.error("Please select country availability");
+    // Type-specific validation
+    if (campaign.type === "retainer" && !campaign.applicationDeadline) {
+      toast.error("Please set an application deadline");
       return false;
     }
-
-    if (campaign.type === "retainer") {
-      if (!campaign.applicationDeadline) {
-        toast.error("Please set an application deadline");
-        return false;
-      }
-    } else if (campaign.type === "challenge") {
-      if (!campaign.submissionDeadline) {
-        toast.error("Please set a submission deadline");
-        return false;
-      }
-    } else if (campaign.type === "payPerView") {
+    
+    if (campaign.type === "challenge" && !campaign.submissionDeadline) {
+      toast.error("Please set a submission deadline");
+      return false;
+    }
+    
+    if (campaign.type === "payPerView") {
       if (!campaign.ratePerThousand || campaign.ratePerThousand <= 0) {
         toast.error("Please enter a valid rate per 1000 views");
         return false;
@@ -140,20 +164,23 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
       }
     }
 
-    if (campaign.visibility === "applicationOnly" && 
-        (!campaign.applicationQuestions || campaign.applicationQuestions.length === 0)) {
-      toast.error("Please add at least one application question");
-      return false;
-    }
-
-    if (campaign.visibility === "restricted" && 
-        campaign.restrictedAccess?.type === "offer" && 
-        (!campaign.restrictedAccess.offerIds || campaign.restrictedAccess.offerIds.length === 0)) {
-      toast.error("Please select at least one offer for restricted access");
-      return false;
-    }
-
     return true;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(Math.min(currentStep + 1, STEPS.length - 1));
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(Math.max(currentStep - 1, 0));
+  };
+
+  const handleStepClick = (stepIndex: number) => {
+    if (stepIndex < currentStep || validateStep(currentStep)) {
+      setCurrentStep(stepIndex);
+    }
   };
 
   const handleSaveAsDraft = () => {
@@ -161,13 +188,12 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
       toast.error("Please enter a campaign title before saving");
       return;
     }
-
     toast.success("Campaign saved as draft");
     onSubmit(campaign as Campaign);
   };
 
   const handleLaunchCampaign = () => {
-    if (!validateCampaign()) {
+    if (!validateAllSteps()) {
       return;
     }
 
@@ -184,220 +210,145 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
     onSubmit(campaign as Campaign);
   };
 
-  const renderCampaignForm = (type: "retainer" | "payPerView" | "challenge") => {
-    const generalInfoSection = (
-      <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-        <h3 className="text-lg font-medium mb-1">General Information</h3>
-        <p className="text-sm text-muted-foreground">
-          This will be displayed to all users before they apply or join your campaign
-        </p>
-      </div>
-    );
+  const progressPercentage = ((currentStep + 1) / STEPS.length) * 100;
 
-    const creatorInfoSection = (
-      <div className="py-3 px-4 bg-muted/40 rounded-lg mb-2">
-        <h3 className="text-lg font-medium mb-1">Creator Information</h3>
-        <p className="text-sm text-muted-foreground">
-          This information will only be visible to creators who have joined or been accepted
-        </p>
-      </div>
-    );
-
-    const getFormContent = () => {
-      if (type === "retainer") {
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
         return (
-          <>
-            <div className="space-y-6">
-              {generalInfoSection}
-              <RetainerForm
-                campaign={campaign as Partial<RetainerCampaign>}
-                onChange={handleRetainerCampaignChange}
-                showCreatorInfoSection={false}
-                disableBudgetEdit={disableBudgetEdit && isEditing}
-              />
-              <div className="mt-6">
-                <VisibilitySelector
-                  visibility={campaign.visibility || "public"}
-                  applicationQuestions={campaign.applicationQuestions}
-                  restrictedAccess={campaign.restrictedAccess}
-                  onChange={handleVisibilityChange}
-                />
-              </div>
-            </div>
-            
-            <Separator className="my-8 bg-muted" />
-            
-            <div className="space-y-6">
-              {creatorInfoSection}
-              <RetainerForm
-                campaign={campaign as Partial<RetainerCampaign>}
-                onChange={handleRetainerCampaignChange}
-                showCreatorInfoSection={true}
-              />
-            </div>
-          </>
+          <CampaignStepBasics 
+            campaign={campaign} 
+            onChange={handleCampaignChange}
+            disableBudgetEdit={disableBudgetEdit && isEditing}
+          />
         );
-      } else if (type === "payPerView") {
+      case 1:
         return (
-          <>
-            <div className="space-y-6">
-              {generalInfoSection}
-              <PayPerViewForm
-                campaign={campaign as Partial<PayPerViewCampaign>}
-                onChange={handlePayPerViewCampaignChange}
-                showCreatorInfoSection={false}
-                disableBudgetEdit={disableBudgetEdit && isEditing}
-              />
-              <div className="mt-6">
-                <VisibilitySelector
-                  visibility={campaign.visibility || "public"}
-                  applicationQuestions={campaign.applicationQuestions}
-                  restrictedAccess={campaign.restrictedAccess}
-                  onChange={handleVisibilityChange}
-                />
-              </div>
-            </div>
-            
-            <Separator className="my-8 bg-muted" />
-            
-            <div className="space-y-6">
-              {creatorInfoSection}
-              <PayPerViewForm
-                campaign={campaign as Partial<PayPerViewCampaign>}
-                onChange={handlePayPerViewCampaignChange}
-                showCreatorInfoSection={true}
-              />
-            </div>
-          </>
+          <CampaignStepType 
+            campaign={campaign} 
+            onChange={handleCampaignChange}
+          />
         );
-      } else {
+      case 2:
         return (
-          <>
-            <div className="space-y-6">
-              {generalInfoSection}
-              <ChallengeForm
-                campaign={campaign as Partial<ChallengeCampaign>}
-                onChange={handleChallengeCampaignChange}
-                showCreatorInfoSection={false}
-                disableBudgetEdit={disableBudgetEdit && isEditing}
-              />
-              <div className="mt-6">
-                <VisibilitySelector
-                  visibility={campaign.visibility || "public"}
-                  applicationQuestions={campaign.applicationQuestions}
-                  restrictedAccess={campaign.restrictedAccess}
-                  onChange={handleVisibilityChange}
-                />
-              </div>
-            </div>
-            
-            <Separator className="my-8 bg-muted" />
-            
-            <div className="space-y-6">
-              {creatorInfoSection}
-              <ChallengeForm
-                campaign={campaign as Partial<ChallengeCampaign>}
-                onChange={handleChallengeCampaignChange}
-                showCreatorInfoSection={true}
-              />
-            </div>
-          </>
+          <CampaignStepDetails 
+            campaign={campaign} 
+            onChange={handleCampaignChange}
+          />
         );
-      }
-    };
-
-    return (
-      <div className="space-y-8">
-        {getFormContent()}
-      </div>
-    );
+      case 3:
+        return (
+          <CampaignStepCreatorInfo 
+            campaign={campaign} 
+            onChange={handleCampaignChange}
+          />
+        );
+      case 4:
+        return (
+          <CampaignStepReview 
+            campaign={campaign as Campaign}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="w-full max-w-5xl mx-auto"
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-lg overflow-hidden shadow-sm"
-      >
-        <div className="p-6">
-          <Tabs
-            defaultValue={campaignType}
-            value={campaignType}
-            onValueChange={(value) => {
-              setCampaignType(value as "retainer" | "payPerView" | "challenge");
-              setCampaign({
-                ...campaign,
-                type: value as "retainer" | "payPerView" | "challenge"
-              });
-            }}
-            className="w-full"
-          >
-            <TabsList className="w-full grid grid-cols-3 mb-6">
-              <TabsTrigger value="retainer">Retainer</TabsTrigger>
-              <TabsTrigger value="payPerView">Pay Per View</TabsTrigger>
-              <TabsTrigger value="challenge">Challenge</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="retainer" className="mt-0">
-              <motion.div
-                key="retainer-content"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                {renderCampaignForm("retainer")}
-              </motion.div>
-            </TabsContent>
-            
-            <TabsContent value="payPerView" className="mt-0">
-              <motion.div
-                key="payPerView-content"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                {renderCampaignForm("payPerView")}
-              </motion.div>
-            </TabsContent>
-            
-            <TabsContent value="challenge" className="mt-0">
-              <motion.div
-                key="challenge-content"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                {renderCampaignForm("challenge")}
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+    <div className={`w-full ${isModal ? 'h-full flex flex-col' : 'max-w-4xl mx-auto'}`}>
+      {/* Progress Header */}
+      <div className="p-6 border-b border-border/30 bg-gradient-to-r from-background to-muted/20">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">{STEPS[currentStep].title}</h2>
+            <p className="text-sm text-muted-foreground">{STEPS[currentStep].description}</p>
+          </div>
+          <Badge variant="outline" className="px-3 py-1">
+            Step {currentStep + 1} of {STEPS.length}
+          </Badge>
         </div>
         
-        <div className="p-6 border-t border-border/60 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+        <Progress value={progressPercentage} className="h-2 mb-4" />
+        
+        {/* Step Navigation */}
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {STEPS.map((step, index) => (
+            <button
+              key={step.id}
+              onClick={() => handleStepClick(index)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                index === currentStep
+                  ? 'bg-primary text-primary-foreground'
+                  : index < currentStep
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              {index < currentStep ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <span className="w-3 h-3 rounded-full bg-current opacity-60 flex-shrink-0" />
+              )}
+              {step.title}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Step Content */}
+      <div className={`flex-1 ${isModal ? 'overflow-y-auto' : ''}`}>
+        <div className="p-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderStepContent()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="p-6 border-t border-border/30 bg-gradient-to-r from-background to-muted/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button variant="outline" onClick={handleSaveAsDraft}>
-              <Save className="h-4 w-4 mr-2" />
-              {isEditing ? "Save Changes" : "Save as Draft"}
-            </Button>
+            {!isEditing && (
+              <Button variant="outline" onClick={handleSaveAsDraft}>
+                <Save className="h-4 w-4 mr-2" />
+                Save as Draft
+              </Button>
+            )}
           </div>
-          <Button onClick={handleLaunchCampaign}>
-            <Rocket className="h-4 w-4 mr-2" />
-            {isEditing ? "Update Campaign" : "Create Campaign"}
-          </Button>
+          
+          <div className="flex items-center gap-2">
+            {currentStep > 0 && (
+              <Button variant="outline" onClick={handlePrevious}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
+            )}
+            
+            {currentStep < STEPS.length - 1 ? (
+              <Button onClick={handleNext}>
+                Next
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            ) : (
+              <Button onClick={handleLaunchCampaign} className="bg-gradient-to-r from-primary to-primary/80">
+                <Rocket className="h-4 w-4 mr-2" />
+                {isEditing ? "Update Campaign" : "Launch Campaign"}
+              </Button>
+            )}
+          </div>
         </div>
-      </motion.div>
+      </div>
 
       {showPaymentModal && (
         <CampaignPaymentModal
@@ -407,7 +358,7 @@ const CampaignCreator = ({ onCancel, onSubmit, campaign: initialCampaign, isEdit
           onPaymentComplete={handlePaymentComplete}
         />
       )}
-    </motion.div>
+    </div>
   );
 };
 
