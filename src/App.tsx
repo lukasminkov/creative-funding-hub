@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -18,6 +17,7 @@ import ExplorePage from "@/pages/dashboard/ExplorePage";
 import AnalyticsPage from "@/pages/dashboard/AnalyticsPage";
 import MessagesPage from "@/pages/dashboard/MessagesPage";
 import PaymentsPage from "@/pages/dashboard/PaymentsPage";
+import FinancesPage from "@/pages/dashboard/FinancesPage";
 import SettingsPage from "@/pages/dashboard/SettingsPage";
 
 // Admin pages
@@ -63,7 +63,7 @@ function App() {
               <Route path="explore" element={<ExplorePage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="messages" element={<MessagesPage />} />
-              <Route path="payments" element={<PaymentsPage />} />
+              <Route path="finances" element={<FinancesPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
 
