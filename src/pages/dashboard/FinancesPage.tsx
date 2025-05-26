@@ -6,22 +6,76 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, TrendingUp, Clock, Download, Search, Filter, CreditCard, Calendar } from "lucide-react";
+import { DollarSign, TrendingUp, Clock, Download, Search, Filter, CreditCard, Calendar, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function FinancesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
   const { data: financialData, isLoading } = useQuery({
     queryKey: ["financial-data"],
     queryFn: () => {
       const stored = localStorage.getItem("financial-data");
       return stored ? JSON.parse(stored) : {
-        totalEarnings: 0,
-        pendingPayments: 0,
-        thisMonthEarnings: 0,
-        avgPaymentTime: "0 days",
-        transactions: []
+        totalEarnings: 24500,
+        pendingPayments: 3200,
+        thisMonthEarnings: 5800,
+        avgPaymentTime: "3-5 days",
+        transactions: [
+          {
+            id: "1",
+            date: "2024-01-15",
+            description: "Campaign Payment - TikTok Content",
+            campaign: "Summer Fashion Collection",
+            platform: "TikTok",
+            status: "completed",
+            amount: 850,
+            type: "incoming",
+            from: "Fashion Brand Ltd",
+            to: "Your Account",
+            transactionId: "TXN-2024-001"
+          },
+          {
+            id: "2", 
+            date: "2024-01-12",
+            description: "Instagram Reel Payment",
+            campaign: "Tech Product Launch",
+            platform: "Instagram",
+            status: "completed",
+            amount: 1200,
+            type: "incoming",
+            from: "Tech Innovations Inc",
+            to: "Your Account",
+            transactionId: "TXN-2024-002"
+          },
+          {
+            id: "3",
+            date: "2024-01-10",
+            description: "YouTube Sponsorship",
+            campaign: "Gaming Setup Review",
+            platform: "YouTube",
+            status: "pending",
+            amount: 2500,
+            type: "incoming",
+            from: "Gaming Gear Co",
+            to: "Your Account",
+            transactionId: "TXN-2024-003"
+          },
+          {
+            id: "4",
+            date: "2024-01-08",
+            description: "Platform Fee",
+            campaign: "Service Fee",
+            platform: "Payper",
+            status: "completed",
+            amount: 45,
+            type: "outgoing",
+            from: "Your Account",
+            to: "Payper Platform",
+            transactionId: "TXN-2024-004"
+          }
+        ]
       };
     }
   });
@@ -41,11 +95,20 @@ export default function FinancesPage() {
     );
   }
 
-  const filteredTransactions = financialData.transactions.filter((transaction: any) =>
-    transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.campaign.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.platform.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTransactions = financialData.transactions.filter((transaction: any) => {
+    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.campaign.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.platform.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.to.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (activeTab === "all") return matchesSearch;
+    if (activeTab === "incoming") return matchesSearch && transaction.type === "incoming";
+    if (activeTab === "outgoing") return matchesSearch && transaction.type === "outgoing";
+    if (activeTab === "pending") return matchesSearch && transaction.status === "pending";
+    
+    return matchesSearch;
+  });
 
   return (
     <div className="p-8">
@@ -99,7 +162,7 @@ export default function FinancesPage() {
             <div className="text-2xl font-bold text-blue-900">
               ${financialData.thisMonthEarnings.toLocaleString()}
             </div>
-            <p className="text-xs text-blue-600">June 2024</p>
+            <p className="text-xs text-blue-600">January 2024</p>
           </CardContent>
         </Card>
 
@@ -123,7 +186,7 @@ export default function FinancesPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <CardTitle>Transaction History</CardTitle>
-              <CardDescription>View all your payment transactions</CardDescription>
+              <CardDescription>View all your payment transactions and financial activity</CardDescription>
             </div>
             
             <div className="flex gap-2">
@@ -144,48 +207,75 @@ export default function FinancesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Campaign</TableHead>
-                <TableHead>Platform</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTransactions.map((transaction: any) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                  <TableCell className="font-medium">{transaction.description}</TableCell>
-                  <TableCell>{transaction.campaign}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{transaction.platform}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={transaction.status === "completed" ? "default" : "secondary"}
-                    >
-                      {transaction.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    ${transaction.amount.toLocaleString()}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {filteredTransactions.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                {searchTerm ? "No transactions found matching your search" : "No transactions yet"}
-              </p>
-            </div>
-          )}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all">All Transactions</TabsTrigger>
+              <TabsTrigger value="incoming">Incoming</TabsTrigger>
+              <TabsTrigger value="outgoing">Outgoing</TabsTrigger>
+              <TabsTrigger value="pending">Pending</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value={activeTab} className="mt-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>From/To</TableHead>
+                    <TableHead>Campaign</TableHead>
+                    <TableHead>Platform</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredTransactions.map((transaction: any) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
+                      <TableCell className="font-medium flex items-center gap-2">
+                        {transaction.type === "incoming" ? (
+                          <ArrowDownLeft className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <ArrowUpRight className="h-4 w-4 text-red-600" />
+                        )}
+                        {transaction.description}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <div className="font-medium">From: {transaction.from}</div>
+                          <div className="text-muted-foreground">To: {transaction.to}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{transaction.campaign}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{transaction.platform}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={transaction.status === "completed" ? "default" : "secondary"}
+                        >
+                          {transaction.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        <span className={transaction.type === "incoming" ? "text-green-600" : "text-red-600"}>
+                          {transaction.type === "incoming" ? "+" : "-"}${transaction.amount.toLocaleString()}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              
+              {filteredTransactions.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    {searchTerm ? "No transactions found matching your search" : "No transactions yet"}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
