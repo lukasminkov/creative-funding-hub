@@ -93,25 +93,27 @@ export default function CampaignFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] p-0 flex flex-col">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 flex flex-col">
+        <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
           <DialogTitle className="text-xl font-semibold">
             {isEditing ? "Edit Campaign" : "Create New Campaign"}
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 max-h-[calc(90vh-80px)]">
-          <div className="p-6">
-            <CampaignCreator 
-              onSubmit={handleSubmitCampaign}
-              onCancel={handleCancelEdit}
-              campaign={campaign || undefined}
-              isEditing={isEditing}
-              disableBudgetEdit={isEditing}
-              isModal={true}
-            />
-          </div>
-        </ScrollArea>
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="p-6">
+              <CampaignCreator 
+                onSubmit={handleSubmitCampaign}
+                onCancel={handleCancelEdit}
+                campaign={campaign || undefined}
+                isEditing={isEditing}
+                disableBudgetEdit={isEditing}
+                isModal={true}
+              />
+            </div>
+          </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
