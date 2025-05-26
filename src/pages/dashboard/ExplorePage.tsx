@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Campaign } from "@/lib/campaign-types";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Users, TrendingUp, Eye, Heart } from "lucide-react";
+import { Users, TrendingUp, Eye, Heart, Star, Crown } from "lucide-react";
 
 export default function ExplorePage() {
   // For demo purposes, we'll simulate discovering campaigns and creators
@@ -24,7 +25,8 @@ export default function ExplorePage() {
           totalBudget: 5000,
           currency: "USD",
           bannerImage: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=3786&auto=format&fit=crop",
-          platforms: ["Instagram Reels", "TikTok"]
+          platforms: ["Instagram Reels", "TikTok"],
+          featured: true
         },
         {
           id: "disc-2",
@@ -35,7 +37,8 @@ export default function ExplorePage() {
           totalBudget: 3000,
           currency: "USD",
           bannerImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=3870&auto=format&fit=crop",
-          platforms: ["YouTube Shorts", "TikTok"]
+          platforms: ["YouTube Shorts", "TikTok"],
+          featured: true
         },
         {
           id: "disc-3",
@@ -46,7 +49,20 @@ export default function ExplorePage() {
           totalBudget: 2500,
           currency: "USD",
           bannerImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=3870&auto=format&fit=crop",
-          platforms: ["Instagram Reels", "TikTok"]
+          platforms: ["Instagram Reels", "TikTok"],
+          featured: false
+        },
+        {
+          id: "disc-4",
+          title: "Tech Product Launch",
+          brandName: "TechCorp",
+          type: "retainer",
+          contentType: "UGC",
+          totalBudget: 4000,
+          currency: "USD",
+          bannerImage: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?q=80&w=3870&auto=format&fit=crop",
+          platforms: ["YouTube", "TikTok"],
+          featured: false
         }
       ];
     }
@@ -66,7 +82,8 @@ export default function ExplorePage() {
           category: "Lifestyle",
           engagement: "8.5%",
           platforms: ["TikTok", "Instagram"],
-          recentViews: "2.1M"
+          recentViews: "2.1M",
+          isTop: true
         },
         {
           id: "creator-2",
@@ -77,7 +94,8 @@ export default function ExplorePage() {
           category: "Fitness",
           engagement: "12.3%",
           platforms: ["Instagram", "YouTube"],
-          recentViews: "1.8M"
+          recentViews: "1.8M",
+          isTop: true
         },
         {
           id: "creator-3",
@@ -88,7 +106,8 @@ export default function ExplorePage() {
           category: "Food",
           engagement: "6.7%",
           platforms: ["TikTok", "Instagram"],
-          recentViews: "3.2M"
+          recentViews: "3.2M",
+          isTop: false
         },
         {
           id: "creator-4",
@@ -99,7 +118,8 @@ export default function ExplorePage() {
           category: "Fashion",
           engagement: "9.8%",
           platforms: ["Instagram", "TikTok"],
-          recentViews: "2.7M"
+          recentViews: "2.7M",
+          isTop: false
         }
       ];
     }
@@ -107,18 +127,131 @@ export default function ExplorePage() {
 
   const isLoading = campaignsLoading || creatorsLoading;
 
-  // Combine and shuffle campaigns and creators for mixed display
-  const combinedContent = [];
+  // Separate featured and regular campaigns
+  const featuredCampaigns = discoveredCampaigns.filter((campaign: any) => campaign.featured);
+  const regularCampaigns = discoveredCampaigns.filter((campaign: any) => !campaign.featured);
+
+  // Separate top and regular creators
+  const topCreators = discoveredCreators.filter((creator: any) => creator.isTop);
+  const regularCreators = discoveredCreators.filter((creator: any) => !creator.isTop);
+
+  // Create "For you" feed by mixing campaigns and creators
+  const forYouFeed = [];
   const maxLength = Math.max(discoveredCampaigns.length, discoveredCreators.length);
   
   for (let i = 0; i < maxLength; i++) {
     if (i < discoveredCampaigns.length) {
-      combinedContent.push({ ...discoveredCampaigns[i], type: 'campaign' });
+      forYouFeed.push({ ...discoveredCampaigns[i], type: 'campaign' });
     }
     if (i < discoveredCreators.length) {
-      combinedContent.push({ ...discoveredCreators[i], type: 'creator' });
+      forYouFeed.push({ ...discoveredCreators[i], type: 'creator' });
     }
   }
+
+  const renderCampaignCard = (campaign: any, isFeatured = false) => (
+    <Card key={campaign.id} className={`overflow-hidden ${isFeatured ? 'border-2 border-yellow-400 shadow-lg' : ''}`}>
+      {isFeatured && (
+        <div className="bg-gradient-to-r from-yellow-400 to-orange-400 px-3 py-1 text-xs font-medium text-white flex items-center gap-1">
+          <Star className="h-3 w-3" />
+          Featured Campaign
+        </div>
+      )}
+      <div className="h-48 relative">
+        <img 
+          src={campaign.bannerImage}
+          alt={campaign.title}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 p-4">
+          <h3 className="text-lg font-medium text-white">{campaign.title}</h3>
+          <p className="text-sm text-white/80">by {campaign.brandName}</p>
+        </div>
+      </div>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">
+            {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)}
+          </span>
+          <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
+            {campaign.contentType}
+          </span>
+        </div>
+        <div className="flex justify-between items-center text-sm mb-4">
+          <div>
+            <span className="text-muted-foreground">Budget: </span>
+            <span className="font-medium">${campaign.totalBudget.toLocaleString()}</span>
+          </div>
+          <div className="flex gap-1">
+            {campaign.platforms.map((platform: string) => (
+              <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">
+                {platform.split(' ')[0]}
+              </span>
+            ))}
+          </div>
+        </div>
+        <Button className="w-full">View Details</Button>
+      </CardContent>
+    </Card>
+  );
+
+  const renderCreatorCard = (creator: any, isTop = false) => (
+    <Card key={creator.id} className={`overflow-hidden ${isTop ? 'border-2 border-purple-400 shadow-lg' : ''}`}>
+      {isTop && (
+        <div className="bg-gradient-to-r from-purple-400 to-pink-400 px-3 py-1 text-xs font-medium text-white flex items-center gap-1">
+          <Crown className="h-3 w-3" />
+          Top Creator
+        </div>
+      )}
+      <CardContent className="p-6">
+        <div className="flex items-center space-x-4 mb-4">
+          <Avatar className="h-16 w-16">
+            <AvatarImage src={creator.avatar} alt={creator.name} />
+            <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg">{creator.name}</h3>
+            <p className="text-muted-foreground text-sm">{creator.username}</p>
+            <Badge variant="secondary" className="mt-1">{creator.category}</Badge>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-4 mb-4 text-center">
+          <div>
+            <div className="flex items-center justify-center gap-1">
+              <Users className="h-3 w-3" />
+              <span className="text-sm font-medium">{creator.followers}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Followers</p>
+          </div>
+          <div>
+            <div className="flex items-center justify-center gap-1">
+              <Heart className="h-3 w-3" />
+              <span className="text-sm font-medium">{creator.engagement}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Engagement</p>
+          </div>
+          <div>
+            <div className="flex items-center justify-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span className="text-sm font-medium">{creator.recentViews}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Recent Views</p>
+          </div>
+        </div>
+        
+        <div className="flex gap-1 mb-4">
+          {creator.platforms.map((platform: string) => (
+            <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">
+              {platform}
+            </span>
+          ))}
+        </div>
+        
+        <Button className="w-full" variant="outline">View Profile</Button>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="container py-8">
@@ -129,14 +262,14 @@ export default function ExplorePage() {
         </p>
       </div>
 
-      <Tabs defaultValue="all" className="space-y-6">
+      <Tabs defaultValue="for-you" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="for-you">For you</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="creators">Creators</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-6">
+        <TabsContent value="for-you" className="space-y-6">
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
@@ -158,97 +291,10 @@ export default function ExplorePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {combinedContent.map((item: any, index) => (
-                item.type === 'campaign' ? (
-                  <Card key={`campaign-${item.id}`} className="overflow-hidden">
-                    <div className="h-48 relative">
-                      <img 
-                        src={item.bannerImage}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                      <div className="absolute bottom-0 left-0 p-4">
-                        <h3 className="text-lg font-medium text-white">{item.title}</h3>
-                        <p className="text-sm text-white/80">by {item.brandName}</p>
-                      </div>
-                    </div>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">
-                          {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-                        </span>
-                        <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
-                          {item.contentType}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm mb-4">
-                        <div>
-                          <span className="text-muted-foreground">Budget: </span>
-                          <span className="font-medium">${item.totalBudget.toLocaleString()}</span>
-                        </div>
-                        <div className="flex gap-1">
-                          {item.platforms.map((platform: string) => (
-                            <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">
-                              {platform.split(' ')[0]}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <Button className="w-full">View Campaign</Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card key={`creator-${item.id}`} className="overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={item.avatar} alt={item.name} />
-                          <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{item.name}</h3>
-                          <p className="text-muted-foreground text-sm">{item.username}</p>
-                          <Badge variant="secondary" className="mt-1">{item.category}</Badge>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-                        <div>
-                          <div className="flex items-center justify-center gap-1">
-                            <Users className="h-3 w-3" />
-                            <span className="text-sm font-medium">{item.followers}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">Followers</p>
-                        </div>
-                        <div>
-                          <div className="flex items-center justify-center gap-1">
-                            <Heart className="h-3 w-3" />
-                            <span className="text-sm font-medium">{item.engagement}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">Engagement</p>
-                        </div>
-                        <div>
-                          <div className="flex items-center justify-center gap-1">
-                            <Eye className="h-3 w-3" />
-                            <span className="text-sm font-medium">{item.recentViews}</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">Recent Views</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-1 mb-4">
-                        {item.platforms.map((platform: string) => (
-                          <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">
-                            {platform}
-                          </span>
-                        ))}
-                      </div>
-                      
-                      <Button className="w-full" variant="outline">View Profile</Button>
-                    </CardContent>
-                  </Card>
-                )
+              {forYouFeed.map((item: any, index) => (
+                item.type === 'campaign' ? 
+                  renderCampaignCard(item) : 
+                  renderCreatorCard(item)
               ))}
             </div>
           )}
@@ -275,47 +321,27 @@ export default function ExplorePage() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {discoveredCampaigns.map((campaign: any) => (
-                <Card key={campaign.id} className="overflow-hidden">
-                  <div className="h-48 relative">
-                    <img 
-                      src={campaign.bannerImage}
-                      alt={campaign.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 p-4">
-                      <h3 className="text-lg font-medium text-white">{campaign.title}</h3>
-                      <p className="text-sm text-white/80">by {campaign.brandName}</p>
-                    </div>
+            <div className="space-y-8">
+              {/* Featured Campaigns */}
+              {featuredCampaigns.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Star className="h-5 w-5 text-yellow-500" />
+                    <h3 className="text-xl font-semibold">Featured Campaigns</h3>
                   </div>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">
-                        {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)}
-                      </span>
-                      <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
-                        {campaign.contentType}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm mb-4">
-                      <div>
-                        <span className="text-muted-foreground">Budget: </span>
-                        <span className="font-medium">${campaign.totalBudget.toLocaleString()}</span>
-                      </div>
-                      <div className="flex gap-1">
-                        {campaign.platforms.map((platform: string) => (
-                          <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">
-                            {platform.split(' ')[0]}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <Button className="w-full">View Details</Button>
-                  </CardContent>
-                </Card>
-              ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredCampaigns.map((campaign: any) => renderCampaignCard(campaign, true))}
+                  </div>
+                </div>
+              )}
+
+              {/* All Campaigns */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">All Campaigns</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {regularCampaigns.map((campaign: any) => renderCampaignCard(campaign))}
+                </div>
+              </div>
             </div>
           )}
         </TabsContent>
@@ -339,58 +365,27 @@ export default function ExplorePage() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {discoveredCreators.map((creator: any) => (
-                <Card key={creator.id} className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={creator.avatar} alt={creator.name} />
-                        <AvatarFallback>{creator.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{creator.name}</h3>
-                        <p className="text-muted-foreground text-sm">{creator.username}</p>
-                        <Badge variant="secondary" className="mt-1">{creator.category}</Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-                      <div>
-                        <div className="flex items-center justify-center gap-1">
-                          <Users className="h-3 w-3" />
-                          <span className="text-sm font-medium">{creator.followers}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">Followers</p>
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-center gap-1">
-                          <Heart className="h-3 w-3" />
-                          <span className="text-sm font-medium">{creator.engagement}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">Engagement</p>
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          <span className="text-sm font-medium">{creator.recentViews}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">Recent Views</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-1 mb-4">
-                      {creator.platforms.map((platform: string) => (
-                        <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded">
-                          {platform}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    <Button className="w-full" variant="outline">View Profile</Button>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="space-y-8">
+              {/* Top Creators */}
+              {topCreators.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Crown className="h-5 w-5 text-purple-500" />
+                    <h3 className="text-xl font-semibold">Top Creators</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {topCreators.map((creator: any) => renderCreatorCard(creator, true))}
+                  </div>
+                </div>
+              )}
+
+              {/* All Creators */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">All Creators</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {regularCreators.map((creator: any) => renderCreatorCard(creator))}
+                </div>
+              </div>
             </div>
           )}
         </TabsContent>
