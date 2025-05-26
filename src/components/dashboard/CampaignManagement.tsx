@@ -19,16 +19,13 @@ import {
   Users, 
   FileText, 
   Search, 
-  Filter,
   Eye,
   Check,
   X,
   TrendingUp,
   TrendingDown,
   ArrowUpDown,
-  ExternalLink,
-  User,
-  MessageCircle
+  ExternalLink
 } from "lucide-react";
 import { Campaign, Submission } from "@/lib/campaign-types";
 import { format } from "date-fns";
@@ -53,6 +50,34 @@ export default function CampaignManagement({
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [selectedCreator, setSelectedCreator] = useState<any>(null);
   const [isCreatorProfileOpen, setIsCreatorProfileOpen] = useState(false);
+
+  // Extract username from creator name (assuming format like "@username" or "Full Name (@username)")
+  const getCreatorUsername = (creatorName: string) => {
+    // Check if name contains username in parentheses like "John Doe (@johndoe)"
+    const usernameMatch = creatorName.match(/\(@([^)]+)\)/);
+    if (usernameMatch) {
+      return `@${usernameMatch[1]}`;
+    }
+    
+    // Check if name starts with @ (already a username)
+    if (creatorName.startsWith('@')) {
+      return creatorName;
+    }
+    
+    // Generate username from name as fallback
+    const cleanName = creatorName.toLowerCase().replace(/\s+/g, '');
+    return `@${cleanName}`;
+  };
+
+  // Generate mock platform username based on creator name and platform
+  const getPlatformUsername = (creatorName: string, platform: string) => {
+    const cleanName = creatorName.toLowerCase().replace(/\s+/g, '');
+    const platformSuffix = platform.toLowerCase().includes('tiktok') ? '_tt' : 
+                          platform.toLowerCase().includes('instagram') ? '_ig' :
+                          platform.toLowerCase().includes('youtube') ? '_yt' :
+                          platform.toLowerCase().includes('twitter') ? '_tw' : '';
+    return `@${cleanName}${platformSuffix}`;
+  };
 
   // Filter and sort submissions
   const filteredSubmissions = submissions
@@ -149,48 +174,21 @@ export default function CampaignManagement({
   };
 
   const handleCreatorClick = (submission: Submission) => {
-    setSelectedCreator({
-      id: submission.creator_id,
-      name: submission.creator_name,
-      username: getCreatorUsername(submission.creator_name),
-      avatar: submission.creator_avatar,
-      submissions: submissions.filter(s => s.creator_id === submission.creator_id),
-      totalViews: submissions
-        .filter(s => s.creator_id === submission.creator_id)
-        .reduce((sum, s) => sum + s.views, 0),
-      totalEarnings: submissions
-        .filter(s => s.creator_id === submission.creator_id)
-        .reduce((sum, s) => sum + s.payment_amount, 0),
-    });
-    setIsCreatorProfileOpen(true);
-  };
-
-  // Generate mock platform username based on creator name and platform
-  const getPlatformUsername = (creatorName: string, platform: string) => {
-    const cleanName = creatorName.toLowerCase().replace(/\s+/g, '');
-    const platformSuffix = platform.toLowerCase().includes('tiktok') ? '_tt' : 
-                          platform.toLowerCase().includes('instagram') ? '_ig' :
-                          platform.toLowerCase().includes('youtube') ? '_yt' :
-                          platform.toLowerCase().includes('twitter') ? '_tw' : '';
-    return `@${cleanName}${platformSuffix}`;
-  };
-
-  // Extract username from creator name (assuming format like "@username" or "Full Name (@username)")
-  const getCreatorUsername = (creatorName: string) => {
-    // Check if name contains username in parentheses like "John Doe (@johndoe)"
-    const usernameMatch = creatorName.match(/\(@([^)]+)\)/);
-    if (usernameMatch) {
-      return `@${usernameMatch[1]}`;
+    try {
+      const creatorSubmissions = submissions.filter(s => s.creator_id === submission.creator_id);
+      setSelectedCreator({
+        id: submission.creator_id,
+        name: submission.creator_name,
+        username: getCreatorUsername(submission.creator_name),
+        avatar: submission.creator_avatar,
+        submissions: creatorSubmissions,
+        totalViews: creatorSubmissions.reduce((sum, s) => sum + s.views, 0),
+        totalEarnings: creatorSubmissions.reduce((sum, s) => sum + s.payment_amount, 0),
+      });
+      setIsCreatorProfileOpen(true);
+    } catch (error) {
+      console.error('Error opening creator profile:', error);
     }
-    
-    // Check if name starts with @ (already a username)
-    if (creatorName.startsWith('@')) {
-      return creatorName;
-    }
-    
-    // Generate username from name as fallback
-    const cleanName = creatorName.toLowerCase().replace(/\s+/g, '');
-    return `@${cleanName}`;
   };
 
   return (
@@ -423,11 +421,13 @@ export default function CampaignManagement({
       </Tabs>
 
       {/* Creator Profile Popup */}
-      <CreatorProfilePopup
-        creator={selectedCreator}
-        open={isCreatorProfileOpen}
-        onOpenChange={setIsCreatorProfileOpen}
-      />
+      {selectedCreator && (
+        <CreatorProfilePopup
+          creator={selectedCreator}
+          open={isCreatorProfileOpen}
+          onOpenChange={setIsCreatorProfileOpen}
+        />
+      )}
     </div>
   );
 }
