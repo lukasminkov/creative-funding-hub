@@ -10,6 +10,7 @@ export const OFFER_OPTIONS = ["MediaLabs Creator", "MediaLabs Campus", "Brez Cli
 export const STATUS_OPTIONS = ["active", "draft", "completed", "paused"] as const;
 export const SUBMISSION_STATUS_OPTIONS = ["pending", "approved", "denied", "paid"] as const;
 export const CAMPAIGN_TYPES = ["retainer", "payPerView", "challenge"] as const;
+export const PAYOUT_TYPES = ["limited", "unlimited"] as const;
 
 export type ContentType = typeof CONTENT_TYPES[number];
 export type Category = typeof CATEGORIES[number];
@@ -23,6 +24,7 @@ export type OfferOption = typeof OFFER_OPTIONS[number];
 export type StatusType = typeof STATUS_OPTIONS[number];
 export type SubmissionStatusType = typeof SUBMISSION_STATUS_OPTIONS[number];
 export type CampaignType = typeof CAMPAIGN_TYPES[number];
+export type PayoutType = typeof PAYOUT_TYPES[number];
 
 export interface Brief {
   type: 'link' | 'file';
@@ -108,7 +110,8 @@ export interface RetainerCampaign extends BaseCampaign {
 export interface PayPerViewCampaign extends BaseCampaign {
   type: 'payPerView';
   ratePerThousand: number;
-  maxPayoutPerSubmission: number;
+  maxPayoutPerSubmission: number | null;
+  payoutType?: PayoutType;
   contentRequirements?: string;
   viewValidationPeriod?: number;
 }
