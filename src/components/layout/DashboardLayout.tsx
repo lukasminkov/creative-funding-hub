@@ -1,10 +1,18 @@
 
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BarChart3, Compass, Home, Layers, MessageSquare, Settings, User, LogOut, Moon, Sun, Plus, ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from "@/components/ui/sidebar";
+import { 
+  BarChart3, Compass, Home, Layers, MessageSquare, Settings, 
+  User, LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell
+} from "lucide-react";
+import { 
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
+  SidebarGroupContent, SidebarHeader, SidebarMenu, 
+  SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar 
+} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
 
@@ -12,61 +20,40 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const menuItems = [{
-  title: "Home",
-  path: "/dashboard",
-  icon: Home
-}, {
-  title: "Explore",
-  path: "/dashboard/explore",
-  icon: Compass
-}, {
-  title: "Campaigns",
-  path: "/dashboard/campaigns",
-  icon: Layers
-}, {
-  title: "Creators",
-  path: "/dashboard/creators",
-  icon: User
-}, {
-  title: "Payments",
-  path: "/dashboard/payments",
-  icon: CreditCard
-}, {
-  title: "Chats",
-  path: "/dashboard/messages",
-  icon: MessageSquare
-}, {
-  title: "Settings",
-  path: "/dashboard/settings",
-  icon: Settings
-}];
+const menuItems = [
+  { title: "Home", path: "/dashboard", icon: Home },
+  { title: "Explore", path: "/dashboard/explore", icon: Compass },
+  { title: "Campaigns", path: "/dashboard/campaigns", icon: Layers },
+  { title: "Creators", path: "/dashboard/creators", icon: User },
+  { title: "Payments", path: "/dashboard/payments", icon: CreditCard },
+  { title: "Messages", path: "/dashboard/messages", icon: MessageSquare },
+  { title: "Settings", path: "/dashboard/settings", icon: Settings }
+];
 
-const SidebarToggle = () => {
-  const {
-    toggleSidebar,
-    state
-  } = useSidebar();
-  return <Button variant="ghost" size="icon" onClick={toggleSidebar} className={cn("h-8 w-8 z-50", state === "expanded" ? "absolute top-4 right-3" // Inside when expanded
-  : "fixed left-[calc(var(--sidebar-width-icon)+0.25rem)] top-5" // Moved down to align with logo
-  )}>
-      {state === "expanded" ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>;
+const ModernSidebarToggle = () => {
+  const { toggleSidebar, state } = useSidebar();
+  
+  return (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={toggleSidebar}
+      className="h-9 w-9 fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-md border shadow-md hover:shadow-lg transition-all"
+    >
+      {state === "expanded" ? (
+        <X className="h-4 w-4" />
+      ) : (
+        <Menu className="h-4 w-4" />
+      )}
+    </Button>
+  );
 };
 
-export default function DashboardLayout({
-  children
-}: DashboardLayoutProps) {
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
   const location = useLocation();
-  const {
-    theme,
-    setTheme
-  } = useTheme();
-  const {
-    state
-  } = useSidebar();
+  const { theme, setTheme } = useTheme();
+  const { state } = useSidebar();
 
   useEffect(() => {
     setIsMounted(true);
@@ -76,75 +63,148 @@ export default function DashboardLayout({
     return null;
   }
 
-  return <div className="flex h-screen w-full bg-background dark:bg-background">
-      <Sidebar side="left" variant="sidebar" collapsible="icon" className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50">
-        <SidebarHeader className="relative">
-          <div className={cn("flex h-16 items-center px-4", state === "expanded" ? "justify-start gap-2" : "justify-center")}>
-            <div className={cn("flex h-10 w-10 min-w-10 items-center justify-center rounded-md bg-primary text-primary-foreground", state === "collapsed" && "mx-auto")}>
-              <BarChart3 className="h-6 w-6" />
+  return (
+    <div className="flex h-screen w-full bg-gradient-to-br from-background via-background to-muted/20">
+      <Sidebar 
+        side="left" 
+        variant="sidebar" 
+        collapsible="icon" 
+        className="border-none bg-white/95 dark:bg-black/60 backdrop-blur-xl shadow-xl"
+      >
+        <SidebarHeader className="border-b border-border/50 pb-4">
+          <div className={cn(
+            "flex items-center px-4 py-6",
+            state === "expanded" ? "justify-start gap-3" : "justify-center"
+          )}>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-white shadow-lg">
+              <BarChart3 className="h-7 w-7" />
             </div>
-            {state === "expanded" && <span className="text-lg font-semibold">Payper</span>}
-          </div>
-          {state === "expanded" && <SidebarToggle />}
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu className="pt-4 px-[16px] py-[150px]">
-            {menuItems.map(item => {
-            const isActive = location.pathname === item.path || item.path !== "/dashboard" && location.pathname.startsWith(item.path);
-            return <SidebarMenuItem key={item.title} className="mb-2">
-                  <SidebarMenuButton tooltip={item.title} asChild isActive={isActive} className={cn("transition-all duration-200 h-10 rounded-md flex items-center", isActive ? "bg-primary text-white font-medium" : "hover:bg-accent", "group-data-[collapsible=icon]:h-10", "group-data-[collapsible=icon]:w-10", "group-data-[collapsible=icon]:flex", "group-data-[collapsible=icon]:items-center", "group-data-[collapsible=icon]:justify-center", "dark:hover:bg-zinc-800")}>
-                    <Link to={item.path} className={cn("w-full flex items-center", state === "collapsed" ? "justify-center" : "justify-start")}>
-                      <item.icon className={cn("h-7 w-7", state === "collapsed" ? "mx-auto" : "ml-3 mr-3")} />
-                      <span className={cn(state === "collapsed" ? "sr-only" : "ml-2")}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>;
-          })}
-          </SidebarMenu>
-          
-          <div className="px-2 mt-auto mb-4">
-            <Button asChild className={cn("w-full rounded-md h-10 bg-primary hover:bg-primary/90 transition-all", "group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10", "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:mx-auto", state === "collapsed" ? "flex justify-center" : "flex justify-start", "group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center")}>
-              <Link to="/dashboard/campaigns/create" className={cn("flex items-center w-full h-full", state === "collapsed" ? "justify-center" : "justify-center lg:justify-start")}>
-                <Plus className={cn("h-7 w-7", state === "collapsed" ? "mx-auto" : "ml-0 mr-2")} />
-                <span className={state === "collapsed" ? "sr-only" : ""}>
-                  Create Campaign
+            {state === "expanded" && (
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                  Payper
                 </span>
+                <span className="text-xs text-muted-foreground">Creator Platform</span>
+              </div>
+            )}
+          </div>
+        </SidebarHeader>
+
+        <SidebarContent className="px-3 py-4">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-2">
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.path || 
+                    (item.path !== "/dashboard" && location.pathname.startsWith(item.path));
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        tooltip={item.title}
+                        asChild
+                        isActive={isActive}
+                        className={cn(
+                          "h-12 rounded-xl transition-all duration-200 group",
+                          isActive 
+                            ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg scale-[1.02]" 
+                            : "hover:bg-accent/50 hover:scale-[1.02] hover:shadow-md"
+                        )}
+                      >
+                        <Link to={item.path} className="flex items-center gap-3 px-4">
+                          <item.icon className={cn(
+                            "h-5 w-5 transition-transform group-hover:scale-110",
+                            state === "collapsed" && "mx-auto"
+                          )} />
+                          {state === "expanded" && (
+                            <span className="font-medium">{item.title}</span>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Create Campaign Button */}
+          <div className="mt-8 px-1">
+            <Button 
+              asChild 
+              className={cn(
+                "w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02]",
+                state === "collapsed" ? "p-0" : ""
+              )}
+            >
+              <Link to="/dashboard/campaigns/create" className="flex items-center gap-3">
+                <Plus className={cn("h-5 w-5", state === "collapsed" && "mx-auto")} />
+                {state === "expanded" && <span className="font-semibold">Create Campaign</span>}
               </Link>
             </Button>
           </div>
         </SidebarContent>
-        <SidebarFooter className="p-2 space-y-2 border-t border-border/10 mt-auto">
-          <div className="flex items-center justify-between w-full px-2">
-            <div className={cn("flex items-center gap-3", state === "collapsed" ? "justify-center w-full" : "")}>
-              <Avatar className="h-9 w-9 border-2 border-primary/20">
-                <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
-                <AvatarFallback>AH</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                <span className="text-sm font-medium">ad hoc gaming GmbH</span>
-                <span className="text-xs text-muted-foreground">Business</span>
+
+        <SidebarFooter className="border-t border-border/50 p-4">
+          {/* User Profile */}
+          <div className={cn(
+            "flex items-center gap-3 mb-4",
+            state === "collapsed" ? "justify-center" : ""
+          )}>
+            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+              <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white">
+                AH
+              </AvatarFallback>
+            </Avatar>
+            {state === "expanded" && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">ad hoc gaming GmbH</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">Business</Badge>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-          <div className={cn("flex w-full px-2", state === "collapsed" ? "justify-center" : "justify-between")}>
-            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="h-8 w-8 rounded-full">
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+
+          {/* Footer Actions */}
+          <div className={cn(
+            "flex gap-2",
+            state === "collapsed" ? "justify-center" : "justify-between"
+          )}>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="h-9 w-9 rounded-lg hover:bg-accent/50"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
             
-            {state === "expanded" && <Button variant="ghost" size="sm" className={cn("rounded-md h-8 w-8", "flex items-center justify-center", "dark:hover:bg-zinc-800")}>
-                <LogOut className="h-5 w-5" />
-                <span className="sr-only">Log out</span>
-              </Button>}
+            {state === "expanded" && (
+              <>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-accent/50">
+                  <Bell className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-accent/50">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </SidebarFooter>
       </Sidebar>
-      {state === "collapsed" && <SidebarToggle />}
-      <div className="flex-1 flex flex-col overflow-auto">
-        <main className="flex-1">
-          {children}
+
+      {state === "collapsed" && <ModernSidebarToggle />}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-auto">
+          <div className="fade-in">
+            {children}
+          </div>
         </main>
       </div>
-    </div>;
+    </div>
+  );
 }

@@ -1,73 +1,61 @@
 
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { 
-  BarChart3, Users, Building2, Layers, Settings, 
-  TrendingUp, CreditCard, Bell, MessageSquare, ShieldAlert
+  BarChart3, Users, Building2, Layers, CreditCard, 
+  Bell, MessageSquare, Settings, LogOut, Moon, Sun, 
+  Menu, X, Activity, Shield
 } from "lucide-react";
 import { 
-  Sidebar, SidebarContent, useSidebar 
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
+  SidebarGroupContent, SidebarHeader, SidebarMenu, 
+  SidebarMenuButton, SidebarMenuItem, useSidebar 
 } from "@/components/ui/sidebar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ViewAsButton } from "@/components/admin/ViewAsButton";
-import { AdminSidebarMenu } from "./admin/AdminSidebarMenu";
-import { AdminSidebarHeader } from "./admin/AdminSidebarHeader";
-import { AdminSidebarFooter } from "./admin/AdminSidebarFooter";
-import { SidebarToggle } from "./admin/SidebarToggle";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { useTheme } from "@/providers/theme-provider";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 const menuItems = [
-  {
-    title: "Dashboard",
-    path: "/admin",
-    icon: BarChart3
-  }, 
-  {
-    title: "Analytics",
-    path: "/admin/analytics",
-    icon: TrendingUp
-  },
-  {
-    title: "Users",
-    path: "/admin/users",
-    icon: Users
-  }, 
-  {
-    title: "Brands",
-    path: "/admin/brands",
-    icon: Building2
-  }, 
-  {
-    title: "Campaigns",
-    path: "/admin/campaigns",
-    icon: Layers
-  }, 
-  {
-    title: "Payments",
-    path: "/admin/payments",
-    icon: CreditCard
-  },
-  {
-    title: "Notifications",
-    path: "/admin/notifications",
-    icon: Bell
-  },
-  {
-    title: "Messages",
-    path: "/admin/messages",
-    icon: MessageSquare
-  },
-  {
-    title: "Settings",
-    path: "/admin/settings",
-    icon: Settings
-  }
+  { title: "Dashboard", path: "/admin", icon: BarChart3 },
+  { title: "Users", path: "/admin/users", icon: Users },
+  { title: "Brands", path: "/admin/brands", icon: Building2 },
+  { title: "Campaigns", path: "/admin/campaigns", icon: Layers },
+  { title: "Payments", path: "/admin/payments", icon: CreditCard },
+  { title: "Analytics", path: "/admin/analytics", icon: Activity },
+  { title: "Messages", path: "/admin/messages", icon: MessageSquare },
+  { title: "Notifications", path: "/admin/notifications", icon: Bell },
+  { title: "Settings", path: "/admin/settings", icon: Settings }
 ];
+
+const AdminSidebarToggle = () => {
+  const { toggleSidebar, state } = useSidebar();
+  
+  return (
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={toggleSidebar}
+      className="h-9 w-9 fixed top-4 left-4 z-50 bg-background/80 backdrop-blur-md border shadow-md hover:shadow-lg transition-all"
+    >
+      {state === "expanded" ? (
+        <X className="h-4 w-4" />
+      ) : (
+        <Menu className="h-4 w-4" />
+      )}
+    </Button>
+  );
+};
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const location = useLocation();
+  const { theme, setTheme } = useTheme();
   const { state } = useSidebar();
 
   useEffect(() => {
@@ -79,48 +67,126 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background dark:bg-background">
+    <div className="flex h-screen w-full bg-gradient-to-br from-background via-background to-muted/20">
       <Sidebar 
         side="left" 
         variant="sidebar" 
         collapsible="icon" 
-        className="border-r border-border/10 dark:bg-zinc-900 bg-zinc-50"
+        className="border-none bg-white/95 dark:bg-black/60 backdrop-blur-xl shadow-xl"
       >
-        <AdminSidebarHeader 
-          sidebarState={state} 
-          toggleButton={<SidebarToggle />} 
-        />
-        
-        <SidebarContent className="flex flex-col h-[calc(100%-11rem)]">
-          <ScrollArea className="flex-1">
-            <AdminSidebarMenu items={menuItems} sidebarState={state} />
-          </ScrollArea>
-          
-          {state === "expanded" && (
-            <div className="px-4 mb-4 mt-auto">
-              <ViewAsButton />
+        <SidebarHeader className="border-b border-border/50 pb-4">
+          <div className={cn(
+            "flex items-center px-4 py-6",
+            state === "expanded" ? "justify-start gap-3" : "justify-center"
+          )}>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg">
+              <Shield className="h-7 w-7" />
             </div>
-          )}
+            {state === "expanded" && (
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+                  Admin Panel
+                </span>
+                <span className="text-xs text-muted-foreground">System Management</span>
+              </div>
+            )}
+          </div>
+        </SidebarHeader>
+
+        <SidebarContent className="px-3 py-4">
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-2">
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.path || 
+                    (item.path !== "/admin" && location.pathname.startsWith(item.path));
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        tooltip={item.title}
+                        asChild
+                        isActive={isActive}
+                        className={cn(
+                          "h-12 rounded-xl transition-all duration-200 group",
+                          isActive 
+                            ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-[1.02]" 
+                            : "hover:bg-accent/50 hover:scale-[1.02] hover:shadow-md"
+                        )}
+                      >
+                        <Link to={item.path} className="flex items-center gap-3 px-4">
+                          <item.icon className={cn(
+                            "h-5 w-5 transition-transform group-hover:scale-110",
+                            state === "collapsed" && "mx-auto"
+                          )} />
+                          {state === "expanded" && (
+                            <span className="font-medium">{item.title}</span>
+                          )}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
-        
-        <AdminSidebarFooter sidebarState={state} />
+
+        <SidebarFooter className="border-t border-border/50 p-4">
+          {/* Admin Profile */}
+          <div className={cn(
+            "flex items-center gap-3 mb-4",
+            state === "collapsed" ? "justify-center" : ""
+          )}>
+            <Avatar className="h-10 w-10 ring-2 ring-red-500/20">
+              <AvatarImage src="https://github.com/shadcn.png" alt="@admin" />
+              <AvatarFallback className="bg-gradient-to-br from-red-500 to-red-600 text-white">
+                AD
+              </AvatarFallback>
+            </Avatar>
+            {state === "expanded" && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">System Administrator</p>
+                <div className="flex items-center gap-2">
+                  <Badge className="text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                    Admin
+                  </Badge>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className={cn(
+            "flex gap-2",
+            state === "collapsed" ? "justify-center" : "justify-between"
+          )}>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="h-9 w-9 rounded-lg hover:bg-accent/50"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            
+            {state === "expanded" && (
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-accent/50">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </SidebarFooter>
       </Sidebar>
-      
-      {state === "collapsed" && <SidebarToggle />}
-      
-      <div className="flex-1 flex flex-col overflow-auto">
-        <header className="border-b border-border p-4 flex items-center justify-between bg-background/90 backdrop-blur-sm sticky top-0 z-10">
-          <h1 className="text-xl font-semibold">Admin Portal</h1>
-          
-          {state === "collapsed" && (
-            <div className="flex items-center gap-2">
-              <ViewAsButton />
-            </div>
-          )}
-        </header>
-        
-        <main className="flex-1">
-          {children}
+
+      {state === "collapsed" && <AdminSidebarToggle />}
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-auto">
+          <div className="fade-in">
+            {children}
+          </div>
         </main>
       </div>
     </div>

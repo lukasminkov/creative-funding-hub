@@ -1,23 +1,21 @@
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Campaign, 
-  RetainerCampaign, 
-  PayPerViewCampaign, 
-  ChallengeCampaign, 
   CONTENT_TYPES, 
-  CATEGORIES, 
-  ApplicationQuestion, 
-  RestrictedAccess, 
-  COUNTRY_OPTIONS 
+  CATEGORIES
 } from "@/lib/campaign-types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import CampaignPaymentModal from "./CampaignPaymentModal";
-import { Save, Rocket, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { 
+  Save, Rocket, ArrowLeft, ArrowRight, Check, 
+  FileText, Settings, Users, Eye 
+} from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import CampaignStepBasics from "./campaign-steps/CampaignStepBasics";
 import CampaignStepType from "./campaign-steps/CampaignStepType";
 import CampaignStepDetails from "./campaign-steps/CampaignStepDetails";
@@ -34,11 +32,36 @@ interface CampaignCreatorProps {
 }
 
 const STEPS = [
-  { id: 'basics', title: 'Campaign Basics', description: 'Name, description & budget' },
-  { id: 'type', title: 'Campaign Type', description: 'Choose your campaign model' },
-  { id: 'details', title: 'Campaign Details', description: 'Requirements & settings' },
-  { id: 'creator-info', title: 'Creator Information', description: 'Guidelines & resources' },
-  { id: 'review', title: 'Review & Launch', description: 'Final review before launch' }
+  { 
+    id: 'basics', 
+    title: 'Campaign Basics', 
+    description: 'Name, description & budget',
+    icon: FileText
+  },
+  { 
+    id: 'type', 
+    title: 'Campaign Type', 
+    description: 'Choose your campaign model',
+    icon: Settings
+  },
+  { 
+    id: 'details', 
+    title: 'Campaign Details', 
+    description: 'Requirements & settings',
+    icon: Users
+  },
+  { 
+    id: 'creator-info', 
+    title: 'Creator Information', 
+    description: 'Guidelines & resources',
+    icon: Users
+  },
+  { 
+    id: 'review', 
+    title: 'Review & Launch', 
+    description: 'Final review before launch',
+    icon: Eye
+  }
 ];
 
 const CampaignCreator = ({ 
@@ -50,7 +73,6 @@ const CampaignCreator = ({
   isModal = false
 }: CampaignCreatorProps) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [campaign, setCampaign] = useState<Partial<Campaign>>(initialCampaign || {
     title: "",
     description: "",
@@ -67,7 +89,6 @@ const CampaignCreator = ({
     requestedTrackingLink: false,
     exampleVideos: [],
     visibility: "public",
-    countryAvailability: COUNTRY_OPTIONS[0],
   });
 
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
@@ -108,62 +129,11 @@ const CampaignCreator = ({
           toast.error("Please select at least one platform");
           return false;
         }
-        if (!campaign.contentType) {
-          toast.error("Please select a content type");
-          return false;
-        }
-        if (!campaign.category) {
-          toast.error("Please select a category");
-          return false;
-        }
         return true;
-        
-      case 3: // Creator Info
-        return true;
-        
-      case 4: // Review
-        return validateAllSteps();
         
       default:
         return true;
     }
-  };
-
-  const validateAllSteps = (): boolean => {
-    // Basic validation
-    if (!campaign.title || !campaign.description || !campaign.totalBudget || campaign.totalBudget <= 0) {
-      toast.error("Please complete all required basic information");
-      return false;
-    }
-
-    if (!campaign.platforms || campaign.platforms.length === 0) {
-      toast.error("Please select at least one platform");
-      return false;
-    }
-
-    // Type-specific validation
-    if (campaign.type === "retainer" && !campaign.applicationDeadline) {
-      toast.error("Please set an application deadline");
-      return false;
-    }
-    
-    if (campaign.type === "challenge" && !campaign.submissionDeadline) {
-      toast.error("Please set a submission deadline");
-      return false;
-    }
-    
-    if (campaign.type === "payPerView") {
-      if (!campaign.ratePerThousand || campaign.ratePerThousand <= 0) {
-        toast.error("Please enter a valid rate per 1000 views");
-        return false;
-      }
-      if (!campaign.maxPayoutPerSubmission || campaign.maxPayoutPerSubmission <= 0) {
-        toast.error("Please enter a valid max payout per submission");
-        return false;
-      }
-    }
-
-    return true;
   };
 
   const handleNext = () => {
@@ -192,20 +162,11 @@ const CampaignCreator = ({
   };
 
   const handleLaunchCampaign = () => {
-    if (!validateAllSteps()) {
+    if (!validateStep(currentStep)) {
       return;
     }
-
-    if (isEditing) {
-      onSubmit(campaign as Campaign);
-    } else {
-      setShowPaymentModal(true);
-    }
-  };
-
-  const handlePaymentComplete = () => {
-    setShowPaymentModal(false);
-    toast.success("Campaign launched successfully!");
+    
+    toast.success(isEditing ? "Campaign updated successfully!" : "Campaign launched successfully!");
     onSubmit(campaign as Campaign);
   };
 
@@ -254,107 +215,115 @@ const CampaignCreator = ({
   };
 
   return (
-    <div className={`w-full ${isModal ? 'space-y-6' : 'max-w-4xl mx-auto'}`}>
-      {/* Progress Header */}
-      <div className={`${isModal ? 'pb-6 border-b' : 'p-6 border-b border-border/30 bg-gradient-to-r from-background to-muted/20'}`}>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-semibold">{STEPS[currentStep].title}</h2>
-            <p className="text-sm text-muted-foreground">{STEPS[currentStep].description}</p>
+    <div className="w-full space-y-8">
+      {/* Modern Progress Header */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white">
+                <STEPS[currentStep].icon className="h-5 w-5" />
+              </div>
+              {STEPS[currentStep].title}
+            </h2>
+            <p className="text-muted-foreground">{STEPS[currentStep].description}</p>
           </div>
-          <Badge variant="outline" className="px-3 py-1">
+          <Badge variant="outline" className="px-4 py-2 text-sm">
             Step {currentStep + 1} of {STEPS.length}
           </Badge>
         </div>
         
-        <Progress value={progressPercentage} className="h-2 mb-4" />
-        
-        {/* Step Navigation */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {STEPS.map((step, index) => (
-            <button
-              key={step.id}
-              onClick={() => handleStepClick(index)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                index === currentStep
-                  ? 'bg-primary text-primary-foreground'
-                  : index < currentStep
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              }`}
-            >
-              {index < currentStep ? (
-                <Check className="h-3 w-3" />
-              ) : (
-                <span className="w-3 h-3 rounded-full bg-current opacity-60 flex-shrink-0" />
-              )}
-              {step.title}
-            </button>
-          ))}
+        <div className="space-y-4">
+          <Progress value={progressPercentage} className="h-2" />
+          
+          {/* Step Navigation */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {STEPS.map((step, index) => (
+              <button
+                key={step.id}
+                onClick={() => handleStepClick(index)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 min-w-fit",
+                  index === currentStep
+                    ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg scale-[1.02]"
+                    : index < currentStep
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:scale-[1.02]"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:scale-[1.02]"
+                )}
+              >
+                <div className={cn(
+                  "h-6 w-6 rounded-full flex items-center justify-center text-xs",
+                  index <= currentStep ? "bg-white/20" : "bg-current/20"
+                )}>
+                  {index < currentStep ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <step.icon className="h-4 w-4" />
+                  )}
+                </div>
+                <span className="hidden sm:inline">{step.title}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Step Content */}
-      <div className="space-y-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderStepContent()}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      <Card className="glass-card">
+        <CardContent className="p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="min-h-[400px]"
+            >
+              {renderStepContent()}
+            </motion.div>
+          </AnimatePresence>
+        </CardContent>
+      </Card>
 
-      {/* Footer Navigation */}
-      <div className={`${isModal ? 'pt-6 border-t' : 'p-6 border-t border-border/30 bg-gradient-to-r from-background to-muted/20'}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
+      {/* Modern Footer Navigation */}
+      <div className="flex items-center justify-between pt-6 border-t">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={onCancel} className="h-11 px-6">
+            Cancel
+          </Button>
+          {!isEditing && (
+            <Button variant="outline" onClick={handleSaveAsDraft} className="h-11 px-6">
+              <Save className="h-4 w-4 mr-2" />
+              Save as Draft
             </Button>
-            {!isEditing && (
-              <Button variant="outline" onClick={handleSaveAsDraft}>
-                <Save className="h-4 w-4 mr-2" />
-                Save as Draft
-              </Button>
-            )}
-          </div>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {currentStep > 0 && (
+            <Button variant="outline" onClick={handlePrevious} className="h-11 px-6">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+          )}
           
-          <div className="flex items-center gap-2">
-            {currentStep > 0 && (
-              <Button variant="outline" onClick={handlePrevious}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Previous
-              </Button>
-            )}
-            
-            {currentStep < STEPS.length - 1 ? (
-              <Button onClick={handleNext}>
-                Next
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : (
-              <Button onClick={handleLaunchCampaign} className="bg-gradient-to-r from-primary to-primary/80">
-                <Rocket className="h-4 w-4 mr-2" />
-                {isEditing ? "Update Campaign" : "Launch Campaign"}
-              </Button>
-            )}
-          </div>
+          {currentStep < STEPS.length - 1 ? (
+            <Button onClick={handleNext} className="h-11 px-8 bg-gradient-to-r from-primary to-primary/90">
+              Next
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleLaunchCampaign} 
+              className="h-11 px-8 bg-gradient-to-r from-primary to-primary/90 shadow-lg hover:shadow-xl"
+            >
+              <Rocket className="h-4 w-4 mr-2" />
+              {isEditing ? "Update Campaign" : "Launch Campaign"}
+            </Button>
+          )}
         </div>
       </div>
-
-      {showPaymentModal && (
-        <CampaignPaymentModal
-          campaign={campaign as Campaign}
-          open={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
-          onPaymentComplete={handlePaymentComplete}
-        />
-      )}
     </div>
   );
 };
