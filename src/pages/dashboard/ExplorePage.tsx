@@ -1,15 +1,21 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Campaign } from "@/lib/campaign-types";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Users, TrendingUp, Eye, Heart, Star, Crown } from "lucide-react";
+import { Users, TrendingUp, Eye, Heart, Star, Crown, Search, X } from "lucide-react";
+import { useState } from "react";
 
 export default function ExplorePage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+
   // For demo purposes, we'll simulate discovering campaigns and creators
   const { data: discoveredCampaigns = [], isLoading: campaignsLoading } = useQuery({
     queryKey: ['discover-campaigns'],
@@ -26,7 +32,8 @@ export default function ExplorePage() {
           currency: "USD",
           bannerImage: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=3786&auto=format&fit=crop",
           platforms: ["Instagram Reels", "TikTok"],
-          featured: true
+          featured: true,
+          progress: 45
         },
         {
           id: "disc-2",
@@ -38,7 +45,8 @@ export default function ExplorePage() {
           currency: "USD",
           bannerImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=3870&auto=format&fit=crop",
           platforms: ["YouTube Shorts", "TikTok"],
-          featured: true
+          featured: true,
+          progress: 78
         },
         {
           id: "disc-3",
@@ -50,7 +58,8 @@ export default function ExplorePage() {
           currency: "USD",
           bannerImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=3870&auto=format&fit=crop",
           platforms: ["Instagram Reels", "TikTok"],
-          featured: false
+          featured: false,
+          progress: 23
         },
         {
           id: "disc-4",
@@ -62,7 +71,8 @@ export default function ExplorePage() {
           currency: "USD",
           bannerImage: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?q=80&w=3870&auto=format&fit=crop",
           platforms: ["YouTube", "TikTok"],
-          featured: false
+          featured: false,
+          progress: 89
         }
       ];
     }
@@ -127,24 +137,36 @@ export default function ExplorePage() {
 
   const isLoading = campaignsLoading || creatorsLoading;
 
+  // Filter data based on search query
+  const filteredCampaigns = discoveredCampaigns.filter((campaign: any) =>
+    campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    campaign.brandName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredCreators = discoveredCreators.filter((creator: any) =>
+    creator.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    creator.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    creator.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Separate featured and regular campaigns
-  const featuredCampaigns = discoveredCampaigns.filter((campaign: any) => campaign.featured);
-  const regularCampaigns = discoveredCampaigns.filter((campaign: any) => !campaign.featured);
+  const featuredCampaigns = filteredCampaigns.filter((campaign: any) => campaign.featured);
+  const regularCampaigns = filteredCampaigns.filter((campaign: any) => !campaign.featured);
 
   // Separate top and regular creators
-  const topCreators = discoveredCreators.filter((creator: any) => creator.isTop);
-  const regularCreators = discoveredCreators.filter((creator: any) => !creator.isTop);
+  const topCreators = filteredCreators.filter((creator: any) => creator.isTop);
+  const regularCreators = filteredCreators.filter((creator: any) => !creator.isTop);
 
   // Create "For you" feed by mixing campaigns and creators
   const forYouFeed = [];
-  const maxLength = Math.max(discoveredCampaigns.length, discoveredCreators.length);
+  const maxLength = Math.max(filteredCampaigns.length, filteredCreators.length);
   
   for (let i = 0; i < maxLength; i++) {
-    if (i < discoveredCampaigns.length) {
-      forYouFeed.push({ ...discoveredCampaigns[i], type: 'campaign' });
+    if (i < filteredCampaigns.length) {
+      forYouFeed.push({ ...filteredCampaigns[i], itemType: 'campaign' });
     }
-    if (i < discoveredCreators.length) {
-      forYouFeed.push({ ...discoveredCreators[i], type: 'creator' });
+    if (i < filteredCreators.length) {
+      forYouFeed.push({ ...filteredCreators[i], itemType: 'creator' });
     }
   }
 
@@ -177,6 +199,16 @@ export default function ExplorePage() {
             {campaign.contentType}
           </span>
         </div>
+        
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-muted-foreground">Campaign Progress</span>
+            <span className="text-sm font-medium">{campaign.progress}%</span>
+          </div>
+          <Progress value={campaign.progress} className="h-2" />
+        </div>
+
         <div className="flex justify-between items-center text-sm mb-4">
           <div>
             <span className="text-muted-foreground">Budget: </span>
@@ -253,13 +285,66 @@ export default function ExplorePage() {
     </Card>
   );
 
+  const renderForYouFeedItem = (item: any) => {
+    if (item.itemType === 'campaign') {
+      return (
+        <div key={`campaign-${item.id}`} className="w-full max-w-md mx-auto mb-4">
+          {renderCampaignCard(item, item.featured)}
+        </div>
+      );
+    } else {
+      return (
+        <div key={`creator-${item.id}`} className="w-full max-w-md mx-auto mb-4">
+          {renderCreatorCard(item, item.isTop)}
+        </div>
+      );
+    }
+  };
+
   return (
-    <div className="container py-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Explore</h2>
-        <p className="text-muted-foreground">
-          Discover campaigns and creators on the platform
-        </p>
+    <div className="container py-8 relative">
+      {/* Header with Search */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-3xl font-bold mb-2">Explore</h2>
+          <p className="text-muted-foreground">
+            Discover campaigns and creators on the platform
+          </p>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="flex items-center gap-2">
+          {showSearch && (
+            <div className="flex items-center gap-2 animate-fade-in">
+              <Input
+                placeholder="Search campaigns, creators..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-64"
+                autoFocus
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearchQuery("");
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          {!showSearch && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowSearch(true)}
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <Tabs defaultValue="for-you" className="space-y-6">
@@ -271,31 +356,23 @@ export default function ExplorePage() {
 
         <TabsContent value="for-you" className="space-y-6">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <Card key={i} className="animate-pulse">
-                  <div className="h-48 bg-muted rounded-t-lg"></div>
-                  <CardHeader className="pb-2">
-                    <div className="h-5 w-3/4 bg-muted rounded"></div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-4 w-1/2 bg-muted rounded mb-3"></div>
-                    <div className="flex gap-2 mb-3">
-                      <div className="h-6 w-16 bg-muted rounded-full"></div>
-                      <div className="h-6 w-16 bg-muted rounded-full"></div>
-                    </div>
-                    <div className="h-10 w-full bg-muted rounded mt-4"></div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="flex justify-center py-8">
+              <div className="text-muted-foreground">Loading feed...</div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {forYouFeed.map((item: any, index) => (
-                item.type === 'campaign' ? 
-                  renderCampaignCard(item) : 
-                  renderCreatorCard(item)
-              ))}
+            <div className="max-w-2xl mx-auto">
+              <ScrollArea className="h-[calc(100vh-200px)]">
+                <div className="space-y-4 px-4">
+                  {forYouFeed.map((item: any, index) => renderForYouFeedItem(item))}
+                  {forYouFeed.length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">
+                        {searchQuery ? "No results found" : "No content available"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
             </div>
           )}
         </TabsContent>
@@ -341,6 +418,11 @@ export default function ExplorePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {regularCampaigns.map((campaign: any) => renderCampaignCard(campaign))}
                 </div>
+                {regularCampaigns.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No campaigns found</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -385,6 +467,11 @@ export default function ExplorePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {regularCreators.map((creator: any) => renderCreatorCard(creator))}
                 </div>
+                {regularCreators.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No creators found</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
