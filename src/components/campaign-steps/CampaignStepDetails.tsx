@@ -109,7 +109,7 @@ export default function CampaignStepDetails({ campaign, onChange }: CampaignStep
           <div className="space-y-2">
             <Label className="text-sm font-medium">Country Availability</Label>
             <CountrySelector
-              value={campaign.countryAvailability || "worldwide"}
+              selectedCountry={campaign.countryAvailability || "worldwide"}
               onChange={(value) => onChange({ countryAvailability: value })}
             />
           </div>
