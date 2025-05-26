@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import Index from "@/pages/Index";
@@ -42,7 +43,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
 
           {/* Dashboard Routes */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
             <Route index element={<DashboardHome />} />
             <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
@@ -57,7 +58,7 @@ function App() {
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminLayout><Outlet /></AdminLayout>}>
             <Route index element={<AdminIndexPage />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="campaigns" element={<AdminCampaignsPage />} />
