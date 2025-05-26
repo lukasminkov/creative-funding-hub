@@ -1,4 +1,3 @@
-
 import { Campaign, Submission } from "./campaign-types";
 
 // Mock Campaigns Data
@@ -26,11 +25,15 @@ export const mockCampaigns: Campaign[] = [
     },
     requirements: ["Must be 18+", "US-based creators only", "Minimum 10K followers"],
     applicationDeadline: new Date("2024-07-01"),
-    submissionDeadline: new Date("2024-08-01"),
+    deliverables: {
+      mode: "videosPerDay",
+      videosPerDay: 1,
+      durationDays: 30
+    },
     creatorTiers: [
-      { name: "Micro", minFollowers: 1000, maxFollowers: 10000, price: 500 },
-      { name: "Macro", minFollowers: 10000, maxFollowers: 100000, price: 1500 },
-      { name: "Mega", minFollowers: 100000, maxFollowers: 1000000, price: 5000 }
+      { name: "Micro", price: 500 },
+      { name: "Macro", price: 1500 },
+      { name: "Mega", price: 5000 }
     ]
   },
   {
@@ -74,11 +77,13 @@ export const mockCampaigns: Campaign[] = [
     brandId: "brand-3",
     bannerImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop",
     prizePool: {
-      first: 10000,
-      second: 5000,
-      third: 2500,
-      participants: 500
+      places: [
+        { position: 1, prize: 10000 },
+        { position: 2, prize: 5000 },
+        { position: 3, prize: 2500 }
+      ]
     },
+    submissionDeadline: new Date("2024-10-01"),
     guidelines: {
       dos: ["Document real progress", "Use our equipment", "Tag fitness goals"],
       donts: ["No unsafe exercises", "Don't promote other brands", "No body shaming"]
@@ -101,10 +106,20 @@ export const mockCampaigns: Campaign[] = [
     brandName: "EcoLife",
     brandId: "brand-4",
     bannerImage: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&h=400&fit=crop",
+    applicationDeadline: new Date("2024-08-01"),
+    deliverables: {
+      mode: "totalVideos",
+      totalVideos: 20
+    },
     creatorTiers: [
-      { name: "Eco Starter", minFollowers: 5000, maxFollowers: 25000, price: 800 },
-      { name: "Green Influencer", minFollowers: 25000, maxFollowers: 100000, price: 2000 }
-    ]
+      { name: "Eco Starter", price: 800 },
+      { name: "Green Influencer", price: 2000 }
+    ],
+    guidelines: {
+      dos: ["Show eco-friendly practices", "Include sustainability tips", "Use natural settings"],
+      donts: ["Don't greenwash", "Avoid wasteful practices", "No plastic products"]
+    },
+    requirements: ["Sustainability focused", "Authentic content", "Educational approach"]
   },
   {
     id: "camp-5",
@@ -123,7 +138,12 @@ export const mockCampaigns: Campaign[] = [
     brandId: "brand-5",
     bannerImage: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=400&fit=crop",
     ratePerThousand: 4.0,
-    maxPayoutPerSubmission: 1500
+    maxPayoutPerSubmission: 1500,
+    guidelines: {
+      dos: ["Show gaming setup", "Include gameplay footage", "Highlight product features"],
+      donts: ["No inappropriate games", "Avoid poor lighting", "No competitor products"]
+    },
+    requirements: ["Gaming content creators", "High-quality setup", "Consistent posting"]
   }
 ];
 

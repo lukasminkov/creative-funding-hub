@@ -14,13 +14,18 @@ export default function CommunitiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  const { data: communities = [], isLoading } = useQuery({
+  const { data: communities = [], isLoading, refetch } = useQuery({
     queryKey: ["communities"],
     queryFn: () => {
       const stored = localStorage.getItem("communities");
       return stored ? JSON.parse(stored) : [];
     }
   });
+
+  const handleCommunityCreated = () => {
+    refetch();
+    setShowCreateDialog(false);
+  };
 
   // Filter communities
   const filteredCommunities = communities.filter((community: any) =>
@@ -227,6 +232,7 @@ export default function CommunitiesPage() {
       <CreateCommunityDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
+        onCommunityCreated={handleCommunityCreated}
       />
     </div>
   );
