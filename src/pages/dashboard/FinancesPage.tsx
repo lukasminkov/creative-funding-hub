@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,9 +23,9 @@ const mockFinancialData = {
       id: "txn_001",
       type: "deposit",
       description: "Stripe Deposit",
-      amount: 10000.00,
-      fee: 815.00, // 3% Stripe + 5% marketplace
-      netAmount: 9185.00,
+      amount: 10815.00, // Customer pays $10k + fees
+      fee: 815.00, // 5% marketplace + 3% Stripe on total
+      netAmount: 10000.00, // Net credit to account
       date: "2023-09-15",
       status: "completed",
       reference: "ch_3O3PqR2eZvKYlo2CwJQpFXAM"
@@ -57,9 +56,9 @@ const mockFinancialData = {
       id: "txn_004",
       type: "deposit",
       description: "Stripe Deposit",
-      amount: 25000.00,
-      fee: 2037.50,
-      netAmount: 22962.50,
+      amount: 27037.50, // Customer pays $25k + fees
+      fee: 2037.50, // 5% marketplace + 3% Stripe on total
+      netAmount: 25000.00, // Net credit to account
       date: "2023-09-10",
       status: "completed",
       reference: "ch_3O3Gr2eZvKYlo2CJ75kpZJA"
