@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency } from "@/lib/campaign-types";
-import { Calendar, MapPin, Users, Eye, DollarSign, ArrowLeft, Trophy, TrendingUp, Target, Clock, Edit, Settings, BarChart3 } from "lucide-react";
+import { Calendar, MapPin, Users, Eye, DollarSign, ArrowLeft, Trophy, TrendingUp, Target, Clock, Edit, Settings, BarChart3, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import CampaignSubmissions from "@/components/dashboard/CampaignSubmissions";
 import CampaignStats from "@/components/dashboard/CampaignStats";
@@ -66,6 +66,10 @@ export default function CampaignDetailPage() {
     refetchCampaigns();
   };
 
+  const handleAddFunds = () => {
+    toast.success("Add funds functionality will be implemented soon!");
+  };
+
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
@@ -83,6 +87,15 @@ export default function CampaignDetailPage() {
           <Badge variant={new Date(campaign.endDate) > new Date() ? "default" : "secondary"}>
             {new Date(campaign.endDate) > new Date() ? "Active" : "Ended"}
           </Badge>
+          <Button 
+            onClick={handleAddFunds}
+            className="relative overflow-hidden bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
+            size="sm"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] transform translate-x-[-100%]" />
+            <Plus className="h-4 w-4 mr-2" />
+            Add Funds
+          </Button>
           <Button onClick={handleEditCampaign} variant="outline" size="sm">
             <Edit className="h-4 w-4 mr-2" />
             Edit Campaign
@@ -361,6 +374,13 @@ export default function CampaignDetailPage() {
         onCampaignUpdated={handleCampaignUpdated}
         isEditing={true}
       />
+
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 }
