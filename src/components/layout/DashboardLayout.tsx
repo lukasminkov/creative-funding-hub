@@ -25,7 +25,7 @@ const menuItems = [
   { title: "Home", path: "/dashboard", icon: Home },
   { title: "Explore", path: "/dashboard/explore", icon: Compass },
   { title: "Campaigns", path: "/dashboard/campaigns", icon: Layers },
-  { title: "Messages", path: "/dashboard/messages", icon: MessageSquare },
+  { title: "Chat", path: "/dashboard/messages", icon: MessageSquare },
   { title: "Finances", path: "/dashboard/finances", icon: CreditCard }
 ];
 
