@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/campaign-types";
 import { Calendar, MapPin, Users, Eye, DollarSign, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import CampaignSubmissions from "@/components/dashboard/CampaignSubmissions";
+import CampaignStats from "@/components/dashboard/CampaignStats";
 import { toast } from "sonner";
 
 export default function CampaignDetailPage() {
@@ -52,9 +53,6 @@ export default function CampaignDetailPage() {
     toast.success(`Submission by ${submission.creator_name} denied`);
   };
 
-  const totalViews = submissions.reduce((sum, s) => sum + s.views, 0);
-  const approvedSubmissions = submissions.filter(s => s.status === "approved").length;
-
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
@@ -85,48 +83,10 @@ export default function CampaignDetailPage() {
         </div>
       )}
 
-      {/* Campaign Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(campaign.totalBudget, campaign.currency)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Submissions</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{submissions.length}</div>
-            <p className="text-xs text-muted-foreground">{approvedSubmissions} approved</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">End Date</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{new Date(campaign.endDate).toLocaleDateString()}</div>
-          </CardContent>
-        </Card>
+      {/* Campaign Statistics */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Campaign Statistics</h2>
+        <CampaignStats campaign={campaign} submissions={submissions} />
       </div>
 
       {/* Campaign Details */}
