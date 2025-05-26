@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, TrendingUp, Users, DollarSign, Eye } from "lucide-react";
 import CampaignSummaryCard from "@/components/dashboard/CampaignSummaryCard";
-import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/lib/campaign-types";
 
@@ -95,9 +94,6 @@ export default function DashboardHome() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Campaign Analytics */}
-      <CampaignAnalytics campaigns={campaigns} />
 
       {/* Recent Campaigns */}
       <div className="space-y-4">
