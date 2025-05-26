@@ -1,5 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/providers/theme-provider";
 import Index from "@/pages/Index";
@@ -27,44 +28,56 @@ import MessagesPageAdmin from "@/pages/admin/MessagesPage";
 import NotificationsPage from "@/pages/admin/NotificationsPage";
 import SettingsPageAdmin from "@/pages/admin/SettingsPage";
 
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
+
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard-old" element={<Dashboard />} />
-          
-          {/* Dashboard Routes - Remove nested SidebarProvider since DashboardLayout already has one */}
-          <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
-          <Route path="/dashboard/explore" element={<DashboardLayout><ExplorePage /></DashboardLayout>} />
-          <Route path="/dashboard/campaigns" element={<DashboardLayout><CampaignsPage /></DashboardLayout>} />
-          <Route path="/dashboard/communities" element={<DashboardLayout><CommunitiesPage /></DashboardLayout>} />
-          <Route path="/dashboard/finances" element={<DashboardLayout><FinancesPage /></DashboardLayout>} />
-          <Route path="/dashboard/messages" element={<DashboardLayout><MessagesPage /></DashboardLayout>} />
-          <Route path="/dashboard/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
-          <Route path="/dashboard/campaigns/:id" element={<DashboardLayout><CampaignDetailPage /></DashboardLayout>} />
-          <Route path="/dashboard/creators/:id" element={<DashboardLayout><CreatorProfilePage /></DashboardLayout>} />
-          <Route path="/dashboard/campaigns/:id/chat" element={<DashboardLayout><CampaignChatPage /></DashboardLayout>} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminIndexPage />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="brands" element={<BrandsPage />} />
-            <Route path="campaigns" element={<CampaignsPageAdmin />} />
-            <Route path="payments" element={<PaymentsPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="messages" element={<MessagesPageAdmin />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="settings" element={<SettingsPageAdmin />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </Router>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard-old" element={<Dashboard />} />
+            
+            {/* Dashboard Routes */}
+            <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
+            <Route path="/dashboard/explore" element={<DashboardLayout><ExplorePage /></DashboardLayout>} />
+            <Route path="/dashboard/campaigns" element={<DashboardLayout><CampaignsPage /></DashboardLayout>} />
+            <Route path="/dashboard/communities" element={<DashboardLayout><CommunitiesPage /></DashboardLayout>} />
+            <Route path="/dashboard/finances" element={<DashboardLayout><FinancesPage /></DashboardLayout>} />
+            <Route path="/dashboard/messages" element={<DashboardLayout><MessagesPage /></DashboardLayout>} />
+            <Route path="/dashboard/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
+            <Route path="/dashboard/campaigns/:id" element={<DashboardLayout><CampaignDetailPage /></DashboardLayout>} />
+            <Route path="/dashboard/creators/:id" element={<DashboardLayout><CreatorProfilePage /></DashboardLayout>} />
+            <Route path="/dashboard/campaigns/:id/chat" element={<DashboardLayout><CampaignChatPage /></DashboardLayout>} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminIndexPage />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="brands" element={<BrandsPage />} />
+              <Route path="campaigns" element={<CampaignsPageAdmin />} />
+              <Route path="payments" element={<PaymentsPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="messages" element={<MessagesPageAdmin />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="settings" element={<SettingsPageAdmin />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
