@@ -11,16 +11,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface ExploreSearchModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  searchQuery: string;
   onSearchChange: (query: string) => void;
 }
 
 export default function ExploreSearchModal({ 
   open, 
   onOpenChange, 
-  searchQuery,
   onSearchChange
 }: ExploreSearchModalProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Get data from localStorage within the component
   const campaigns = JSON.parse(localStorage.getItem("explore-campaigns") || "[]");
   const creators = JSON.parse(localStorage.getItem("explore-creators") || "[]");
@@ -47,9 +47,16 @@ export default function ExploreSearchModal({
     ...filteredCreators.map((item: any) => ({ ...item, itemType: 'creator' }))
   ];
 
+  // Handle search changes
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    onSearchChange(value);
+  };
+
   // Clear search when modal closes
   useEffect(() => {
     if (!open) {
+      setSearchQuery("");
       onSearchChange("");
     }
   }, [open, onSearchChange]);
@@ -65,7 +72,7 @@ export default function ExploreSearchModal({
               <Input
                 placeholder="Search campaigns, creators, brands..."
                 value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10 text-base"
                 autoFocus
               />

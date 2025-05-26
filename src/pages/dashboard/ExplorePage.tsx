@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Filter, Sparkles } from "lucide-react";
-import ExploreHeader from "@/components/explore/ExploreHeader";
 import ExploreSearchModal from "@/components/explore/ExploreSearchModal";
 import ForYouFeed from "@/components/explore/ForYouFeed";
 import CampaignsTab from "@/components/explore/CampaignsTab";
@@ -59,8 +58,6 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <ExploreHeader onSearchClick={() => setShowSearchModal(true)} />
-      
       <div className="container mx-auto px-4 py-6">
         {/* Search Bar */}
         <div className="flex items-center gap-4 mb-8">
@@ -120,7 +117,6 @@ export default function ExplorePage() {
       <ExploreSearchModal
         open={showSearchModal}
         onOpenChange={setShowSearchModal}
-        searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
     </div>

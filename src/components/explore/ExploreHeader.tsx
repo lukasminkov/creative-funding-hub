@@ -15,17 +15,6 @@ export default function ExploreHeader({ onSearchClick }: ExploreHeaderProps) {
           Discover campaigns and creators on the platform
         </p>
       </div>
-      
-      {onSearchClick && (
-        <Button
-          variant="outline"
-          onClick={onSearchClick}
-          className="flex items-center gap-2"
-        >
-          <Search className="h-4 w-4" />
-          Search all content
-        </Button>
-      )}
     </div>
   );
 }
