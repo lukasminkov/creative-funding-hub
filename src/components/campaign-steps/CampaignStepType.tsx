@@ -2,7 +2,8 @@
 import { Campaign } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Eye, Trophy, DollarSign, Users, Calendar } from "lucide-react";
+import { Clock, Eye, Trophy, DollarSign, Users, Calendar, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CampaignStepTypeProps {
   campaign: Partial<Campaign>;
@@ -34,7 +35,12 @@ const CAMPAIGN_TYPES = [
       "View-based compensation",
       "Scalable reach"
     ],
-    bestFor: "Maximizing reach and paying for actual results"
+    bestFor: "Maximizing reach and paying for actual results",
+    info: {
+      title: "How Pay Per View Works",
+      description: "All submissions will have 10 days to accumulate views after which the payment to the creators is automatically generated for Approved and pending payouts. Denied submissions will not receive a payout.",
+      additionalInfo: "You can cap the payout per submission to have a more predictable budget spend."
+    }
   },
   {
     id: "challenge",
@@ -115,6 +121,25 @@ export default function CampaignStepType({ campaign, onChange }: CampaignStepTyp
                         <span className="font-medium">Best for:</span> {type.bestFor}
                       </p>
                     </div>
+
+                    {type.info && (
+                      <Alert className="mt-4 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
+                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <AlertDescription className="text-sm">
+                          <div className="space-y-2">
+                            <p className="font-medium text-blue-800 dark:text-blue-200">
+                              {type.info.title}
+                            </p>
+                            <p className="text-blue-700 dark:text-blue-300">
+                              {type.info.description}
+                            </p>
+                            <p className="text-blue-600 dark:text-blue-400 text-xs">
+                              💡 {type.info.additionalInfo}
+                            </p>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
                 </div>
               </CardContent>
