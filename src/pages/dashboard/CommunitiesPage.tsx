@@ -35,9 +35,9 @@ export default function CommunitiesPage() {
   const fetchCommunities = async () => {
     try {
       setError(null);
+      setLoading(true);
       console.log('Fetching communities...');
       
-      // First, let's try a simple query to see if the basic table works
       const { data, error } = await supabase
         .from('communities')
         .select('*')
@@ -50,8 +50,7 @@ export default function CommunitiesPage() {
 
       console.log('Communities data:', data);
 
-      // For now, set member_count to 0 for all communities
-      // We can enhance this later with a separate query
+      // Set member_count to 0 for all communities for now
       const communitiesWithCount = data?.map(community => ({
         ...community,
         member_count: 0

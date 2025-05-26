@@ -35,7 +35,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/dashboard-old" element={<Dashboard />} />
           
-          {/* Dashboard Routes */}
+          {/* Dashboard Routes - Remove nested SidebarProvider since DashboardLayout already has one */}
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/dashboard/explore" element={<DashboardLayout><ExplorePage /></DashboardLayout>} />
           <Route path="/dashboard/campaigns" element={<DashboardLayout><CampaignsPage /></DashboardLayout>} />
