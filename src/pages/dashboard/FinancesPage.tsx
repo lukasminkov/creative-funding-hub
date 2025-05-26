@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Search, Plus, TrendingUp, TrendingDown, Wallet, 
-  CreditCard, ArrowUpRight, ArrowDownLeft, Filter
+  Search, Plus, Wallet, 
+  CreditCard, ArrowUpRight, ArrowDownLeft, Filter, Lock, TrendingDown
 } from "lucide-react";
 import { formatCurrency } from "@/lib/campaign-types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,9 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Mock financial data
 const mockFinancialData = {
   accountBalance: 25000.00,
-  totalDeposited: 150000.00,
-  totalPaidOut: 125000.00,
-  pendingPayouts: 3500.00,
+  committed: 18500.00, // Money committed to active campaigns
+  paidOut: 12750.00, // Money paid out to creators
   transactions: [
     {
       id: "txn_001",
@@ -135,7 +134,7 @@ export default function FinancesPage() {
         <div>
           <h2 className="text-3xl font-bold mb-2">Finances</h2>
           <p className="text-muted-foreground">
-            Manage your account balance, deposits, and payouts
+            Overview of your account balance, committed funds, and payouts
           </p>
         </div>
         <Button className="gap-2">
@@ -151,7 +150,7 @@ export default function FinancesPage() {
         </TabsList>
 
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -170,15 +169,15 @@ export default function FinancesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Total Deposited
+                  <Lock className="h-4 w-4" />
+                  Committed
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(mockFinancialData.totalDeposited, 'USD')}
+                <div className="text-2xl font-bold text-orange-600">
+                  {formatCurrency(mockFinancialData.committed, 'USD')}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Lifetime deposits</p>
+                <p className="text-xs text-muted-foreground mt-1">Allocated to campaigns</p>
               </CardContent>
             </Card>
 
@@ -186,29 +185,14 @@ export default function FinancesPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <TrendingDown className="h-4 w-4" />
-                  Total Paid Out
+                  Paid Out
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(mockFinancialData.totalPaidOut, 'USD')}
+                <div className="text-2xl font-bold text-blue-600">
+                  {formatCurrency(mockFinancialData.paidOut, 'USD')}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">To creators</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Pending Payouts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
-                  {formatCurrency(mockFinancialData.pendingPayouts, 'USD')}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Awaiting processing</p>
               </CardContent>
             </Card>
           </div>
