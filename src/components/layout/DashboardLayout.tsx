@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -14,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
+import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -49,6 +51,7 @@ const ModernSidebarToggle = () => {
 
 function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [showCreateCampaign, setShowCreateCampaign] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { state } = useSidebar();
@@ -129,16 +132,14 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
           {/* Create Campaign Button */}
           <div className="mt-8 px-1">
             <Button 
-              asChild 
+              onClick={() => setShowCreateCampaign(true)}
               className={cn(
                 "w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02]",
                 state === "collapsed" ? "p-0" : ""
               )}
             >
-              <Link to="/dashboard/campaigns/create" className="flex items-center gap-3">
-                <Plus className={cn("h-5 w-5", state === "collapsed" && "mx-auto")} />
-                {state === "expanded" && <span className="font-semibold">Create Campaign</span>}
-              </Link>
+              <Plus className={cn("h-5 w-5", state === "collapsed" && "mx-auto")} />
+              {state === "expanded" && <span className="font-semibold">Create Campaign</span>}
             </Button>
           </div>
         </SidebarContent>
@@ -203,6 +204,12 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Campaign Creation Modal */}
+      <CampaignFormDialog
+        open={showCreateCampaign}
+        onOpenChange={setShowCreateCampaign}
+      />
     </div>
   );
 }
