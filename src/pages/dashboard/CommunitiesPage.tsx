@@ -26,6 +26,7 @@ export default function CommunitiesPage() {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCommunities();
@@ -33,24 +34,33 @@ export default function CommunitiesPage() {
 
   const fetchCommunities = async () => {
     try {
+      setError(null);
+      console.log('Fetching communities...');
+      
+      // First, let's try a simple query to see if the basic table works
       const { data, error } = await supabase
         .from('communities')
-        .select(`
-          *,
-          community_members(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Communities data:', data);
+
+      // For now, set member_count to 0 for all communities
+      // We can enhance this later with a separate query
       const communitiesWithCount = data?.map(community => ({
         ...community,
-        member_count: community.community_members?.[0]?.count || 0
+        member_count: 0
       })) || [];
 
       setCommunities(communitiesWithCount);
     } catch (error) {
       console.error('Error fetching communities:', error);
+      setError('Failed to load communities');
       toast.error('Failed to load communities');
     } finally {
       setLoading(false);
@@ -103,6 +113,27 @@ export default function CommunitiesPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="p-8">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold">Communities</h1>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600">Error: {error}</p>
+            <Button 
+              onClick={fetchCommunities} 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -144,7 +175,7 @@ export default function CommunitiesPage() {
                       {community.is_private && <Lock className="h-4 w-4 text-muted-foreground" />}
                     </CardTitle>
                     <CardDescription className="line-clamp-2">
-                      {community.description}
+                      {community.description || 'No description provided'}
                     </CardDescription>
                   </div>
                 </div>
@@ -168,7 +199,7 @@ export default function CommunitiesPage() {
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Users className="h-4 w-4 mr-1" />
-                    {community.member_count} members
+                    {community.member_count || 0} members
                   </div>
                 </div>
               </CardContent>
