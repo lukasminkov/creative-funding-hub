@@ -30,7 +30,12 @@ const PlatformSelector = ({
   const handlePlatformClick = (platform: string) => {
     // Special handling for TikTok Shop - it can only be selected alone
     if (platform === 'TikTok Shop') {
-      // If TikTok Shop is clicked, clear other selections and select only TikTok Shop
+      // If TikTok Shop is already selected, deselect it
+      if (selectedPlatforms.includes('TikTok Shop')) {
+        onChange(platform); // This will toggle it off
+        return;
+      }
+      // If TikTok Shop is not selected, select only TikTok Shop
       onChange(platform);
       return;
     }
