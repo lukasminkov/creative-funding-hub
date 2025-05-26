@@ -25,8 +25,8 @@ const menuItems = [
   { title: "Home", path: "/dashboard", icon: Home },
   { title: "Explore", path: "/dashboard/explore", icon: Compass },
   { title: "Campaigns", path: "/dashboard/campaigns", icon: Layers },
-  { title: "Finances", path: "/dashboard/finances", icon: CreditCard },
-  { title: "Messages", path: "/dashboard/messages", icon: MessageSquare }
+  { title: "Messages", path: "/dashboard/messages", icon: MessageSquare },
+  { title: "Finances", path: "/dashboard/finances", icon: CreditCard }
 ];
 
 const ModernSidebarToggle = () => {
