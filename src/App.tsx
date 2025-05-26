@@ -13,7 +13,6 @@ import DashboardHome from "@/pages/dashboard/DashboardHome";
 import CampaignsPage from "@/pages/dashboard/CampaignsPage";
 import CampaignDetailPage from "@/pages/dashboard/CampaignDetailPage";
 import CampaignChatPage from "@/pages/dashboard/CampaignChatPage";
-import CreatorsPage from "@/pages/dashboard/CreatorsPage";
 import CreatorProfilePage from "@/pages/dashboard/CreatorProfilePage";
 import ExplorePage from "@/pages/dashboard/ExplorePage";
 import AnalyticsPage from "@/pages/dashboard/AnalyticsPage";
@@ -60,7 +59,6 @@ function App() {
               <Route path="campaigns" element={<CampaignsPage />} />
               <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
               <Route path="campaigns/:campaignId/chat" element={<CampaignChatPage />} />
-              <Route path="creators" element={<CreatorsPage />} />
               <Route path="creators/:creatorId" element={<CreatorProfilePage />} />
               <Route path="explore" element={<ExplorePage />} />
               <Route path="analytics" element={<AnalyticsPage />} />

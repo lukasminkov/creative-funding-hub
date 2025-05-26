@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   BarChart3, Compass, Home, Layers, MessageSquare, Settings, 
-  User, LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell
+  LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell
 } from "lucide-react";
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
@@ -24,7 +23,6 @@ const menuItems = [
   { title: "Home", path: "/dashboard", icon: Home },
   { title: "Explore", path: "/dashboard/explore", icon: Compass },
   { title: "Campaigns", path: "/dashboard/campaigns", icon: Layers },
-  { title: "Creators", path: "/dashboard/creators", icon: User },
   { title: "Payments", path: "/dashboard/payments", icon: CreditCard },
   { title: "Messages", path: "/dashboard/messages", icon: MessageSquare },
   { title: "Settings", path: "/dashboard/settings", icon: Settings }
