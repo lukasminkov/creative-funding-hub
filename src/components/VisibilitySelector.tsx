@@ -38,7 +38,6 @@ const VisibilitySelector = ({
   const [accessType, setAccessType] = useState<'offer' | 'invite'>(restrictedAccess.type || 'invite');
   const [inviteLink, setInviteLink] = useState(restrictedAccess.inviteLink || '');
   const [selectedOffers, setSelectedOffers] = useState<string[]>(restrictedAccess.offerIds || []);
-  const [contentKey, setContentKey] = useState<number>(0); // Used to force re-render
 
   // Available offers for selection
   const availableOffers = [
@@ -49,11 +48,6 @@ const VisibilitySelector = ({
     { id: "offer5", name: "Freezertarps Clipping" },
     { id: "offer6", name: "Banks Interns" }
   ];
-
-  // Force re-render when visibility changes to prevent layout issues
-  useEffect(() => {
-    setContentKey(prev => prev + 1);
-  }, [visibility]);
 
   const handleVisibilityChange = (value: VisibilityType) => {
     if (value === "applicationOnly" && questions.length === 0) {
@@ -191,7 +185,7 @@ const VisibilitySelector = ({
     switch (visibility) {
       case "public":
         return (
-          <div className="flex items-center justify-center h-[350px] text-center">
+          <div className="flex items-center justify-center py-8 text-center">
             <div>
               <p>This campaign will be visible to all creators.</p>
               <p className="text-sm mt-2 text-muted-foreground">No additional settings required.</p>
@@ -201,7 +195,7 @@ const VisibilitySelector = ({
         
       case "applicationOnly":
         return (
-          <div className="h-[350px] overflow-y-auto py-2">
+          <div className="py-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-sm font-medium">Application Questions</h3>
               <Button
@@ -215,7 +209,7 @@ const VisibilitySelector = ({
               </Button>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-64 overflow-y-auto">
               {questions.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground text-sm">
                   No questions added yet. Add questions for creators to answer when applying.
@@ -281,7 +275,7 @@ const VisibilitySelector = ({
         
       case "restricted":
         return (
-          <div className="h-[350px] overflow-y-auto py-2">
+          <div className="py-4">
             <RadioGroup
               value={accessType}
               onValueChange={(value) => handleAccessTypeChange(value as 'offer' | 'invite')}
@@ -298,81 +292,81 @@ const VisibilitySelector = ({
               </div>
             </RadioGroup>
             
-            {accessType === 'offer' && (
-              <div className="pt-3 pb-1">
-                <div className="text-sm mb-3">Select offers that can participate:</div>
-                <div className="space-y-2">
-                  <Select
-                    onValueChange={handleOfferSelect}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select offers" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableOffers.map((offer) => (
-                        <SelectItem
-                          key={offer.id}
-                          value={offer.id}
-                          className={selectedOffers.includes(offer.id) ? "bg-primary/10" : ""}
-                        >
-                          {offer.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {selectedOffers.length > 0 && (
-                    <div className="mt-3">
-                      <div className="text-sm font-medium mb-2">Selected offers:</div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedOffers.map((offerId) => {
-                          const offer = availableOffers.find(o => o.id === offerId);
-                          return offer ? (
-                            <div 
-                              key={offerId}
-                              className="flex items-center bg-primary/10 rounded-md px-2 py-1 text-sm"
-                            >
-                              <span>{offer.name}</span>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-5 w-5 ml-1"
-                                onClick={() => handleOfferSelect(offerId)}
+            <div className="mt-4 max-h-48 overflow-y-auto">
+              {accessType === 'offer' && (
+                <div>
+                  <div className="text-sm mb-3">Select offers that can participate:</div>
+                  <div className="space-y-2">
+                    <Select onValueChange={handleOfferSelect}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select offers" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableOffers.map((offer) => (
+                          <SelectItem
+                            key={offer.id}
+                            value={offer.id}
+                            className={selectedOffers.includes(offer.id) ? "bg-primary/10" : ""}
+                          >
+                            {offer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {selectedOffers.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-sm font-medium mb-2">Selected offers:</div>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedOffers.map((offerId) => {
+                            const offer = availableOffers.find(o => o.id === offerId);
+                            return offer ? (
+                              <div 
+                                key={offerId}
+                                className="flex items-center bg-primary/10 rounded-md px-2 py-1 text-sm"
                               >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ) : null;
-                        })}
+                                <span>{offer.name}</span>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-5 w-5 ml-1"
+                                  onClick={() => handleOfferSelect(offerId)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                
-                  {selectedOffers.length === 0 && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Select at least one offer to enable this option.
-                    </p>
-                  )}
+                    )}
+                  
+                    {selectedOffers.length === 0 && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Select at least one offer to enable this option.
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-            
-            {accessType === 'invite' && (
-              <div className="pt-3">
-                <Label htmlFor="invite-link" className="text-sm mb-2 block">
-                  Invite Link (optional)
-                </Label>
-                <Input
-                  id="invite-link"
-                  value={inviteLink}
-                  onChange={(e) => handleInviteLinkChange(e.target.value)}
-                  placeholder="https://example.com/invite/xyz123"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Leave empty to auto-generate a link when campaign is published.
-                </p>
-              </div>
-            )}
+              )}
+              
+              {accessType === 'invite' && (
+                <div>
+                  <Label htmlFor="invite-link" className="text-sm mb-2 block">
+                    Invite Link (optional)
+                  </Label>
+                  <Input
+                    id="invite-link"
+                    value={inviteLink}
+                    onChange={(e) => handleInviteLinkChange(e.target.value)}
+                    placeholder="https://example.com/invite/xyz123"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave empty to auto-generate a link when campaign is published.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         );
         
@@ -455,10 +449,9 @@ const VisibilitySelector = ({
         </RadioGroup>
       </div>
 
-      {/* Content area with fixed structure to ensure consistent rendering */}
-      <Card className="mt-4" key={contentKey}>
+      <Card className="mt-4">
         <CardContent className="pt-6">
-          <div className="w-full h-[350px] relative">
+          <div className="min-h-[200px]">
             {renderVisibilityContent()}
           </div>
         </CardContent>
