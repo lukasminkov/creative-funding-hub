@@ -28,7 +28,9 @@ const mockFinancialData = {
       netAmount: 10000.00, // Net credit to account
       date: "2023-09-15",
       status: "completed",
-      reference: "ch_3O3PqR2eZvKYlo2CwJQpFXAM"
+      reference: "ch_3O3PqR2eZvKYlo2CwJQpFXAM",
+      from: "Your Bank Account",
+      to: "Account Balance"
     },
     {
       id: "txn_002",
@@ -39,7 +41,9 @@ const mockFinancialData = {
       netAmount: -1500.00,
       date: "2023-09-14",
       status: "completed",
-      reference: "Summer Collection Campaign"
+      reference: "Summer Collection Campaign",
+      from: "Account Balance",
+      to: "Emma Johnson"
     },
     {
       id: "txn_003",
@@ -50,7 +54,9 @@ const mockFinancialData = {
       netAmount: -5000.00,
       date: "2023-09-13",
       status: "completed",
-      reference: "Spring Launch Campaign"
+      reference: "Spring Launch Campaign",
+      from: "Account Balance",
+      to: "Spring Launch Campaign"
     },
     {
       id: "txn_004",
@@ -61,7 +67,9 @@ const mockFinancialData = {
       netAmount: 25000.00, // Net credit to account
       date: "2023-09-10",
       status: "completed",
-      reference: "ch_3O3Gr2eZvKYlo2CJ75kpZJA"
+      reference: "ch_3O3Gr2eZvKYlo2CJ75kpZJA",
+      from: "Your Bank Account",
+      to: "Account Balance"
     },
     {
       id: "txn_005",
@@ -72,7 +80,9 @@ const mockFinancialData = {
       netAmount: -850.00,
       date: "2023-09-09",
       status: "completed",
-      reference: "iPhone Launch Campaign"
+      reference: "iPhone Launch Campaign",
+      from: "Account Balance",
+      to: "James Wilson"
     }
   ]
 };
@@ -283,6 +293,8 @@ export default function FinancesPage() {
                     <TableRow>
                       <TableHead>Type</TableHead>
                       <TableHead>Description</TableHead>
+                      <TableHead>From</TableHead>
+                      <TableHead>To</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Fee</TableHead>
                       <TableHead>Net Amount</TableHead>
@@ -301,6 +313,8 @@ export default function FinancesPage() {
                           </div>
                         </TableCell>
                         <TableCell>{transaction.description}</TableCell>
+                        <TableCell className="font-medium">{transaction.from}</TableCell>
+                        <TableCell className="font-medium">{transaction.to}</TableCell>
                         <TableCell>{formatCurrency(transaction.amount, 'USD')}</TableCell>
                         <TableCell>
                           {transaction.fee > 0 ? formatCurrency(transaction.fee, 'USD') : '-'}
