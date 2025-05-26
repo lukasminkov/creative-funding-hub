@@ -55,11 +55,6 @@ export default function CommunitiesPage() {
   return (
     <div className="p-8">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Communities</h1>
-          <p className="text-muted-foreground">Connect with creators and brands in exclusive communities</p>
-        </div>
-        
         <div className="flex gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

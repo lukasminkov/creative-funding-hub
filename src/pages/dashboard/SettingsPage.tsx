@@ -11,13 +11,6 @@ import { BellRing, CreditCard, Lock, User } from "lucide-react";
 export default function SettingsPage() {
   return (
     <div className="container py-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Settings</h2>
-        <p className="text-muted-foreground">
-          Manage your account preferences and settings
-        </p>
-      </div>
-
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="mb-8">
           <TabsTrigger value="profile">Profile</TabsTrigger>

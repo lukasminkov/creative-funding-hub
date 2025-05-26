@@ -59,8 +59,8 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
-        {/* Search Bar */}
-        <div className="flex items-center gap-4 mb-8">
+        {/* Centered Search Bar */}
+        <div className="flex justify-center items-center gap-4 mb-8">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
