@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BrandSelector, { Brand } from "@/components/BrandSelector";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
+import DefaultCampaignBanner from "@/components/DefaultCampaignBanner";
 import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
 
@@ -107,13 +107,10 @@ const Dashboard = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-4 border-b border-border/60">
-                      <h3 className="text-lg font-medium">{campaign.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
-                        {campaign.brandName && ` • ${campaign.brandName}`}
-                      </p>
-                    </div>
+                    <DefaultCampaignBanner 
+                      title={campaign.title}
+                      type={campaign.type}
+                    />
                   )}
                   
                   <div className="p-4">

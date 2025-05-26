@@ -1,7 +1,7 @@
-
 import { Campaign, formatCurrency, getDaysLeft, getCountryLabel } from "@/lib/campaign-types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle, XCircle } from "lucide-react";
+import DefaultCampaignBanner from "./DefaultCampaignBanner";
 
 interface CampaignPreviewProps {
   campaign: Partial<Campaign>;
@@ -66,13 +66,11 @@ const CampaignPreview = ({ campaign }: CampaignPreviewProps) => {
             </div>
           </div>
         ) : (
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-medium text-gray-800">{campaign.title}</h2>
-            <p className="text-gray-500 mt-1">
-              {campaign.type && campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
-              {campaign.brandName && ` • ${campaign.brandName}`}
-            </p>
-          </div>
+          <DefaultCampaignBanner 
+            title={campaign.title} 
+            type={campaign.type || "campaign"}
+            className="h-48"
+          />
         )}
         
         <div className="p-6">

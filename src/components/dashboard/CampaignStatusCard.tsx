@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { Campaign, formatCurrency, getDaysLeft } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Check, X, Calendar, DollarSign, Clock, Percent, BadgePercent, BadgeDollarSign, Info, Flag, Flame } from "lucide-react";
+import DefaultCampaignBanner from "../DefaultCampaignBanner";
 
 interface CampaignStatusCardProps {
   campaign: Campaign;
@@ -94,24 +94,32 @@ export default function CampaignStatusCard({ campaign, onAddBudget }: CampaignSt
   }, [campaign]);
 
   const renderBanner = () => {
-    if (!campaign.bannerImage) return null;
-    
-    return (
-      <div className="h-40 relative rounded-t-lg overflow-hidden">
-        <img 
-          src={campaign.bannerImage} 
-          alt={campaign.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 p-4">
-          <h2 className="text-xl font-medium text-white">{campaign.title}</h2>
-          <p className="text-white/80 text-sm">
-            {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
-          </p>
+    if (campaign.bannerImage) {
+      return (
+        <div className="h-40 relative rounded-t-lg overflow-hidden">
+          <img 
+            src={campaign.bannerImage} 
+            alt={campaign.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 p-4">
+            <h2 className="text-xl font-medium text-white">{campaign.title}</h2>
+            <p className="text-white/80 text-sm">
+              {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
+            </p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <DefaultCampaignBanner 
+          title={campaign.title}
+          type={campaign.type}
+          className="rounded-t-lg"
+        />
+      );
+    }
   };
 
   const renderGuidelines = () => {
