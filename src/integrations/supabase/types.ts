@@ -117,6 +117,216 @@ export type Database = {
         }
         Relationships: []
       }
+      communities: {
+        Row: {
+          banner_image: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          discord_role_id: string | null
+          discord_server_id: string | null
+          id: string
+          is_private: boolean | null
+          max_members: number | null
+          name: string
+          owner_id: string
+          price: number | null
+          slug: string
+          type: Database["public"]["Enums"]["community_type"]
+          updated_at: string
+        }
+        Insert: {
+          banner_image?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discord_role_id?: string | null
+          discord_server_id?: string | null
+          id?: string
+          is_private?: boolean | null
+          max_members?: number | null
+          name: string
+          owner_id: string
+          price?: number | null
+          slug: string
+          type?: Database["public"]["Enums"]["community_type"]
+          updated_at?: string
+        }
+        Update: {
+          banner_image?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          discord_role_id?: string | null
+          discord_server_id?: string | null
+          id?: string
+          is_private?: boolean | null
+          max_members?: number | null
+          name?: string
+          owner_id?: string
+          price?: number | null
+          slug?: string
+          type?: Database["public"]["Enums"]["community_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      community_campaigns: {
+        Row: {
+          campaign_id: string
+          community_id: string
+          id: string
+        }
+        Insert: {
+          campaign_id: string
+          community_id: string
+          id?: string
+        }
+        Update: {
+          campaign_id?: string
+          community_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_campaigns_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_campaigns_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_chat_messages: {
+        Row: {
+          community_id: string
+          created_at: string
+          id: string
+          message: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          community_id: string
+          created_at?: string
+          id?: string
+          message: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          community_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_chat_messages_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_members: {
+        Row: {
+          community_id: string
+          discord_user_id: string | null
+          id: string
+          joined_at: string
+          status: Database["public"]["Enums"]["member_status"]
+          stripe_subscription_id: string | null
+          subscription_end_date: string | null
+          user_id: string
+        }
+        Insert: {
+          community_id: string
+          discord_user_id?: string | null
+          id?: string
+          joined_at?: string
+          status?: Database["public"]["Enums"]["member_status"]
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          user_id: string
+        }
+        Update: {
+          community_id?: string
+          discord_user_id?: string | null
+          id?: string
+          joined_at?: string
+          status?: Database["public"]["Enums"]["member_status"]
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_members_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_resources: {
+        Row: {
+          community_id: string
+          created_at: string
+          description: string | null
+          file_path: string | null
+          id: string
+          is_featured: boolean | null
+          title: string
+          type: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          community_id: string
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_featured?: boolean | null
+          title: string
+          type: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          community_id?: string
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_featured?: boolean | null
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_resources_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "communities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           campaign_id: string | null
@@ -215,7 +425,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      community_type: "free" | "one_time" | "subscription"
+      member_status: "pending" | "active" | "suspended" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -330,6 +541,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      community_type: ["free", "one_time", "subscription"],
+      member_status: ["pending", "active", "suspended", "cancelled"],
+    },
   },
 } as const

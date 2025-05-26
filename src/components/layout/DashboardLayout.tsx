@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   BarChart3, Compass, Home, Layers, MessageSquare, Settings, 
-  LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell
+  LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell, Users
 } from "lucide-react";
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
@@ -25,6 +25,7 @@ const menuItems = [
   { title: "Home", path: "/dashboard", icon: Home },
   { title: "Explore", path: "/dashboard/explore", icon: Compass },
   { title: "Campaigns", path: "/dashboard/campaigns", icon: Layers },
+  { title: "Communities", path: "/dashboard/communities", icon: Users },
   { title: "Finances", path: "/dashboard/finances", icon: CreditCard },
   { title: "Messages", path: "/dashboard/messages", icon: MessageSquare },
   { title: "Settings", path: "/dashboard/settings", icon: Settings }
