@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   BarChart3, Compass, Home, Layers, MessageSquare, Settings, 
-  LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell, Users
+  LogOut, Moon, Sun, Plus, Menu, X, CreditCard, Bell
 } from "lucide-react";
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, 
@@ -15,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -25,7 +25,6 @@ const menuItems = [
   { title: "Home", path: "/dashboard", icon: Home },
   { title: "Explore", path: "/dashboard/explore", icon: Compass },
   { title: "Campaigns", path: "/dashboard/campaigns", icon: Layers },
-  { title: "Communities", path: "/dashboard/communities", icon: Users },
   { title: "Finances", path: "/dashboard/finances", icon: CreditCard },
   { title: "Messages", path: "/dashboard/messages", icon: MessageSquare },
   { title: "Settings", path: "/dashboard/settings", icon: Settings }
@@ -58,16 +57,11 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const { state } = useSidebar();
 
   useEffect(() => {
-    console.log('DashboardLayout mounting for route:', location.pathname);
     setIsMounted(true);
-  }, [location.pathname]);
+  }, []);
 
   if (!isMounted) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="text-muted-foreground">Loading dashboard...</div>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -135,6 +129,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
             </SidebarGroupContent>
           </SidebarGroup>
 
+          {/* Create Campaign Button */}
           <div className="mt-8 px-1">
             <Button 
               onClick={() => setShowCreateCampaign(true)}
@@ -150,6 +145,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
         </SidebarContent>
 
         <SidebarFooter className="border-t border-border/50 p-4">
+          {/* User Profile */}
           <div className={cn(
             "flex items-center gap-3 mb-4",
             state === "collapsed" ? "justify-center" : ""
@@ -170,6 +166,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
             )}
           </div>
 
+          {/* Footer Actions */}
           <div className={cn(
             "flex gap-2",
             state === "collapsed" ? "justify-center" : "justify-between"
@@ -199,34 +196,28 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
 
       {state === "collapsed" && <ModernSidebarToggle />}
 
+      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-auto">
-          <ErrorBoundary>
-            <div className="fade-in">
-              {children}
-            </div>
-          </ErrorBoundary>
+          <div className="fade-in">
+            {children}
+          </div>
         </main>
       </div>
 
-      <ErrorBoundary>
-        <CampaignFormDialog
-          open={showCreateCampaign}
-          onOpenChange={setShowCreateCampaign}
-        />
-      </ErrorBoundary>
+      {/* Campaign Creation Modal */}
+      <CampaignFormDialog
+        open={showCreateCampaign}
+        onOpenChange={setShowCreateCampaign}
+      />
     </div>
   );
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  console.log('DashboardLayout wrapper rendering');
-  
   return (
-    <ErrorBoundary>
-      <SidebarProvider>
-        <DashboardLayoutContent>{children}</DashboardLayoutContent>
-      </SidebarProvider>
-    </ErrorBoundary>
+    <SidebarProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </SidebarProvider>
   );
 }

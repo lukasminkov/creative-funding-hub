@@ -11,19 +11,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface ExploreSearchModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSearchChange: (query: string) => void;
+  campaigns: any[];
+  creators: any[];
 }
 
 export default function ExploreSearchModal({ 
   open, 
   onOpenChange, 
-  onSearchChange
+  campaigns, 
+  creators 
 }: ExploreSearchModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Get data from localStorage within the component
-  const campaigns = JSON.parse(localStorage.getItem("explore-campaigns") || "[]");
-  const creators = JSON.parse(localStorage.getItem("explore-creators") || "[]");
 
   // Filter data based on search query across ALL categories
   const filteredCampaigns = campaigns.filter((campaign: any) =>
@@ -43,23 +41,16 @@ export default function ExploreSearchModal({
 
   // Create mixed results
   const allResults = [
-    ...filteredCampaigns.map((item: any) => ({ ...item, itemType: 'campaign' })),
-    ...filteredCreators.map((item: any) => ({ ...item, itemType: 'creator' }))
+    ...filteredCampaigns.map(item => ({ ...item, itemType: 'campaign' })),
+    ...filteredCreators.map(item => ({ ...item, itemType: 'creator' }))
   ];
-
-  // Handle search changes
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    onSearchChange(value);
-  };
 
   // Clear search when modal closes
   useEffect(() => {
     if (!open) {
       setSearchQuery("");
-      onSearchChange("");
     }
-  }, [open, onSearchChange]);
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -72,7 +63,7 @@ export default function ExploreSearchModal({
               <Input
                 placeholder="Search campaigns, creators, brands..."
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 text-base"
                 autoFocus
               />
