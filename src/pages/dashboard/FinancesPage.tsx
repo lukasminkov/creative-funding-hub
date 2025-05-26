@@ -29,22 +29,22 @@ const mockFinancialData = {
       netAmount: 10000.00, // Net credit to account
       date: "2023-09-15",
       status: "completed",
-      reference: "ch_3O3PqR2eZvKYlo2CwJQpFXAM",
+      reference: "stripe_deposit_ch_3O3PqR2eZvKYlo2CwJQpFXAM",
       from: "Credit Card ****1234",
-      to: "Account Balance"
+      to: "Available Account Balance"
     },
     {
       id: "txn_002",
       type: "campaign_to_creator",
-      description: "Payment to Emma Johnson - Summer Collection",
+      description: "Payment to @emmajohnson - Summer Collection",
       amount: 1500.00,
       fee: 0,
       netAmount: -1500.00,
       date: "2023-09-14",
       status: "completed",
-      reference: "Summer Collection Campaign",
+      reference: "payper_summercollection_sub_001_user_emma",
       from: "Summer Collection Campaign Budget",
-      to: "Emma Johnson"
+      to: "@emmajohnson"
     },
     {
       id: "txn_003",
@@ -55,7 +55,7 @@ const mockFinancialData = {
       netAmount: -5000.00,
       date: "2023-09-13",
       status: "completed",
-      reference: "Spring Launch Campaign",
+      reference: "budget_allocation_springlaunch_camp_002",
       from: "Available Account Balance",
       to: "Spring Launch Campaign Budget"
     },
@@ -68,22 +68,22 @@ const mockFinancialData = {
       netAmount: 25000.00, // Net credit to account
       date: "2023-09-10",
       status: "completed",
-      reference: "ch_3O3Gr2eZvKYlo2CJ75kpZJA",
+      reference: "stripe_deposit_ch_3O3Gr2eZvKYlo2CJ75kpZJA",
       from: "Bank Account ****5678",
-      to: "Account Balance"
+      to: "Available Account Balance"
     },
     {
       id: "txn_005",
       type: "campaign_to_creator",
-      description: "Payment to James Wilson - iPhone Campaign",
+      description: "Payment to @jameswilson - iPhone Campaign",
       amount: 850.00,
       fee: 0,
       netAmount: -850.00,
       date: "2023-09-09",
       status: "completed",
-      reference: "iPhone Launch Campaign",
+      reference: "payper_iphonelaunch_sub_003_user_james",
       from: "iPhone Launch Campaign Budget",
-      to: "James Wilson"
+      to: "@jameswilson"
     },
     {
       id: "txn_006",
@@ -94,7 +94,7 @@ const mockFinancialData = {
       netAmount: -2000.00,
       date: "2023-09-08",
       status: "completed",
-      reference: "po_3O3Kr2eZvKYlo2CJ85kpZJB",
+      reference: "stripe_withdrawal_po_3O3Kr2eZvKYlo2CJ85kpZJB",
       from: "Available Account Balance",
       to: "Bank Account ****5678"
     },
@@ -107,7 +107,7 @@ const mockFinancialData = {
       netAmount: 3000.00,
       date: "2023-09-07",
       status: "completed",
-      reference: "Winter Campaign Cancelled",
+      reference: "budget_return_wintercampaign_camp_004",
       from: "Winter Campaign Budget",
       to: "Available Account Balance"
     },
@@ -120,9 +120,9 @@ const mockFinancialData = {
       netAmount: -500.00,
       date: "2023-09-06",
       status: "completed",
-      reference: "Transfer to Sarah's Account",
+      reference: "user_transfer_sarahmitchell_partner_005",
       from: "Your Account Balance",
-      to: "Sarah Mitchell (Partner)"
+      to: "@sarahmitchell (Partner)"
     }
   ]
 };
