@@ -51,6 +51,8 @@ export const useCampaigns = () => {
 
         // Map database platforms to our Platform enum
         const mapPlatforms = (dbPlatforms: string[]): Platform[] => {
+          if (!Array.isArray(dbPlatforms)) return ['TikTok'];
+          
           return dbPlatforms.map(platform => {
             switch (platform.toLowerCase()) {
               case 'instagram':
@@ -61,8 +63,8 @@ export const useCampaigns = () => {
                 return 'YouTube Shorts';
               case 'twitter':
                 return 'Twitter';
-              case 'twitch':
-                return 'TikTok'; // Fallback since Twitch isn't in our enum
+              case 'tiktok shop':
+                return 'TikTok Shop';
               default:
                 return 'TikTok';
             }
@@ -71,11 +73,11 @@ export const useCampaigns = () => {
 
         // Map database visibility to our VisibilityType enum
         const mapVisibility = (dbVisibility: string): VisibilityType => {
-          switch (dbVisibility) {
+          switch (dbVisibility?.toLowerCase()) {
             case 'public':
               return 'public';
             case 'private':
-            case 'applicationOnly':
+            case 'applicationonly':
               return 'applicationOnly';
             case 'restricted':
               return 'restricted';
@@ -86,7 +88,7 @@ export const useCampaigns = () => {
 
         // Map database country to our CountryOption enum
         const mapCountryAvailability = (dbCountry: string): CountryOption => {
-          switch (dbCountry.toLowerCase()) {
+          switch (dbCountry?.toLowerCase()) {
             case 'global':
             case 'worldwide':
               return 'worldwide';
@@ -104,13 +106,24 @@ export const useCampaigns = () => {
           }
         };
 
+        // Map database category to our Category enum
+        const mapCategory = (dbCategory: string): Category => {
+          const validCategories = ["Fashion", "Beauty", "Tech", "Gaming", "Food", "Travel", "Lifestyle", "Fitness", "Education", "Entertainment", "Finance", "Business", "Health", "Sports", "Music", "News", "Politics", "Science", "Art", "Design", "Photography", "Film", "Writing", "DIY", "Automotive", "Real Estate", "Home", "Parenting", "Pets", "Nature"];
+          
+          const category = validCategories.find(cat => 
+            cat.toLowerCase() === dbCategory?.toLowerCase()
+          );
+          
+          return (category as Category) || 'Lifestyle';
+        };
+
         return {
           id: campaign.id,
           title: campaign.title,
           description: campaign.description || "",
           type: campaign.type as "retainer" | "payPerView" | "challenge",
           contentType: mapContentType(campaign.content_type),
-          category: campaign.category as Category,
+          category: mapCategory(campaign.category),
           platforms: mapPlatforms(campaign.platforms || []),
           totalBudget: Number(campaign.total_budget),
           currency: campaign.currency as Currency,
@@ -132,7 +145,7 @@ export const useCampaigns = () => {
           prizePool: safeJsonParse(campaign.prize_pool),
           applicationQuestions: safeJsonParse(campaign.application_questions, []) as ApplicationQuestion[],
           requestedTrackingLink: campaign.requested_tracking_link || false,
-          tiktokShopCommission: safeJsonParse(campaign.tiktok_shop_commission),
+          tikTokShopCommission: safeJsonParse(campaign.tiktok_shop_commission),
           instructionVideo: campaign.instruction_video,
           brief: safeJsonParse(campaign.brief) as Brief,
           exampleVideos: safeJsonParse(campaign.example_videos, []) as ExampleVideo[],
