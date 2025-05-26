@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,10 +25,13 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowUpDown,
-  ExternalLink
+  ExternalLink,
+  User,
+  MessageCircle
 } from "lucide-react";
 import { Campaign, Submission } from "@/lib/campaign-types";
 import { format } from "date-fns";
+import CreatorProfilePopup from "./CreatorProfilePopup";
 
 interface CampaignManagementProps {
   campaign: Campaign;
@@ -48,6 +50,8 @@ export default function CampaignManagement({
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedCreator, setSelectedCreator] = useState<any>(null);
+  const [isCreatorProfileOpen, setIsCreatorProfileOpen] = useState(false);
 
   // Filter and sort submissions
   const filteredSubmissions = submissions
@@ -140,6 +144,33 @@ export default function CampaignManagement({
     }
   };
 
+  const handleCreatorClick = (submission: Submission) => {
+    setSelectedCreator({
+      id: submission.creator_id,
+      name: submission.creator_name,
+      avatar: submission.creator_avatar,
+      // Add more creator data as needed
+      submissions: submissions.filter(s => s.creator_id === submission.creator_id),
+      totalViews: submissions
+        .filter(s => s.creator_id === submission.creator_id)
+        .reduce((sum, s) => sum + s.views, 0),
+      totalEarnings: submissions
+        .filter(s => s.creator_id === submission.creator_id)
+        .reduce((sum, s) => sum + s.payment_amount, 0),
+    });
+    setIsCreatorProfileOpen(true);
+  };
+
+  // Generate mock platform username based on creator name and platform
+  const getPlatformUsername = (creatorName: string, platform: string) => {
+    const cleanName = creatorName.toLowerCase().replace(/\s+/g, '');
+    const platformSuffix = platform.toLowerCase().includes('tiktok') ? '_tt' : 
+                          platform.toLowerCase().includes('instagram') ? '_ig' :
+                          platform.toLowerCase().includes('youtube') ? '_yt' :
+                          platform.toLowerCase().includes('twitter') ? '_tw' : '';
+    return `@${cleanName}${platformSuffix}`;
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="submissions" className="space-y-4">
@@ -190,8 +221,14 @@ export default function CampaignManagement({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Creator</TableHead>
+                      <TableHead className="cursor-pointer" onClick={() => handleSort("creator")}>
+                        <div className="flex items-center gap-1">
+                          Creator
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
                       <TableHead>Platform</TableHead>
+                      <TableHead>Username</TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort("date")}>
                         <div className="flex items-center gap-1">
                           Submitted
@@ -204,13 +241,13 @@ export default function CampaignManagement({
                           <ArrowUpDown className="h-3 w-3" />
                         </div>
                       </TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead className="cursor-pointer" onClick={() => handleSort("payment")}>
                         <div className="flex items-center gap-1">
                           Payment
                           <ArrowUpDown className="h-3 w-3" />
                         </div>
                       </TableHead>
-                      <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -226,18 +263,28 @@ export default function CampaignManagement({
                                 <AvatarFallback>{submission.creator_name.charAt(0)}</AvatarFallback>
                               )}
                             </Avatar>
-                            <span className="font-medium">{submission.creator_name}</span>
+                            <button
+                              onClick={() => handleCreatorClick(submission)}
+                              className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              {submission.creator_name}
+                            </button>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">{submission.platform}</Badge>
                         </TableCell>
                         <TableCell>
+                          <span className="text-muted-foreground">
+                            {getPlatformUsername(submission.creator_name, submission.platform)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
                           {format(new Date(submission.submitted_date), 'MMM dd, yyyy')}
                         </TableCell>
                         <TableCell>{submission.views.toLocaleString()}</TableCell>
-                        <TableCell>${submission.payment_amount}</TableCell>
                         <TableCell>{getStatusBadge(submission.status)}</TableCell>
+                        <TableCell>${submission.payment_amount}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
                             <Button
@@ -271,15 +318,6 @@ export default function CampaignManagement({
                                 </Button>
                               </>
                             )}
-                            
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => window.open(submission.content, '_blank')}
-                              title="Open in New Tab"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -361,6 +399,13 @@ export default function CampaignManagement({
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Creator Profile Popup */}
+      <CreatorProfilePopup
+        creator={selectedCreator}
+        open={isCreatorProfileOpen}
+        onOpenChange={setIsCreatorProfileOpen}
+      />
     </div>
   );
 }
