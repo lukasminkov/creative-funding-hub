@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,10 +19,11 @@ import CampaignCreator from "@/components/CampaignCreator";
 import { Campaign } from "@/lib/campaign-types";
 import { cn } from "@/lib/utils";
 
+// Updated mock campaigns with real UUIDs from your Supabase database
 const mockCampaigns = [
   {
-    id: "1",
-    title: "Summer Product Launch",
+    id: "a184c1a3-0b05-4973-8948-29a9d2e334d0",
+    title: "Summer Fashion Collection Retainer",
     description: "Promote our new summer collection with engaging content",
     type: "retainer",
     totalBudget: 15000,
@@ -36,9 +36,9 @@ const mockCampaigns = [
     category: "Fashion"
   },
   {
-    id: "2",
-    title: "Gaming Challenge Campaign",
-    description: "Create viral gaming content for our new game release",
+    id: "e26e8a9c-ad6a-4292-abc5-3e9affd23a02",
+    title: "Fitness Challenge",
+    description: "Create viral fitness content for our new fitness app",
     type: "challenge",
     totalBudget: 25000,
     currency: "USD",
@@ -46,12 +46,12 @@ const mockCampaigns = [
     applicants: 0,
     accepted: 0,
     endDate: new Date("2024-08-20"),
-    platforms: ["youtube", "twitch"],
-    category: "Gaming"
+    platforms: ["youtube", "instagram"],
+    category: "Fitness"
   },
   {
-    id: "3",
-    title: "Tech Review Series",
+    id: "fc7bf454-624b-4d58-b1f2-66669a8ae027",
+    title: "Tech Gadget Review Campaign",
     description: "In-depth reviews of our latest tech products",
     type: "payPerView",
     totalBudget: 18000,
@@ -62,6 +62,20 @@ const mockCampaigns = [
     endDate: new Date("2024-06-30"),
     platforms: ["youtube"],
     category: "Technology"
+  },
+  {
+    id: "44ffa767-bbcf-49dd-8066-cd5d2ed3cdc8",
+    title: "Paypper Clipping Campaign",
+    description: "Create engaging short-form content clips",
+    type: "payPerView",
+    totalBudget: 12000,
+    currency: "USD",
+    status: "active",
+    applicants: 18,
+    accepted: 6,
+    endDate: new Date("2024-09-15"),
+    platforms: ["tiktok", "youtube"],
+    category: "Entertainment"
   }
 ];
 
