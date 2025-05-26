@@ -50,11 +50,6 @@ export default function FinancesPage() {
   return (
     <div className="p-8">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Finances</h1>
-          <p className="text-muted-foreground">Track your earnings and payment history</p>
-        </div>
-        
         <div className="flex gap-2">
           <Button variant="outline">
             <Download className="h-4 w-4 mr-2" />
