@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Filter, Sparkles } from "lucide-react";
+import { Search, Filter, Sparkles, Users } from "lucide-react";
 import ExploreSearchModal from "@/components/explore/ExploreSearchModal";
 import ForYouFeed from "@/components/explore/ForYouFeed";
 import CampaignsTab from "@/components/explore/CampaignsTab";
 import CreatorsTab from "@/components/explore/CreatorsTab";
+import CommunitiesTab from "@/components/explore/CommunitiesTab";
 import { useQuery } from "@tanstack/react-query";
 
 export default function ExplorePage() {
@@ -32,7 +33,15 @@ export default function ExplorePage() {
     }
   });
 
-  const isLoading = creatorsLoading || campaignsLoading;
+  const { data: exploreCommunities = [], isLoading: communitiesLoading } = useQuery({
+    queryKey: ["communities"],
+    queryFn: () => {
+      const stored = localStorage.getItem("communities");
+      return stored ? JSON.parse(stored) : [];
+    }
+  });
+
+  const isLoading = creatorsLoading || campaignsLoading || communitiesLoading;
 
   // Filter data based on search
   const filteredCreators = exploreCreators.filter((creator: any) =>
@@ -47,11 +56,19 @@ export default function ExplorePage() {
     campaign.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredCommunities = exploreCommunities.filter((community: any) =>
+    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    community.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   // Separate featured/top from regular
   const topCreators = filteredCreators.filter((creator: any) => creator.isTop);
   const regularCreators = filteredCreators.filter((creator: any) => !creator.isTop);
   const featuredCampaigns = filteredCampaigns.filter((campaign: any) => campaign.featured);
   const regularCampaigns = filteredCampaigns.filter((campaign: any) => !campaign.featured);
+  const featuredCommunities = filteredCommunities.filter((c: any) => c.memberCount > 1000);
+  const regularCommunities = filteredCommunities.filter((c: any) => c.memberCount <= 1000);
 
   // Create mixed "For You" feed
   const forYouFeed = [...featuredCampaigns.slice(0, 2), ...topCreators.slice(0, 3), ...regularCampaigns.slice(0, 3), ...regularCreators.slice(0, 2)];
@@ -79,13 +96,17 @@ export default function ExplorePage() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-4 mb-8">
             <TabsTrigger value="forYou" className="flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
               For You
             </TabsTrigger>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="creators">Creators</TabsTrigger>
+            <TabsTrigger value="communities" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Communities
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="forYou">
@@ -109,6 +130,14 @@ export default function ExplorePage() {
               isLoading={isLoading}
               topCreators={topCreators}
               regularCreators={regularCreators}
+            />
+          </TabsContent>
+
+          <TabsContent value="communities">
+            <CommunitiesTab
+              isLoading={isLoading}
+              featuredCommunities={featuredCommunities}
+              regularCommunities={regularCommunities}
             />
           </TabsContent>
         </Tabs>

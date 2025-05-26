@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Filter, Plus, Users, Lock, Star, MessageSquare } from "lucide-react";
+import { Search, Filter, Plus, Users, Lock, Star, MessageSquare, Settings } from "lucide-react";
 import CreateCommunityDialog from "@/components/communities/CreateCommunityDialog";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -15,10 +15,15 @@ export default function CommunitiesPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const { data: communities = [], isLoading, refetch } = useQuery({
-    queryKey: ["communities"],
+    queryKey: ["my-communities"],
     queryFn: () => {
       const stored = localStorage.getItem("communities");
-      return stored ? JSON.parse(stored) : [];
+      const allCommunities = stored ? JSON.parse(stored) : [];
+      // Filter to show only communities created by current user
+      // For demo purposes, we'll show communities where owner matches "Current User"
+      return allCommunities.filter((community: any) => 
+        community.owner === "Current User" || community.ownerId === "current-user-id"
+      );
     }
   });
 
@@ -27,15 +32,12 @@ export default function CommunitiesPage() {
     setShowCreateDialog(false);
   };
 
-  // Filter communities
+  // Filter my communities
   const filteredCommunities = communities.filter((community: any) =>
     community.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     community.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     community.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const featuredCommunities = filteredCommunities.filter((c: any) => c.memberCount > 1000);
-  const regularCommunities = filteredCommunities.filter((c: any) => c.memberCount <= 1000);
 
   if (isLoading) {
     return (
@@ -60,7 +62,7 @@ export default function CommunitiesPage() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
               type="search" 
-              placeholder="Search communities..." 
+              placeholder="Search my communities..." 
               className="pl-8 w-[250px]" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -78,79 +80,11 @@ export default function CommunitiesPage() {
         </div>
       </div>
 
-      {/* Featured Communities */}
-      {featuredCommunities.length > 0 && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Star className="h-5 w-5 text-yellow-500" />
-            <h3 className="text-xl font-semibold">Featured Communities</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredCommunities.map((community: any) => (
-              <Card key={community.id} className="overflow-hidden border-2 border-yellow-200">
-                <div className="h-32 relative">
-                  <img 
-                    src={community.bannerImage}
-                    alt={community.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                      <Star className="h-3 w-3 mr-1" />
-                      Featured
-                    </Badge>
-                  </div>
-                </div>
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-2">
-                        {community.name}
-                        {community.isPrivate && <Lock className="h-4 w-4 text-muted-foreground" />}
-                      </CardTitle>
-                      <CardDescription className="text-sm">by {community.owner}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">{community.description}</p>
-                  
-                  <div className="flex items-center gap-4 mb-3 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      <span>{community.memberCount.toLocaleString()} members</span>
-                    </div>
-                    <Badge variant="outline">{community.category}</Badge>
-                  </div>
-
-                  <div className="flex gap-1 mb-3">
-                    {community.tags?.map((tag: string) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button className="flex-1" size="sm">
-                      {community.type === 'paid' ? `Join for $${community.price}` : 'Join Free'}
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* All Communities */}
+      {/* My Communities */}
       <div>
-        <h3 className="text-xl font-semibold mb-4">All Communities</h3>
+        <h3 className="text-xl font-semibold mb-4">My Communities</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {regularCommunities.map((community: any) => (
+          {filteredCommunities.map((community: any) => (
             <Card key={community.id} className="overflow-hidden">
               <div className="h-32 relative">
                 <img 
@@ -169,7 +103,9 @@ export default function CommunitiesPage() {
                   {community.name}
                   {community.isPrivate && <Lock className="h-4 w-4 text-muted-foreground" />}
                 </CardTitle>
-                <CardDescription className="text-sm">by {community.owner}</CardDescription>
+                <CardDescription className="text-sm">
+                  Created by you • {community.memberCount.toLocaleString()} members
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-3">{community.description}</p>
@@ -191,8 +127,11 @@ export default function CommunitiesPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button className="flex-1" size="sm" variant="outline">
-                    {community.type === 'paid' ? `Join for $${community.price}` : 'Join Free'}
+                  <Button className="flex-1" size="sm">
+                    Manage
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm">
                     <MessageSquare className="h-4 w-4" />
@@ -206,12 +145,12 @@ export default function CommunitiesPage() {
         {filteredCommunities.length === 0 && (
           <div className="text-center py-8">
             <h3 className="text-lg font-medium text-muted-foreground mb-2">
-              {searchTerm ? "No communities found" : "No communities yet"}
+              {searchTerm ? "No communities found" : "No communities created yet"}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
               {searchTerm 
                 ? "Try adjusting your search terms" 
-                : "Create the first community to get started"
+                : "Create your first community to get started"
               }
             </p>
             {!searchTerm && (
