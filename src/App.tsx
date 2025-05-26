@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -14,6 +15,7 @@ import CampaignDetailPage from "@/pages/dashboard/CampaignDetailPage";
 import CampaignChatPage from "@/pages/dashboard/CampaignChatPage";
 import CreatorProfilePage from "@/pages/dashboard/CreatorProfilePage";
 import ExplorePage from "@/pages/dashboard/ExplorePage";
+import ToolsPage from "@/pages/dashboard/ToolsPage";
 import AnalyticsPage from "@/pages/dashboard/AnalyticsPage";
 import MessagesPage from "@/pages/dashboard/MessagesPage";
 import PaymentsPage from "@/pages/dashboard/PaymentsPage";
@@ -61,6 +63,7 @@ function App() {
               <Route path="campaigns/:campaignId/chat" element={<CampaignChatPage />} />
               <Route path="creators/:creatorId" element={<CreatorProfilePage />} />
               <Route path="explore" element={<ExplorePage />} />
+              <Route path="tools" element={<ToolsPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="messages" element={<MessagesPage />} />
               <Route path="finances" element={<FinancesPage />} />
