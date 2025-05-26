@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import CampaignCreator from "@/components/CampaignCreator";
 import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
@@ -92,23 +93,25 @@ export default function CampaignFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden p-0 flex flex-col bg-background/95 backdrop-blur-sm border-border/50">
-        <DialogHeader className="p-6 border-b border-border/30 bg-gradient-to-r from-background to-muted/30">
-          <DialogTitle className="text-2xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] p-0 flex flex-col">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="text-xl font-semibold">
             {isEditing ? "Edit Campaign" : "Create New Campaign"}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-hidden">
-          <CampaignCreator 
-            onSubmit={handleSubmitCampaign}
-            onCancel={handleCancelEdit}
-            campaign={campaign || undefined}
-            isEditing={isEditing}
-            disableBudgetEdit={isEditing}
-            isModal={true}
-          />
-        </div>
+        <ScrollArea className="flex-1 max-h-[calc(90vh-80px)]">
+          <div className="p-6">
+            <CampaignCreator 
+              onSubmit={handleSubmitCampaign}
+              onCancel={handleCancelEdit}
+              campaign={campaign || undefined}
+              isEditing={isEditing}
+              disableBudgetEdit={isEditing}
+              isModal={true}
+            />
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

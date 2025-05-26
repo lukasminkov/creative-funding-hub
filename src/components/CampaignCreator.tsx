@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -255,9 +254,9 @@ const CampaignCreator = ({
   };
 
   return (
-    <div className={`w-full ${isModal ? 'h-full flex flex-col' : 'max-w-4xl mx-auto'}`}>
+    <div className={`w-full ${isModal ? 'space-y-6' : 'max-w-4xl mx-auto'}`}>
       {/* Progress Header */}
-      <div className="p-6 border-b border-border/30 bg-gradient-to-r from-background to-muted/20">
+      <div className={`${isModal ? 'pb-6 border-b' : 'p-6 border-b border-border/30 bg-gradient-to-r from-background to-muted/20'}`}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-semibold">{STEPS[currentStep].title}</h2>
@@ -296,24 +295,22 @@ const CampaignCreator = ({
       </div>
 
       {/* Step Content */}
-      <div className={`flex-1 ${isModal ? 'overflow-y-auto' : ''}`}>
-        <div className="p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              {renderStepContent()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      <div className="space-y-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderStepContent()}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Footer Navigation */}
-      <div className="p-6 border-t border-border/30 bg-gradient-to-r from-background to-muted/20">
+      <div className={`${isModal ? 'pt-6 border-t' : 'p-6 border-t border-border/30 bg-gradient-to-r from-background to-muted/20'}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onCancel}>
