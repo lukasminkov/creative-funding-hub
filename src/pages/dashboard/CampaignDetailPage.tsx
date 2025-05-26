@@ -1,562 +1,232 @@
-import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { convertDatabaseCampaign } from "@/lib/campaign-utils";
-import { Edit2, Trash2, ArrowLeft, ChevronRight, MessageSquare, Filter, X, Calendar, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
+import { useParams } from "react-router-dom";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { useSubmissions } from "@/hooks/useSubmissions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
+import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/campaign-types";
+import { Calendar, MapPin, Users, Eye, DollarSign, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import CampaignSubmissions from "@/components/dashboard/CampaignSubmissions";
-import CampaignStatusCard from "@/components/dashboard/CampaignStatusCard";
-import CampaignCreatorsList from "@/components/dashboard/CampaignCreatorsList";
-import CampaignApplicationsList from "@/components/dashboard/CampaignApplicationsList";
-import { Submission, SubmissionStatusType } from "@/lib/campaign-types";
 import { toast } from "sonner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-const mockCreators = [{
-  id: 1,
-  name: "Sarah Johnson",
-  avatar: "https://i.pravatar.cc/150?u=sarah",
-  platforms: ["instagram", "tiktok"],
-  submissions: 5,
-  views: 25000,
-  status: "active"
-}, {
-  id: 2,
-  name: "Mike Peters",
-  avatar: "https://i.pravatar.cc/150?u=mike",
-  platforms: ["tiktok", "youtube"],
-  submissions: 3,
-  views: 18500,
-  status: "active"
-}, {
-  id: 3,
-  name: "Jessica Williams",
-  avatar: "https://i.pravatar.cc/150?u=jessica",
-  platforms: ["instagram", "twitter"],
-  submissions: 4,
-  views: 15200,
-  status: "active"
-}, {
-  id: 4,
-  name: "Alex Rodriguez",
-  avatar: "https://i.pravatar.cc/150?u=alex",
-  platforms: ["tiktok", "instagram"],
-  submissions: 6,
-  views: 42000,
-  status: "active"
-}, {
-  id: 5,
-  name: "Emma Chen",
-  avatar: "https://i.pravatar.cc/150?u=emma",
-  platforms: ["youtube", "twitter"],
-  submissions: 2,
-  views: 31500,
-  status: "active"
-}];
-
-const mockApplications = [{
-  id: 101,
-  name: "Tyler Rodriguez",
-  avatar: "https://i.pravatar.cc/150?u=tyler",
-  platforms: ["instagram", "tiktok", "youtube"],
-  followers: 15000,
-  totalViews: 120000,
-  totalGmv: 5200,
-  customQuestion1: "I've worked with similar brands before",
-  customQuestion2: "I can deliver within 1 week",
-  status: "pending"
-}, {
-  id: 102,
-  name: "Aisha Patel",
-  avatar: "https://i.pravatar.cc/150?u=aisha",
-  platforms: ["tiktok"],
-  followers: 22000,
-  totalViews: 180000,
-  totalGmv: 7500,
-  customQuestion1: "My audience loves tech products",
-  customQuestion2: "Available for immediate start",
-  status: "pending"
-}, {
-  id: 103,
-  name: "Marcus Green",
-  avatar: "https://i.pravatar.cc/150?u=marcus",
-  platforms: ["instagram", "youtube"],
-  followers: 8500,
-  totalViews: 75000,
-  totalGmv: 3100,
-  customQuestion1: "I specialize in unboxing videos",
-  customQuestion2: "Can provide additional promotion",
-  status: "pending"
-}, {
-  id: 104,
-  name: "Lily Wang",
-  avatar: "https://i.pravatar.cc/150?u=lily",
-  platforms: ["tiktok", "instagram"],
-  followers: 31000,
-  totalViews: 250000,
-  totalGmv: 9200,
-  customQuestion1: "My audience is primarily 18-24 year olds",
-  customQuestion2: "I can create unique storytelling content",
-  status: "pending"
-}, {
-  id: 105,
-  name: "Jordan Smith",
-  avatar: "https://i.pravatar.cc/150?u=jordan",
-  platforms: ["youtube", "twitter"],
-  followers: 42000,
-  totalViews: 320000,
-  totalGmv: 12500,
-  customQuestion1: "I have a unique approach to product reviews",
-  customQuestion2: "Can deliver high production quality videos",
-  status: "pending"
-}];
-
-const generateSubmissionDate = (daysAgo) => {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  date.setHours(Math.floor(Math.random() * 24));
-  date.setMinutes(Math.floor(Math.random() * 60));
-  date.setSeconds(Math.floor(Math.random() * 60));
-  return date;
-};
-
-const generateMockSubmissions = (campaignId) => {
-  return [
-    {
-      id: "201",
-      creator_id: "1001",
-      creator_name: "Sarah Johnson",
-      creator_avatar: "https://i.pravatar.cc/150?u=sarah",
-      campaign_id: campaignId,
-      campaign_title: "Product Review Video",
-      campaign_type: "retainer" as const,
-      submitted_date: generateSubmissionDate(1),
-      platform: "TikTok",
-      platform_account: "@sarahjreview",
-      content: "https://tiktok.com/video123",
-      payment_amount: 150,
-      views: 8500,
-      status: "pending" as SubmissionStatusType
-    },
-    {
-      id: "202",
-      creator_id: "1002",
-      creator_name: "Mike Peters",
-      creator_avatar: "https://i.pravatar.cc/150?u=mike",
-      campaign_id: campaignId,
-      campaign_title: "Brand Unboxing",
-      campaign_type: "payPerView" as const,
-      submitted_date: generateSubmissionDate(5),
-      platform: "YouTube Shorts",
-      platform_account: "@MikeTech",
-      content: "https://youtube.com/shorts/video456",
-      payment_amount: 200,
-      views: 12300,
-      status: "approved" as SubmissionStatusType
-    },
-    {
-      id: "203",
-      creator_id: "1003",
-      creator_name: "Jessica Williams",
-      creator_avatar: "https://i.pravatar.cc/150?u=jessica",
-      campaign_id: campaignId,
-      campaign_title: "Tutorial with Product",
-      campaign_type: "retainer" as const,
-      submitted_date: generateSubmissionDate(2),
-      platform: "Instagram Reels",
-      platform_account: "@jessicacraft",
-      content: "https://instagram.com/reel789",
-      payment_amount: 175,
-      views: 5600,
-      status: "pending" as SubmissionStatusType
-    },
-    {
-      id: "204",
-      creator_id: "1004",
-      creator_name: "David Chen",
-      creator_avatar: "https://i.pravatar.cc/150?u=david",
-      campaign_id: campaignId,
-      campaign_title: "Product Demo",
-      campaign_type: "payPerView" as const,
-      submitted_date: generateSubmissionDate(9),
-      platform: "TikTok",
-      platform_account: "@davidtechreviews",
-      content: "https://tiktok.com/video789",
-      payment_amount: 125,
-      views: 3200,
-      status: "rejected" as SubmissionStatusType
-    },
-    {
-      id: "205",
-      creator_id: "1005",
-      creator_name: "Emma Lopez",
-      creator_avatar: "https://i.pravatar.cc/150?u=emma",
-      campaign_id: campaignId,
-      campaign_title: "Lifestyle Integration",
-      campaign_type: "challenge" as const,
-      submitted_date: generateSubmissionDate(0.5),
-      platform: "Instagram Reels",
-      platform_account: "@emmalifestyle",
-      content: "https://instagram.com/reel987",
-      payment_amount: 220,
-      views: 9800,
-      status: "pending" as SubmissionStatusType
-    },
-    {
-      id: "206",
-      creator_id: "1006",
-      creator_name: "Alex Wong",
-      creator_avatar: "https://i.pravatar.cc/150?u=alex",
-      campaign_id: campaignId,
-      campaign_title: "Product Review",
-      campaign_type: "payPerView" as const,
-      submitted_date: generateSubmissionDate(11),
-      platform: "TikTok",
-      platform_account: "@alexreviews",
-      content: "https://tiktok.com/video654",
-      payment_amount: 180,
-      views: 15200,
-      status: "paid" as SubmissionStatusType
-    },
-    {
-      id: "207",
-      creator_id: "1007",
-      creator_name: "Taylor Reed",
-      creator_avatar: "https://i.pravatar.cc/150?u=taylor",
-      campaign_id: campaignId,
-      campaign_title: "First Impressions",
-      campaign_type: "challenge" as const,
-      submitted_date: generateSubmissionDate(0.1),
-      platform: "YouTube Shorts",
-      platform_account: "@TaylorTalks",
-      content: "https://youtube.com/shorts/video321",
-      payment_amount: 195,
-      views: 7200,
-      status: "pending" as SubmissionStatusType
-    }
-  ];
-};
 
 export default function CampaignDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("submissions");
-  const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
-  const [budgetAmount, setBudgetAmount] = useState<string>("1000");
-  
-  const mockSubmissions = id ? generateMockSubmissions(id) : [];
-  
-  const getTopCreators = () => {
-    const creatorMap = new Map();
-    
-    mockSubmissions.forEach(submission => {
-      const creatorId = submission.creator_id;
-      if (!creatorMap.has(creatorId)) {
-        creatorMap.set(creatorId, {
-          id: creatorId,
-          name: submission.creator_name,
-          avatar: submission.creator_avatar,
-          platform: submission.platform,
-          platformUsername: submission.platform_account,
-          views: submission.views,
-          submissions: 1
-        });
-      } else {
-        const creator = creatorMap.get(creatorId);
-        creator.views += submission.views;
-        creator.submissions += 1;
-        creator.platform = submission.platform;
-        creator.platformUsername = submission.platform_account;
-      }
-    });
-    
-    return Array.from(creatorMap.values())
-      .sort((a, b) => b.views - a.views)
-      .slice(0, 5);
-  };
-  
-  const {
-    data: campaign,
-    isLoading,
-    refetch
-  } = useQuery({
-    queryKey: ['campaign', id],
-    queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from('campaigns').select('*').eq('id', id).single();
-      if (error) {
-        console.error("Error fetching campaign:", error);
-        throw new Error("Campaign not found");
-      }
-      if (!data) {
-        throw new Error("Campaign not found");
-      }
-      return convertDatabaseCampaign(data);
-    }
-  });
+  const { campaignId } = useParams<{ campaignId: string }>();
+  const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns();
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissions(campaignId);
 
-  const handleAddBudget = () => {
-    const amount = parseFloat(budgetAmount);
-    if (isNaN(amount) || amount <= 0) {
-      toast.error("Please enter a valid budget amount");
-      return;
-    }
-    
-    toast.success(`Added $${amount.toFixed(2)} to campaign budget`);
-    setBudgetDialogOpen(false);
-  };
+  const campaign = campaigns.find(c => c.id === campaignId);
 
-  const handleApproveSubmission = async (submission: Submission) => {
-    try {
-      toast.success(`Approved submission from ${submission.creator_name}`);
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Error approving submission:", error);
-      toast.error("Failed to approve submission");
-      return Promise.reject(error);
-    }
-  };
-
-  const handleDenySubmission = async (submission: Submission, reason: string) => {
-    try {
-      toast.success(`Denied submission from ${submission.creator_name}`);
-      console.log("Denial reason:", reason);
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Error denying submission:", error);
-      toast.error("Failed to deny submission");
-      return Promise.reject(error);
-    }
-  };
-
-  if (isLoading) {
-    return <div className="container py-8">
-        <div className="mb-6 animate-pulse">
-          <div className="h-8 w-48 bg-muted rounded mb-4"></div>
-          <div className="h-6 w-64 bg-muted rounded"></div>
+  if (campaignsLoading || submissionsLoading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading campaign details...</div>
         </div>
-      </div>;
+      </div>
+    );
   }
-  
+
   if (!campaign) {
-    return <div className="container py-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Campaign not found</h2>
-        <p className="text-muted-foreground mb-6">The campaign you're looking for doesn't exist or was deleted.</p>
-        <Button onClick={() => navigate("/dashboard/campaigns")}>
-          Return to Campaigns
-        </Button>
-      </div>;
+    return (
+      <div className="p-8">
+        <div className="text-center py-8">
+          <h3 className="text-lg font-medium text-muted-foreground mb-2">Campaign not found</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            The campaign you're looking for doesn't exist or has been removed.
+          </p>
+          <Link to="/dashboard/campaigns">
+            <Button>Back to Campaigns</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
+
+  const handleApproveSubmission = async (submission: any) => {
+    toast.success(`Submission by ${submission.creator_name} approved`);
+  };
+
+  const handleDenySubmission = async (submission: any, reason: string) => {
+    toast.success(`Submission by ${submission.creator_name} denied`);
+  };
+
+  const totalViews = submissions.reduce((sum, s) => sum + s.views, 0);
+  const approvedSubmissions = submissions.filter(s => s.status === "approved").length;
 
   return (
-    <div className="container py-8">
-      <div className="flex items-center mb-2">
-        <Button variant="ghost" size="sm" className="mr-2" onClick={() => navigate("/dashboard/campaigns")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Link to="/dashboard" className="hover:underline">Dashboard</Link>
-          <ChevronRight className="h-4 w-4 mx-1" />
-          <Link to="/dashboard/campaigns" className="hover:underline">Campaigns</Link>
-          <ChevronRight className="h-4 w-4 mx-1" />
-          <span className="text-foreground">{campaign.title}</span>
-        </div>
-      </div>
-
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">{campaign.title}</h1>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">
-              {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)}
-            </span>
-            <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
-              {campaign.contentType}
-            </span>
-          </div>
-        </div>
-        <div className="flex gap-2 self-end md:self-auto">
-          <Link to={`/dashboard/campaigns/${id}/chat`}>
-            <Button variant="outline" size="sm">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Campaign Chat
-            </Button>
-          </Link>
-          <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
-            <Edit2 className="h-4 w-4 mr-2" />
-            Edit Campaign
+    <div className="p-8 space-y-8">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link to="/dashboard/campaigns">
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="h-4 w-4" />
           </Button>
+        </Link>
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold">{campaign.title}</h1>
+          <p className="text-muted-foreground">{campaign.description}</p>
         </div>
+        <Badge variant={new Date(campaign.endDate) > new Date() ? "default" : "secondary"}>
+          {new Date(campaign.endDate) > new Date() ? "Active" : "Ended"}
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <CampaignStatusCard 
-          campaign={campaign} 
-          onAddBudget={() => setBudgetDialogOpen(true)} 
-        />
-        
+      {/* Banner Image */}
+      {campaign.bannerImage && (
+        <div className="relative h-64 rounded-lg overflow-hidden">
+          <img 
+            src={campaign.bannerImage} 
+            alt={campaign.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+      )}
+
+      {/* Campaign Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Top Accounts</CardTitle>
-            <CardDescription>Best performing creators for this campaign</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Platform</TableHead>
-                  <TableHead>Username</TableHead>
-                  <TableHead className="text-right">Views</TableHead>
-                  <TableHead className="text-right">Submissions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getTopCreators().map((creator) => (
-                  <TableRow key={creator.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={creator.avatar} alt={creator.name} />
-                          <AvatarFallback>{creator.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{creator.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {creator.platform}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{creator.platformUsername}</TableCell>
-                    <TableCell className="text-right">{creator.views.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">{creator.submissions}</TableCell>
-                  </TableRow>
-                ))}
-                
-                {getTopCreators().length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                      No creator data available yet
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <div className="text-2xl font-bold">{formatCurrency(campaign.totalBudget, campaign.currency)}</div>
           </CardContent>
-          <CardFooter className="border-t pt-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs w-full hover:bg-primary/5"
-              onClick={() => setActiveTab("creators")}
-            >
-              View All Creators
-            </Button>
-          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Submissions</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{submissions.length}</div>
+            <p className="text-xs text-muted-foreground">{approvedSubmissions} approved</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">End Date</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{new Date(campaign.endDate).toLocaleDateString()}</div>
+          </CardContent>
         </Card>
       </div>
-      
-      <Card className="mb-8">
-        <Tabs defaultValue="submissions" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="submissions">Submissions</TabsTrigger>
-            <TabsTrigger value="creators">Creators</TabsTrigger>
-            <TabsTrigger value="applications">Applications</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="submissions" className="mt-6">
-            <Card>
-              <CardContent className="pt-6">
-                <CampaignSubmissions 
-                  submissions={mockSubmissions}
-                  onApprove={handleApproveSubmission}
-                  onDeny={handleDenySubmission}
-                  campaign={campaign}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="creators" className="mt-6">
-            <Card>
-              <CardHeader className="pb-0 border-b">
-                <CardTitle>Active Creators</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <CampaignCreatorsList 
-                  creators={mockCreators} 
-                  campaign={campaign}
-                  submissions={mockSubmissions}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="applications" className="mt-6">
-            <Card>
-              <CardHeader className="pb-0 border-b">
-                <CardTitle>Applications</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <CampaignApplicationsList applications={mockApplications} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </Card>
 
-      <Dialog open={budgetDialogOpen} onOpenChange={setBudgetDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Budget to Campaign</DialogTitle>
-            <DialogDescription>
-              Increase the budget for "{campaign.title}"
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="budget-amount" className="text-sm font-medium">
-                Budget Amount
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input
-                  id="budget-amount"
-                  type="number"
-                  value={budgetAmount}
-                  onChange={(e) => setBudgetAmount(e.target.value)}
-                  className="pl-7"
-                  min="1"
-                />
+      {/* Campaign Details */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Campaign Guidelines</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-green-600 mb-2">Do's</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {campaign.guidelines.dos?.map((item, index) => (
+                      <li key={index} className="text-sm">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium text-red-600 mb-2">Don'ts</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {campaign.guidelines.donts?.map((item, index) => (
+                      <li key={index} className="text-sm">{item}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBudgetDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddBudget}>
-              Add Budget
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </CardContent>
+          </Card>
 
-      <CampaignFormDialog campaign={campaign} open={editDialogOpen} onOpenChange={setEditDialogOpen} isEditing={true} onCampaignUpdated={() => {
-      if (refetch) refetch();
-    }} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Submissions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CampaignSubmissions
+                submissions={submissions}
+                onApprove={handleApproveSubmission}
+                onDeny={handleDenySubmission}
+                campaign={campaign}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Campaign Info</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium">Brand</p>
+                <p className="text-sm text-muted-foreground">{campaign.brandName || "Not specified"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Category</p>
+                <p className="text-sm text-muted-foreground">{campaign.category}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Type</p>
+                <Badge variant="outline">{campaign.type}</Badge>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Platforms</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {campaign.platforms.map(platform => (
+                    <Badge key={platform} variant="secondary" className="text-xs">
+                      {platform}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Availability</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <MapPin className="h-3 w-3" />
+                  <p className="text-sm text-muted-foreground">{campaign.countryAvailability}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {campaign.requirements && campaign.requirements.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Requirements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-1">
+                  {campaign.requirements.map((requirement, index) => (
+                    <li key={index} className="text-sm">{requirement}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
