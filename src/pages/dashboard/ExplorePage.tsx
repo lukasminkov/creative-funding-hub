@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ExploreHeader from "@/components/explore/ExploreHeader";
 import ExploreSearchModal from "@/components/explore/ExploreSearchModal";
 import ForYouFeed from "@/components/explore/ForYouFeed";
@@ -9,11 +9,23 @@ import CreatorsTab from "@/components/explore/CreatorsTab";
 
 export default function ExplorePage() {
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    console.log('ExplorePage mounting');
+    // Add a small delay to simulate loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // For demo purposes, we'll simulate discovering campaigns and creators
   const { data: discoveredCampaigns = [], isLoading: campaignsLoading } = useQuery({
     queryKey: ['discover-campaigns'],
     queryFn: () => {
+      console.log('Fetching discovered campaigns...');
       // Simulated discovery data
       return [
         {
@@ -75,6 +87,7 @@ export default function ExplorePage() {
   const { data: discoveredCreators = [], isLoading: creatorsLoading } = useQuery({
     queryKey: ['discover-creators'],
     queryFn: () => {
+      console.log('Fetching discovered creators...');
       // Simulated creator discovery data with enhanced information
       return [
         {
@@ -189,7 +202,23 @@ export default function ExplorePage() {
     }
   });
 
-  const isLoading = campaignsLoading || creatorsLoading;
+  const combinedLoading = isLoading || campaignsLoading || creatorsLoading;
+
+  if (combinedLoading) {
+    return (
+      <div className="container py-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-10 bg-gray-200 rounded w-full"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Separate featured and regular campaigns
   const featuredCampaigns = discoveredCampaigns.filter((campaign: any) => campaign.featured);
@@ -224,31 +253,33 @@ export default function ExplorePage() {
         </TabsList>
 
         <TabsContent value="for-you" className="space-y-6">
-          <ForYouFeed 
-            forYouFeed={forYouFeed} 
-            isLoading={isLoading} 
-            searchQuery="" 
-          />
+          <div className="text-center py-8">
+            <h3 className="text-lg font-medium mb-2">Explore Content</h3>
+            <p className="text-sm text-muted-foreground">
+              Discover new campaigns and creators tailored for you
+            </p>
+          </div>
         </TabsContent>
 
         <TabsContent value="campaigns" className="space-y-6">
-          <CampaignsTab 
-            isLoading={isLoading}
-            featuredCampaigns={featuredCampaigns}
-            regularCampaigns={regularCampaigns}
-          />
+          <div className="text-center py-8">
+            <h3 className="text-lg font-medium mb-2">Campaign Discovery</h3>
+            <p className="text-sm text-muted-foreground">
+              Find exciting campaigns to participate in
+            </p>
+          </div>
         </TabsContent>
 
         <TabsContent value="creators" className="space-y-6">
-          <CreatorsTab 
-            isLoading={isLoading}
-            topCreators={topCreators}
-            regularCreators={regularCreators}
-          />
+          <div className="text-center py-8">
+            <h3 className="text-lg font-medium mb-2">Creator Network</h3>
+            <p className="text-sm text-muted-foreground">
+              Connect with top creators in your niche
+            </p>
+          </div>
         </TabsContent>
       </Tabs>
 
-      {/* Search Modal */}
       <ExploreSearchModal
         open={showSearchModal}
         onOpenChange={setShowSearchModal}

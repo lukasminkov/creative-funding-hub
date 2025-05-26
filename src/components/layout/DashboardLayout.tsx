@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -16,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -58,11 +58,16 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const { state } = useSidebar();
 
   useEffect(() => {
+    console.log('DashboardLayout mounting for route:', location.pathname);
     setIsMounted(true);
-  }, []);
+  }, [location.pathname]);
 
   if (!isMounted) {
-    return null;
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="text-muted-foreground">Loading dashboard...</div>
+      </div>
+    );
   }
 
   return (
@@ -130,7 +135,6 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Create Campaign Button */}
           <div className="mt-8 px-1">
             <Button 
               onClick={() => setShowCreateCampaign(true)}
@@ -146,7 +150,6 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
         </SidebarContent>
 
         <SidebarFooter className="border-t border-border/50 p-4">
-          {/* User Profile */}
           <div className={cn(
             "flex items-center gap-3 mb-4",
             state === "collapsed" ? "justify-center" : ""
@@ -167,7 +170,6 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
             )}
           </div>
 
-          {/* Footer Actions */}
           <div className={cn(
             "flex gap-2",
             state === "collapsed" ? "justify-center" : "justify-between"
@@ -197,28 +199,34 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
 
       {state === "collapsed" && <ModernSidebarToggle />}
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-auto">
-          <div className="fade-in">
-            {children}
-          </div>
+          <ErrorBoundary>
+            <div className="fade-in">
+              {children}
+            </div>
+          </ErrorBoundary>
         </main>
       </div>
 
-      {/* Campaign Creation Modal */}
-      <CampaignFormDialog
-        open={showCreateCampaign}
-        onOpenChange={setShowCreateCampaign}
-      />
+      <ErrorBoundary>
+        <CampaignFormDialog
+          open={showCreateCampaign}
+          onOpenChange={setShowCreateCampaign}
+        />
+      </ErrorBoundary>
     </div>
   );
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  console.log('DashboardLayout wrapper rendering');
+  
   return (
-    <SidebarProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    </SidebarProvider>
+    <ErrorBoundary>
+      <SidebarProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </SidebarProvider>
+    </ErrorBoundary>
   );
 }

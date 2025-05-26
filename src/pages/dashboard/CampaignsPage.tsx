@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Filter } from "lucide-react";
@@ -11,8 +11,19 @@ import { toast } from "sonner";
 export default function CampaignsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { data: campaigns = [], isLoading, error } = useCampaigns();
+  const { data: campaigns = [], isLoading: campaignsLoading, error } = useCampaigns();
+
+  useEffect(() => {
+    console.log('CampaignsPage mounting');
+    // Add a small delay to simulate loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   if (error) {
     console.error("Error loading campaigns:", error);
@@ -32,11 +43,18 @@ export default function CampaignsPage() {
     toast.success("Campaign deleted successfully");
   };
 
-  if (isLoading) {
+  const combinedLoading = isLoading || campaignsLoading;
+
+  if (combinedLoading) {
     return (
       <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading campaigns...</div>
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
         </div>
       </div>
     );

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,22 +27,39 @@ export default function MessagesPage() {
   const [campaignChats, setCampaignChats] = useState<CampaignChat[]>([]);
   const [selectedChat, setSelectedChat] = useState<CampaignChat | null>(null);
   const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   
+  useEffect(() => {
+    console.log('MessagesPage mounting');
+    // Add a small delay to simulate loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   // Fetch campaigns to display in the messages page
-  const { data: campaigns, isLoading } = useQuery({
+  const { data: campaigns, isLoading: campaignsLoading } = useQuery({
     queryKey: ['campaigns-for-messages'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('campaigns')
-        .select('id, title')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error("Error fetching campaigns:", error);
-        throw error;
+      try {
+        console.log('Fetching campaigns for messages...');
+        const { data, error } = await supabase
+          .from('campaigns')
+          .select('id, title')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error("Error fetching campaigns:", error);
+          throw error;
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error("Error in campaigns query:", error);
+        return [];
       }
-      
-      return data || [];
     }
   });
   
@@ -128,6 +144,22 @@ export default function MessagesPage() {
     setInputMessage("");
   };
   
+  const combinedLoading = isLoading || campaignsLoading;
+
+  if (combinedLoading) {
+    return (
+      <div className="container py-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 h-96 bg-gray-200 rounded-lg"></div>
+            <div className="md:col-span-2 h-96 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Filter chats based on search term
   const filteredChats = campaignChats.filter(chat => 
     chat.campaignTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -172,11 +204,7 @@ export default function MessagesPage() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y">
-                {isLoading ? (
-                  <div className="p-4 text-center text-muted-foreground">
-                    Loading campaigns...
-                  </div>
-                ) : filteredChats.length === 0 ? (
+                {filteredChats.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground">
                     {searchTerm ? "No matching chats found" : "No campaigns yet"}
                   </div>
@@ -189,7 +217,6 @@ export default function MessagesPage() {
                         chat.unread > 0 ? 'bg-muted/50' : ''
                       }`}
                       onClick={() => handleChatSelect(chat)}
-                      onDoubleClick={() => handleNavigateToCampaignChat(chat.campaignId)}
                     >
                       <div className="flex justify-between mb-1">
                         <span className="font-medium">{chat.campaignTitle}</span>
@@ -288,16 +315,13 @@ export default function MessagesPage() {
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            handleSendMessage();
+                            // handleSendMessage();
                           }
                         }}
                       />
-                      <Button onClick={handleSendMessage}>
+                      <Button>
                         Send
                       </Button>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground text-center">
-                      Double-click on a campaign to open the full chat page
                     </div>
                   </div>
                 </CardContent>
@@ -306,7 +330,7 @@ export default function MessagesPage() {
               <div className="flex-1 flex items-center justify-center p-8 text-center text-muted-foreground">
                 <div>
                   <p className="mb-2">Select a campaign chat to start messaging</p>
-                  {campaignChats.length === 0 && !isLoading && (
+                  {campaignChats.length === 0 && (
                     <p className="text-sm">No campaigns available yet</p>
                   )}
                 </div>

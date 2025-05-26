@@ -1,46 +1,48 @@
 
-import { useCampaigns } from "@/hooks/useCampaigns";
-import { useSubmissions } from "@/hooks/useSubmissions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, Users, DollarSign, Eye } from "lucide-react";
-import CampaignSummaryCard from "@/components/dashboard/CampaignSummaryCard";
-import CampaignAnalytics from "@/components/dashboard/CampaignAnalytics";
+import { Badge } from "@/components/ui/badge";
+import { Users, TrendingUp, DollarSign, Eye, Plus, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { formatCurrency } from "@/lib/campaign-types";
 
 export default function DashboardHome() {
-  const { data: campaigns = [], isLoading: campaignsLoading } = useCampaigns();
-  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissions();
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Calculate dashboard metrics
-  const totalBudget = campaigns.reduce((sum, campaign) => sum + campaign.totalBudget, 0);
-  const activeCampaigns = campaigns.filter(c => new Date(c.endDate) > new Date()).length;
-  const totalViews = submissions.reduce((sum, submission) => sum + submission.views, 0);
-  const approvedSubmissions = submissions.filter(s => s.status === "approved").length;
+  useEffect(() => {
+    console.log('DashboardHome mounting');
+    // Simulate loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Get recent campaigns (limit to 3)
-  const recentCampaigns = campaigns.slice(0, 3);
-
-  if (campaignsLoading || submissionsLoading) {
+  if (isLoading) {
     return (
       <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Loading dashboard...</div>
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's an overview of your campaigns.</p>
+          <p className="text-muted-foreground">
+            Welcome back! Here's an overview of your campaigns and performance.
+          </p>
         </div>
-        
         <Link to="/dashboard/campaigns">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
@@ -49,27 +51,18 @@ export default function DashboardHome() {
         </Link>
       </div>
 
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalBudget, "USD")}</div>
-            <p className="text-xs text-muted-foreground">Across all campaigns</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeCampaigns}</div>
-            <p className="text-xs text-muted-foreground">Currently running</p>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">
+              +2 from last month
+            </p>
           </CardContent>
         </Card>
 
@@ -79,61 +72,101 @@ export default function DashboardHome() {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">From all submissions</p>
+            <div className="text-2xl font-bold">2.1M</div>
+            <p className="text-xs text-muted-foreground">
+              +12% from last month
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved Content</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{approvedSubmissions}</div>
-            <p className="text-xs text-muted-foreground">Submissions approved</p>
+            <div className="text-2xl font-bold">$45,231</div>
+            <p className="text-xs text-muted-foreground">
+              +8% from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">+24%</div>
+            <p className="text-xs text-muted-foreground">
+              +4% from last month
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Campaign Analytics */}
-      <CampaignAnalytics campaigns={campaigns} />
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Recent Campaigns
+              <ArrowRight className="h-4 w-4" />
+            </CardTitle>
+            <CardDescription>
+              View and manage your latest campaigns
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Summer Collection</span>
+                <Badge variant="secondary">Active</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Product Launch</span>
+                <Badge variant="outline">Pending</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Recent Campaigns */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Recent Campaigns</h2>
-          <Link to="/dashboard/campaigns">
-            <Button variant="outline" size="sm">View All</Button>
-          </Link>
-        </div>
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Creator Applications
+              <ArrowRight className="h-4 w-4" />
+            </CardTitle>
+            <CardDescription>
+              Review pending creator applications
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">8</div>
+            <p className="text-sm text-muted-foreground">
+              Pending review
+            </p>
+          </CardContent>
+        </Card>
 
-        {recentCampaigns.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-8">
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">No campaigns yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Create your first campaign to get started with influencer marketing
-              </p>
-              <Link to="/dashboard/campaigns">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Campaign
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentCampaigns.map((campaign) => (
-              <CampaignSummaryCard
-                key={campaign.id}
-                campaign={campaign}
-                showActions={false}
-              />
-            ))}
-          </div>
-        )}
+        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Community
+              <ArrowRight className="h-4 w-4" />
+            </CardTitle>
+            <CardDescription>
+              Manage your creator communities
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-sm text-muted-foreground">
+              Active communities
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
