@@ -341,15 +341,15 @@ export default function FinancesPage() {
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         <span className={transaction.type === "incoming" ? "text-green-600" : "text-red-600"}>
-                          {transaction.type === "incoming" ? "+" : "-"}${(transaction.amount || 0).toLocaleString()}
+                          {transaction.type === "incoming" ? "+" : "-"}${transaction.amount.toLocaleString()}
                         </span>
                       </TableCell>
                       <TableCell className="text-right text-red-600">
-                        {(transaction.processingFee || 0) > 0 ? `-$${(transaction.processingFee || 0).toFixed(2)}` : '-'}
+                        {transaction.processingFee > 0 ? `-$${transaction.processingFee.toFixed(2)}` : '-'}
                       </TableCell>
                       <TableCell className="text-right font-bold">
                         <span className={transaction.type === "incoming" ? "text-green-600" : "text-red-600"}>
-                          {transaction.type === "incoming" ? "+" : "-"}${(transaction.netAmount || 0).toFixed(2)}
+                          {transaction.type === "incoming" ? "+" : "-"}${transaction.netAmount.toFixed(2)}
                         </span>
                       </TableCell>
                     </TableRow>
