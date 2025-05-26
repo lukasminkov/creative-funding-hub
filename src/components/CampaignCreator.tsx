@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -220,7 +221,7 @@ const CampaignCreator = ({
           <div className="space-y-1">
             <h2 className="text-2xl font-bold flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white">
-                <STEPS[currentStep].icon className="h-5 w-5" />
+                {React.createElement(STEPS[currentStep].icon, { className: "h-5 w-5" })}
               </div>
               {STEPS[currentStep].title}
             </h2>
@@ -236,7 +237,6 @@ const CampaignCreator = ({
           
           <div className="flex gap-2 overflow-x-auto pb-2">
             {STEPS.map((step, index) => {
-              const StepIcon = step.icon;
               return (
                 <button
                   key={step.id}
@@ -257,7 +257,7 @@ const CampaignCreator = ({
                     {index < currentStep ? (
                       <Check className="h-4 w-4" />
                     ) : (
-                      <StepIcon className="h-4 w-4" />
+                      React.createElement(step.icon, { className: "h-4 w-4" })
                     )}
                   </div>
                   <span className="hidden sm:inline">{step.title}</span>
