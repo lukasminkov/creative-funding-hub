@@ -2,12 +2,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import ExploreHeader from "@/components/explore/ExploreHeader";
+import ExploreSearchModal from "@/components/explore/ExploreSearchModal";
 import ForYouFeed from "@/components/explore/ForYouFeed";
 import CampaignsTab from "@/components/explore/CampaignsTab";
 import CreatorsTab from "@/components/explore/CreatorsTab";
 
 export default function ExplorePage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   // For demo purposes, we'll simulate discovering campaigns and creators
   const { data: discoveredCampaigns = [], isLoading: campaignsLoading } = useQuery({
@@ -190,42 +191,30 @@ export default function ExplorePage() {
 
   const isLoading = campaignsLoading || creatorsLoading;
 
-  // Filter data based on search query - now searches across ALL categories
-  const filteredCampaigns = discoveredCampaigns.filter((campaign: any) =>
-    campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    campaign.brandName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredCreators = discoveredCreators.filter((creator: any) =>
-    creator.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    creator.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    creator.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   // Separate featured and regular campaigns
-  const featuredCampaigns = filteredCampaigns.filter((campaign: any) => campaign.featured);
-  const regularCampaigns = filteredCampaigns.filter((campaign: any) => !campaign.featured);
+  const featuredCampaigns = discoveredCampaigns.filter((campaign: any) => campaign.featured);
+  const regularCampaigns = discoveredCampaigns.filter((campaign: any) => !campaign.featured);
 
   // Separate top and regular creators
-  const topCreators = filteredCreators.filter((creator: any) => creator.isTop);
-  const regularCreators = filteredCreators.filter((creator: any) => !creator.isTop);
+  const topCreators = discoveredCreators.filter((creator: any) => creator.isTop);
+  const regularCreators = discoveredCreators.filter((creator: any) => !creator.isTop);
 
   // Create "For you" feed by mixing campaigns and creators
   const forYouFeed = [];
-  const maxLength = Math.max(filteredCampaigns.length, filteredCreators.length);
+  const maxLength = Math.max(discoveredCampaigns.length, discoveredCreators.length);
   
   for (let i = 0; i < maxLength; i++) {
-    if (i < filteredCampaigns.length) {
-      forYouFeed.push({ ...filteredCampaigns[i], itemType: 'campaign' });
+    if (i < discoveredCampaigns.length) {
+      forYouFeed.push({ ...discoveredCampaigns[i], itemType: 'campaign' });
     }
-    if (i < filteredCreators.length) {
-      forYouFeed.push({ ...filteredCreators[i], itemType: 'creator' });
+    if (i < discoveredCreators.length) {
+      forYouFeed.push({ ...discoveredCreators[i], itemType: 'creator' });
     }
   }
 
   return (
     <div className="container py-8 relative">
-      <ExploreHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <ExploreHeader onSearchClick={() => setShowSearchModal(true)} />
 
       <Tabs defaultValue="for-you" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
@@ -238,7 +227,7 @@ export default function ExplorePage() {
           <ForYouFeed 
             forYouFeed={forYouFeed} 
             isLoading={isLoading} 
-            searchQuery={searchQuery} 
+            searchQuery="" 
           />
         </TabsContent>
 
@@ -258,6 +247,14 @@ export default function ExplorePage() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Search Modal */}
+      <ExploreSearchModal
+        open={showSearchModal}
+        onOpenChange={setShowSearchModal}
+        campaigns={discoveredCampaigns}
+        creators={discoveredCreators}
+      />
     </div>
   );
 }
