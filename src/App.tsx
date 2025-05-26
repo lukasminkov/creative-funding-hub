@@ -1,5 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import Index from "@/pages/Index";
@@ -33,47 +34,59 @@ import AdminPaymentsPage from "@/pages/admin/PaymentsPage";
 import AdminNotificationsPage from "@/pages/admin/NotificationsPage";
 import AdminSettingsPage from "@/pages/admin/SettingsPage";
 
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
+
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-react-theme">
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard-test" element={<Dashboard />} />
-          <Route path="*" element={<NotFound />} />
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-react-theme">
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard-test" element={<Dashboard />} />
+            <Route path="*" element={<NotFound />} />
 
-          {/* Dashboard Routes */}
-          <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
-            <Route index element={<DashboardHome />} />
-            <Route path="campaigns" element={<CampaignsPage />} />
-            <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
-            <Route path="campaigns/:campaignId/chat" element={<CampaignChatPage />} />
-            <Route path="creators" element={<CreatorsPage />} />
-            <Route path="creators/:creatorId" element={<CreatorProfilePage />} />
-            <Route path="explore" element={<ExplorePage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="messages" element={<MessagesPage />} />
-            <Route path="payments" element={<PaymentsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
+            {/* Dashboard Routes */}
+            <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
+              <Route index element={<DashboardHome />} />
+              <Route path="campaigns" element={<CampaignsPage />} />
+              <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
+              <Route path="campaigns/:campaignId/chat" element={<CampaignChatPage />} />
+              <Route path="creators" element={<CreatorsPage />} />
+              <Route path="creators/:creatorId" element={<CreatorProfilePage />} />
+              <Route path="explore" element={<ExplorePage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="messages" element={<MessagesPage />} />
+              <Route path="payments" element={<PaymentsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout><Outlet /></AdminLayout>}>
-            <Route index element={<AdminIndexPage />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="campaigns" element={<AdminCampaignsPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="brands" element={<BrandsPage />} />
-            <Route path="analytics" element={<AdminAnalyticsPage />} />
-            <Route path="messages" element={<AdminMessagesPage />} />
-            <Route path="payments" element={<AdminPaymentsPage />} />
-            <Route path="notifications" element={<AdminNotificationsPage />} />
-            <Route path="settings" element={<AdminSettingsPage />} />
-          </Route>
-        </Routes>
-      </Router>
-      <Toaster />
-    </ThemeProvider>
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout><Outlet /></AdminLayout>}>
+              <Route index element={<AdminIndexPage />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="campaigns" element={<AdminCampaignsPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="brands" element={<BrandsPage />} />
+              <Route path="analytics" element={<AdminAnalyticsPage />} />
+              <Route path="messages" element={<AdminMessagesPage />} />
+              <Route path="payments" element={<AdminPaymentsPage />} />
+              <Route path="notifications" element={<AdminNotificationsPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+            </Route>
+          </Routes>
+        </Router>
+        <Toaster />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
