@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,20 +22,20 @@ const mockFinancialData = {
   transactions: [
     {
       id: "txn_001",
-      type: "deposit",
-      description: "Stripe Deposit",
+      type: "stripe_deposit",
+      description: "Stripe Card Deposit",
       amount: 10815.00, // Customer pays $10k + fees
       fee: 815.00, // 5% marketplace + 3% Stripe on total
       netAmount: 10000.00, // Net credit to account
       date: "2023-09-15",
       status: "completed",
       reference: "ch_3O3PqR2eZvKYlo2CwJQpFXAM",
-      from: "Your Bank Account",
+      from: "Credit Card ****1234",
       to: "Account Balance"
     },
     {
       id: "txn_002",
-      type: "payout",
+      type: "campaign_to_creator",
       description: "Payment to Emma Johnson - Summer Collection",
       amount: 1500.00,
       fee: 0,
@@ -42,12 +43,12 @@ const mockFinancialData = {
       date: "2023-09-14",
       status: "completed",
       reference: "Summer Collection Campaign",
-      from: "Account Balance",
+      from: "Summer Collection Campaign Budget",
       to: "Emma Johnson"
     },
     {
       id: "txn_003",
-      type: "campaign_funding",
+      type: "balance_to_campaign",
       description: "Campaign Budget Allocation - Spring Launch",
       amount: 5000.00,
       fee: 0,
@@ -55,25 +56,25 @@ const mockFinancialData = {
       date: "2023-09-13",
       status: "completed",
       reference: "Spring Launch Campaign",
-      from: "Account Balance",
-      to: "Spring Launch Campaign"
+      from: "Available Account Balance",
+      to: "Spring Launch Campaign Budget"
     },
     {
       id: "txn_004",
-      type: "deposit",
-      description: "Stripe Deposit",
+      type: "stripe_deposit",
+      description: "Stripe Bank Transfer",
       amount: 27037.50, // Customer pays $25k + fees
       fee: 2037.50, // 5% marketplace + 3% Stripe on total
       netAmount: 25000.00, // Net credit to account
       date: "2023-09-10",
       status: "completed",
       reference: "ch_3O3Gr2eZvKYlo2CJ75kpZJA",
-      from: "Your Bank Account",
+      from: "Bank Account ****5678",
       to: "Account Balance"
     },
     {
       id: "txn_005",
-      type: "payout",
+      type: "campaign_to_creator",
       description: "Payment to James Wilson - iPhone Campaign",
       amount: 850.00,
       fee: 0,
@@ -81,8 +82,47 @@ const mockFinancialData = {
       date: "2023-09-09",
       status: "completed",
       reference: "iPhone Launch Campaign",
-      from: "Account Balance",
+      from: "iPhone Launch Campaign Budget",
       to: "James Wilson"
+    },
+    {
+      id: "txn_006",
+      type: "stripe_withdrawal",
+      description: "Withdrawal to Bank Account",
+      amount: 2000.00,
+      fee: 25.00, // Stripe Connect fee
+      netAmount: -2000.00,
+      date: "2023-09-08",
+      status: "completed",
+      reference: "po_3O3Kr2eZvKYlo2CJ85kpZJB",
+      from: "Available Account Balance",
+      to: "Bank Account ****5678"
+    },
+    {
+      id: "txn_007",
+      type: "campaign_to_balance",
+      description: "Campaign Budget Return - Cancelled Project",
+      amount: 3000.00,
+      fee: 0,
+      netAmount: 3000.00,
+      date: "2023-09-07",
+      status: "completed",
+      reference: "Winter Campaign Cancelled",
+      from: "Winter Campaign Budget",
+      to: "Available Account Balance"
+    },
+    {
+      id: "txn_008",
+      type: "user_to_user",
+      description: "Transfer to Partner Account",
+      amount: 500.00,
+      fee: 15.00, // Internal transfer fee
+      netAmount: -500.00,
+      date: "2023-09-06",
+      status: "completed",
+      reference: "Transfer to Sarah's Account",
+      from: "Your Account Balance",
+      to: "Sarah Mitchell (Partner)"
     }
   ]
 };
@@ -94,19 +134,27 @@ export default function FinancesPage() {
 
   const filteredTransactions = mockFinancialData.transactions.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.reference.toLowerCase().includes(searchTerm.toLowerCase());
+                         transaction.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transaction.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transaction.to.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === "all" || transaction.type === filterType;
     return matchesSearch && matchesFilter;
   });
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case "deposit":
+      case "stripe_deposit":
         return <ArrowDownLeft className="h-4 w-4 text-green-600" />;
-      case "payout":
+      case "campaign_to_creator":
         return <ArrowUpRight className="h-4 w-4 text-red-600" />;
-      case "campaign_funding":
+      case "balance_to_campaign":
         return <Wallet className="h-4 w-4 text-blue-600" />;
+      case "stripe_withdrawal":
+        return <ArrowUpRight className="h-4 w-4 text-orange-600" />;
+      case "campaign_to_balance":
+        return <ArrowDownLeft className="h-4 w-4 text-blue-600" />;
+      case "user_to_user":
+        return <CreditCard className="h-4 w-4 text-purple-600" />;
       default:
         return <CreditCard className="h-4 w-4 text-gray-600" />;
     }
@@ -114,11 +162,14 @@ export default function FinancesPage() {
 
   const getTransactionColor = (type: string) => {
     switch (type) {
-      case "deposit":
+      case "stripe_deposit":
+      case "campaign_to_balance":
         return "text-green-600";
-      case "payout":
+      case "campaign_to_creator":
+      case "stripe_withdrawal":
+      case "user_to_user":
         return "text-red-600";
-      case "campaign_funding":
+      case "balance_to_campaign":
         return "text-blue-600";
       default:
         return "text-gray-600";
@@ -239,8 +290,8 @@ export default function FinancesPage() {
                     </div>
                     <div className="text-right">
                       <p className={`font-medium ${getTransactionColor(transaction.type)}`}>
-                        {transaction.type === 'deposit' ? '+' : ''}
-                        {formatCurrency(transaction.netAmount, 'USD')}
+                        {transaction.netAmount > 0 ? '+' : ''}
+                        {formatCurrency(Math.abs(transaction.netAmount), 'USD')}
                       </p>
                       {transaction.fee > 0 && (
                         <p className="text-xs text-muted-foreground">
@@ -272,15 +323,18 @@ export default function FinancesPage() {
                     />
                   </div>
                   <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="w-[140px]">
+                    <SelectTrigger className="w-[180px]">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Filter" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="deposit">Deposits</SelectItem>
-                      <SelectItem value="payout">Payouts</SelectItem>
-                      <SelectItem value="campaign_funding">Campaign Funding</SelectItem>
+                      <SelectItem value="stripe_deposit">Stripe Deposits</SelectItem>
+                      <SelectItem value="campaign_to_creator">Campaign Payouts</SelectItem>
+                      <SelectItem value="balance_to_campaign">Campaign Funding</SelectItem>
+                      <SelectItem value="stripe_withdrawal">Withdrawals</SelectItem>
+                      <SelectItem value="campaign_to_balance">Budget Returns</SelectItem>
+                      <SelectItem value="user_to_user">User Transfers</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -320,8 +374,8 @@ export default function FinancesPage() {
                           {transaction.fee > 0 ? formatCurrency(transaction.fee, 'USD') : '-'}
                         </TableCell>
                         <TableCell className={getTransactionColor(transaction.type)}>
-                          {transaction.type === 'deposit' ? '+' : ''}
-                          {formatCurrency(transaction.netAmount, 'USD')}
+                          {transaction.netAmount > 0 ? '+' : ''}
+                          {formatCurrency(Math.abs(transaction.netAmount), 'USD')}
                         </TableCell>
                         <TableCell>{transaction.date}</TableCell>
                         <TableCell>{getStatusBadge(transaction.status)}</TableCell>
