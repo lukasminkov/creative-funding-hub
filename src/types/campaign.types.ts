@@ -1,4 +1,5 @@
 
+
 // Strict TypeScript types for campaign system
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
 export type CampaignType = 'retainer' | 'payPerView' | 'challenge';
@@ -28,6 +29,12 @@ export interface PrizePool {
 export interface Brief {
   type: 'link' | 'file';
   value: string;
+}
+
+// ExampleVideo interface to match original types
+export interface ExampleVideo {
+  platform: Platform;
+  url: string;
 }
 
 // Campaign validation errors with specific field types and index signature
@@ -82,18 +89,18 @@ export interface DebugLogEntry {
 // Re-export existing Campaign type with better typing - made compatible with original
 export interface Campaign {
   id?: string;
-  title: string;
-  description: string;
-  type: CampaignType;
+  title?: string;
+  description?: string;
+  type?: CampaignType;
   status?: CampaignStatus;
-  visibility: CampaignVisibility;
-  contentType: ContentType;
-  category: Category;
-  platforms: Platform[];
-  countryAvailability: Country;
-  totalBudget: number;
-  currency: string;
-  endDate: Date;
+  visibility?: CampaignVisibility;
+  contentType?: ContentType;
+  category?: Category;
+  platforms?: Platform[];
+  countryAvailability?: Country;
+  totalBudget?: number;
+  currency?: string;
+  endDate?: Date;
   createdAt?: string | Date; // Made compatible with original type
   updatedAt?: Date;
   
@@ -104,7 +111,7 @@ export interface Campaign {
   brief?: Brief | null; // Changed to Brief interface to match original
   instructionVideo?: string | null;
   instructionVideoFile?: File | null;
-  exampleVideos?: File[] | null;
+  exampleVideos?: ExampleVideo[] | null; // Changed to ExampleVideo[] to match original
   requestedTrackingLink?: boolean;
   trackingLink?: string | null;
   
@@ -130,3 +137,4 @@ export interface Campaign {
   applicationQuestions?: any[];
   restrictedAccess?: any;
 }
+
