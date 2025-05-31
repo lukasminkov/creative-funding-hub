@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -8,15 +9,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { ProgressIndicator } from "@/components/ui/progress-indicator";
+import { AccessibleButton } from "@/components/ui/accessible-button";
 import { 
-  Save, Rocket, ArrowLeft, ArrowRight, Check, 
-  FileText, Settings, Users, Eye, Loader2
+  Save, Rocket, ArrowLeft, ArrowRight, 
+  FileText, Settings, Users, Eye
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCampaignValidation } from "@/hooks/useCampaignValidation";
 import { useCampaignFormState } from "@/hooks/useCampaignFormState";
+import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
 import CampaignStepBasics from "./campaign-steps/CampaignStepBasics";
 import CampaignStepType from "./campaign-steps/CampaignStepType";
 import CampaignStepDetails from "./campaign-steps/CampaignStepDetails";
@@ -38,35 +41,40 @@ const STEPS = [
     title: 'Campaign Basics', 
     description: 'Name, description & budget',
     icon: FileText,
-    fields: ['title', 'description', 'totalBudget', 'bannerImage']
+    fields: ['title', 'description', 'totalBudget', 'bannerImage'],
+    status: 'pending' as const
   },
   { 
     id: 'type', 
     title: 'Campaign Type', 
     description: 'Choose your campaign model',
     icon: Settings,
-    fields: ['type']
+    fields: ['type'],
+    status: 'pending' as const
   },
   { 
     id: 'details', 
     title: 'Campaign Details', 
     description: 'Requirements & settings',
     icon: Users,
-    fields: ['platforms', 'contentType', 'category', 'countryAvailability', 'endDate', 'requirements']
+    fields: ['platforms', 'contentType', 'category', 'countryAvailability', 'endDate', 'requirements'],
+    status: 'pending' as const
   },
   { 
     id: 'creator-info', 
     title: 'Creator Information', 
     description: 'Guidelines & resources',
     icon: Users,
-    fields: ['guidelines', 'brief', 'instructionVideo', 'requestedTrackingLink', 'trackingLink', 'exampleVideos']
+    fields: ['guidelines', 'brief', 'instructionVideo', 'requestedTrackingLink', 'trackingLink', 'exampleVideos'],
+    status: 'pending' as const
   },
   { 
     id: 'review', 
     title: 'Review & Launch', 
     description: 'Final review before launch',
     icon: Eye,
-    fields: []
+    fields: [],
+    status: 'pending' as const
   }
 ];
 
@@ -184,7 +192,21 @@ const CampaignCreator = ({
     }
   };
 
-  const progressPercentage = ((currentStep + 1) / STEPS.length) * 100;
+  // Keyboard navigation
+  useKeyboardNavigation({
+    onNext: currentStep < STEPS.length - 1 ? handleNext : undefined,
+    onPrevious: currentStep > 0 ? handlePrevious : undefined,
+    onEscape: onCancel,
+    enabled: !formState.isSubmitting && !isValidating
+  });
+
+  // Create progress steps with status
+  const progressSteps = STEPS.map((step, index) => ({
+    ...step,
+    status: index < currentStep ? 'completed' as const :
+            index === currentStep ? (isValidating ? 'active' as const : 'active' as const) :
+            'pending' as const
+  }));
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -234,19 +256,17 @@ const CampaignCreator = ({
   };
 
   return (
-    <div className="w-full space-y-8">
-      {/* Step Header with Auto-save Indicator */}
+    <div className="w-full space-y-8" role="main" aria-label="Campaign Creation Form">
+      {/* Step Header with Progress Indicator */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-white">
-                {React.createElement(STEPS[currentStep].icon, { className: "h-5 w-5" })}
-              </div>
+            <h2 className="text-2xl font-bold" id="step-title">
               {STEPS[currentStep].title}
-              {isValidating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </h2>
-            <p className="text-muted-foreground">{STEPS[currentStep].description}</p>
+            <p className="text-muted-foreground" id="step-description">
+              {STEPS[currentStep].description}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="px-4 py-2 text-sm">
@@ -265,42 +285,11 @@ const CampaignCreator = ({
           </div>
         </div>
         
-        <div className="space-y-4">
-          <Progress value={progressPercentage} className="h-2" />
-          
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {STEPS.map((step, index) => {
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => handleStepClick(index)}
-                  disabled={isValidating || formState.isSubmitting}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 min-w-fit",
-                    index === currentStep
-                      ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg scale-[1.02]"
-                      : index < currentStep
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:scale-[1.02]"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:scale-[1.02]",
-                    (isValidating || formState.isSubmitting) && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  <div className={cn(
-                    "h-6 w-6 rounded-full flex items-center justify-center text-xs",
-                    index <= currentStep ? "bg-white/20" : "bg-current/20"
-                  )}>
-                    {index < currentStep ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      React.createElement(step.icon, { className: "h-4 w-4" })
-                    )}
-                  </div>
-                  <span className="hidden sm:inline">{step.title}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <ProgressIndicator
+          steps={progressSteps}
+          currentStep={currentStep}
+          className="mb-6"
+        />
       </div>
 
       <Card className="glass-card">
@@ -313,6 +302,9 @@ const CampaignCreator = ({
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
               className="min-h-[400px]"
+              role="tabpanel"
+              aria-labelledby="step-title"
+              aria-describedby="step-description"
             >
               {renderStepContent()}
             </motion.div>
@@ -320,88 +312,69 @@ const CampaignCreator = ({
         </CardContent>
       </Card>
 
-      {/* Action Buttons with Loading States */}
+      {/* Action Buttons with Accessibility */}
       <div className="flex items-center justify-between pt-6 border-t">
         <div className="flex items-center gap-3">
-          <Button 
+          <AccessibleButton 
             variant="outline" 
             onClick={onCancel} 
             className="h-11 px-6"
-            disabled={formState.isSubmitting || isValidating}
+            isLoading={formState.isSubmitting || isValidating}
+            ariaLabel="Cancel campaign creation"
           >
             Cancel
-          </Button>
+          </AccessibleButton>
           {!isEditing && (
-            <Button 
+            <AccessibleButton 
               variant="outline" 
               onClick={handleSaveAsDraft} 
               className="h-11 px-6"
-              disabled={formState.isSaving || formState.isSubmitting || isValidating}
+              isLoading={formState.isSaving}
+              loadingText="Saving..."
+              ariaLabel="Save campaign as draft"
             >
-              {formState.isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save as Draft
-                </>
-              )}
-            </Button>
+              <Save className="h-4 w-4 mr-2" />
+              Save as Draft
+            </AccessibleButton>
           )}
         </div>
         
         <div className="flex items-center gap-3">
           {currentStep > 0 && (
-            <Button 
+            <AccessibleButton 
               variant="outline" 
               onClick={handlePrevious} 
               className="h-11 px-6"
-              disabled={formState.isSubmitting || isValidating}
+              isLoading={formState.isSubmitting || isValidating}
+              ariaLabel="Go to previous step"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Previous
-            </Button>
+            </AccessibleButton>
           )}
           
           {currentStep < STEPS.length - 1 ? (
-            <Button 
+            <AccessibleButton 
               onClick={handleNext} 
               className="h-11 px-8 bg-gradient-to-r from-primary to-primary/90"
-              disabled={isValidating || formState.isSubmitting}
+              isLoading={isValidating}
+              loadingText="Validating..."
+              ariaLabel="Go to next step"
             >
-              {isValidating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Validating...
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </>
-              )}
-            </Button>
+              Next
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </AccessibleButton>
           ) : (
-            <Button 
+            <AccessibleButton 
               onClick={handleLaunchCampaign} 
               className="h-11 px-8 bg-gradient-to-r from-primary to-primary/90 shadow-lg hover:shadow-xl"
-              disabled={formState.isSubmitting || isValidating}
+              isLoading={formState.isSubmitting}
+              loadingText={isEditing ? "Updating..." : "Launching..."}
+              ariaLabel={isEditing ? "Update campaign" : "Launch campaign"}
             >
-              {formState.isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {isEditing ? "Updating..." : "Launching..."}
-                </>
-              ) : (
-                <>
-                  <Rocket className="h-4 w-4 mr-2" />
-                  {isEditing ? "Update Campaign" : "Launch Campaign"}
-                </>
-              )}
-            </Button>
+              <Rocket className="h-4 w-4 mr-2" />
+              {isEditing ? "Update Campaign" : "Launch Campaign"}
+            </AccessibleButton>
           )}
         </div>
       </div>
