@@ -73,13 +73,13 @@ export interface DebugLogEntry {
   data?: any;
 }
 
-// Re-export existing Campaign type with better typing
+// Re-export existing Campaign type with better typing - made compatible with original
 export interface Campaign {
-  id: string;
+  id?: string;
   title: string;
   description: string;
   type: CampaignType;
-  status: CampaignStatus;
+  status?: CampaignStatus;
   visibility: CampaignVisibility;
   contentType: ContentType;
   category: Category;
@@ -88,8 +88,8 @@ export interface Campaign {
   totalBudget: number;
   currency: string;
   endDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: string | Date; // Made compatible with original type
+  updatedAt?: Date;
   
   // Optional fields with strict null checking
   bannerImage?: string | null;
@@ -99,7 +99,7 @@ export interface Campaign {
   instructionVideo?: string | null;
   instructionVideoFile?: File | null;
   exampleVideos?: File[] | null;
-  requestedTrackingLink: boolean;
+  requestedTrackingLink?: boolean;
   trackingLink?: string | null;
   
   // Brand information
@@ -116,4 +116,11 @@ export interface Campaign {
   prizeAmount?: number | null; // For challenge campaigns (equal distribution)
   winnersCount?: number | null; // For challenge campaigns (equal distribution)
   prizePool?: PrizePool | null; // For challenge campaigns (custom distribution)
+  
+  // Additional fields from original type to maintain compatibility
+  creatorTiers?: any[];
+  deliverables?: any;
+  tikTokShopCommission?: any;
+  applicationQuestions?: any[];
+  restrictedAccess?: any;
 }
