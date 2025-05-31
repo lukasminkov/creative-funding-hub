@@ -126,23 +126,23 @@ export const challengeCampaignSchema = baseCampaignSchema.extend({
 
 // Simplified validation for field-level checks
 export const createFieldValidator = (campaignType: "retainer" | "payPerView" | "challenge") => {
-  const baseSchema = baseCampaignSchema;
+  const baseSchema = baseCampaignSchema.partial();
   
   switch (campaignType) {
     case "retainer":
       return baseSchema.extend({
-        type: z.literal("retainer"),
+        type: z.literal("retainer").optional(),
         applicationDeadline: z.date().optional()
       });
     case "payPerView":
       return baseSchema.extend({
-        type: z.literal("payPerView"),
+        type: z.literal("payPerView").optional(),
         ratePerThousand: z.number().optional(),
         maxPayoutPerSubmission: z.number().optional()
       });
     case "challenge":
       return baseSchema.extend({
-        type: z.literal("challenge"),
+        type: z.literal("challenge").optional(),
         submissionDeadline: z.date().optional(),
         prizeDistributionType: z.enum(["equal", "custom"]).optional()
       });
@@ -151,7 +151,7 @@ export const createFieldValidator = (campaignType: "retainer" | "payPerView" | "
   }
 };
 
-// Union type for all campaign schemas
+// Union type for all campaign schemas - fix the discriminatedUnion call
 export const campaignSchema = z.discriminatedUnion("type", [
   retainerCampaignSchema,
   payPerViewCampaignSchema,
