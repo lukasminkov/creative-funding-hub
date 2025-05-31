@@ -1,6 +1,6 @@
-
 import { z } from "zod";
 import { CONTENT_TYPES, CATEGORIES, PLATFORMS } from "./campaign-types";
+import { CampaignValidationErrors } from "@/types/campaign.types";
 
 // Base campaign schema with common fields
 const baseCampaignSchema = z.object({
@@ -169,4 +169,5 @@ export const validateCampaignByType = (campaignData: any) => {
   }
 };
 
-export type CampaignFormErrors = Record<string, string>;
+// Update the type export to use the correct interface
+export type CampaignFormErrors = CampaignValidationErrors;

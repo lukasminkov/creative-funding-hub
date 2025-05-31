@@ -2,10 +2,10 @@
 // Strict TypeScript types for campaign system
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
 export type CampaignType = 'retainer' | 'payPerView' | 'challenge';
-export type CampaignVisibility = 'public' | 'private';
-export type ContentType = 'video' | 'image' | 'article' | 'livestream' | 'ugc';
-export type Platform = 'tiktok' | 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'linkedin';
-export type Category = 'fashion' | 'beauty' | 'tech' | 'gaming' | 'food' | 'travel' | 'fitness' | 'lifestyle';
+export type CampaignVisibility = 'public' | 'private' | 'applicationOnly' | 'restricted';
+export type ContentType = 'video' | 'image' | 'article' | 'livestream' | 'ugc' | 'UGC' | 'Faceless' | 'Clipping';
+export type Platform = 'tiktok' | 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'linkedin' | 'TikTok' | 'TikTok Shop' | 'Instagram Reels' | 'Twitter' | 'YouTube Shorts';
+export type Category = 'fashion' | 'beauty' | 'tech' | 'gaming' | 'food' | 'travel' | 'fitness' | 'lifestyle' | 'Fashion' | 'Beauty' | 'Tech' | 'Gaming' | 'Food' | 'Travel' | 'Lifestyle' | 'Fitness' | 'Education' | 'Entertainment' | 'Finance' | 'Business' | 'Health' | 'Sports' | 'Music' | 'News' | 'Politics' | 'Science' | 'Art' | 'Design' | 'Photography' | 'Film' | 'Writing' | 'DIY' | 'Automotive' | 'Real Estate' | 'Home' | 'Parenting' | 'Pets' | 'Nature' | 'entertainment' | 'art';
 export type Country = 'worldwide' | 'usa' | 'mexico' | 'canada' | 'dach';
 export type PrizeDistributionType = 'equal' | 'custom';
 
@@ -24,8 +24,9 @@ export interface PrizePool {
   places: PrizePoolPlace[];
 }
 
-// Campaign validation errors with specific field types
+// Campaign validation errors with specific field types and index signature
 export interface CampaignValidationErrors {
+  [key: string]: string | undefined;
   title?: string;
   description?: string;
   totalBudget?: string;

@@ -1,6 +1,5 @@
 
 import { CampaignTestScenario } from '@/types/campaign.types';
-import { CONTENT_TYPES, CATEGORIES, PLATFORMS } from '@/lib/campaign-types';
 
 export const campaignTestScenarios: CampaignTestScenario[] = [
   // Valid scenarios
@@ -13,9 +12,9 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       title: 'Fashion Brand Retainer',
       description: 'Long-term partnership with fashion influencers for brand awareness',
       type: 'retainer',
-      contentType: CONTENT_TYPES[0],
-      category: CATEGORIES[0],
-      platforms: [PLATFORMS[0]],
+      contentType: 'UGC',
+      category: 'Fashion',
+      platforms: ['TikTok'],
       totalBudget: 5000,
       currency: 'USD',
       endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
@@ -34,7 +33,7 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       description: 'Create engaging content and get paid per thousand views',
       type: 'payPerView',
       contentType: 'video',
-      category: 'entertainment',
+      category: 'Entertainment',
       platforms: ['tiktok', 'instagram'],
       totalBudget: 10000,
       currency: 'USD',
@@ -56,7 +55,7 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       description: 'Submit your best recipe video for a chance to win prizes',
       type: 'challenge',
       contentType: 'video',
-      category: 'food',
+      category: 'Food',
       platforms: ['youtube', 'instagram'],
       totalBudget: 3000,
       currency: 'USD',
@@ -81,9 +80,9 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       title: '',
       description: 'This campaign is missing a title',
       type: 'retainer',
-      contentType: CONTENT_TYPES[0],
-      category: CATEGORIES[0],
-      platforms: [PLATFORMS[0]],
+      contentType: 'UGC',
+      category: 'Fashion',
+      platforms: ['TikTok'],
       totalBudget: 1000,
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       applicationDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
@@ -100,9 +99,9 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       title: 'Invalid Date Campaign',
       description: 'This campaign has an invalid end date',
       type: 'retainer',
-      contentType: CONTENT_TYPES[0],
-      category: CATEGORIES[0],
-      platforms: [PLATFORMS[0]],
+      contentType: 'UGC',
+      category: 'Fashion',
+      platforms: ['TikTok'],
       totalBudget: 1000,
       endDate: new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
       applicationDeadline: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
@@ -120,7 +119,7 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       description: 'This campaign has zero budget',
       type: 'payPerView',
       contentType: 'video',
-      category: 'tech',
+      category: 'Tech',
       platforms: ['youtube'],
       totalBudget: 0,
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -140,7 +139,7 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       description: 'Retainer campaign across multiple platforms',
       type: 'retainer',
       contentType: 'video',
-      category: 'lifestyle',
+      category: 'Lifestyle',
       platforms: ['tiktok', 'instagram', 'youtube'],
       totalBudget: 2000,
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -159,7 +158,7 @@ export const campaignTestScenarios: CampaignTestScenario[] = [
       description: 'Challenge with prizes exceeding budget',
       type: 'challenge',
       contentType: 'image',
-      category: 'art',
+      category: 'Art',
       platforms: ['instagram'],
       totalBudget: 1000,
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
