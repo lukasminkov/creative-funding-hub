@@ -7,7 +7,7 @@ import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 import DefaultCampaignBanner from "@/components/DefaultCampaignBanner";
 import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
-import VirtualizedCampaignList from "@/components/VirtualizedCampaignList";
+import VirtualizedCampaignList from "@/components/dashboard/VirtualizedCampaignList";
 
 const Dashboard = () => {
   const [showCampaignModal, setShowCampaignModal] = useState(false);
