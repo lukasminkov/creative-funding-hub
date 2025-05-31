@@ -127,6 +127,7 @@ export interface ChallengeCampaign extends BaseCampaign {
   submissionDeadline: Date;
   prizeAmount?: number;
   winnersCount?: number;
+  prizeDistributionType?: 'equal' | 'custom';
 }
 
 export type Campaign = RetainerCampaign | PayPerViewCampaign | ChallengeCampaign;
