@@ -1,4 +1,3 @@
-
 import { Campaign, formatCurrency } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -156,12 +155,6 @@ export default function CampaignStepReview({ campaign }: CampaignStepReviewProps
               <span className="text-muted-foreground">View validation period:</span>
               <span className="font-medium">10 days (app standard)</span>
             </div>
-            {campaign.contentRequirements && (
-              <div className="pt-2 border-t">
-                <p className="text-sm text-muted-foreground mb-1">Content Requirements:</p>
-                <p className="text-sm">{campaign.contentRequirements}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
