@@ -5,17 +5,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BannerImageUpload from "@/components/BannerImageUpload";
+import { CampaignFormErrors } from "@/lib/campaign-validation";
 
 interface CampaignStepBasicsProps {
   campaign: Partial<Campaign>;
   onChange: (updatedCampaign: Partial<Campaign>) => void;
   disableBudgetEdit?: boolean;
+  errors?: CampaignFormErrors;
 }
 
 export default function CampaignStepBasics({ 
   campaign, 
   onChange, 
-  disableBudgetEdit = false 
+  disableBudgetEdit = false,
+  errors = {}
 }: CampaignStepBasicsProps) {
   return (
     <div className="space-y-6">
@@ -35,6 +38,9 @@ export default function CampaignStepBasics({
               placeholder="Enter a compelling campaign title"
               className="text-base"
             />
+            {errors.title && (
+              <p className="text-sm font-medium text-destructive">{errors.title}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -48,6 +54,9 @@ export default function CampaignStepBasics({
               onChange={(e) => onChange({ description: e.target.value })}
               placeholder="Describe your campaign goals, target audience, and what you're looking for from creators"
             />
+            {errors.description && (
+              <p className="text-sm font-medium text-destructive">{errors.description}</p>
+            )}
             <p className="text-xs text-muted-foreground">
               This description will be visible to creators when they discover your campaign
             </p>
@@ -89,6 +98,9 @@ export default function CampaignStepBasics({
                 className={`text-lg font-medium ${disableBudgetEdit ? "bg-muted cursor-not-allowed" : ""}`}
               />
             </div>
+            {errors.totalBudget && (
+              <p className="text-sm font-medium text-destructive">{errors.totalBudget}</p>
+            )}
             {disableBudgetEdit && (
               <p className="text-xs text-muted-foreground">
                 Budget can only be increased using the "Add Budget" button

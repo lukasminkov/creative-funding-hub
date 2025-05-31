@@ -1,259 +1,213 @@
 
-import { 
-  Campaign, 
-  ContentType, 
-  Category, 
-  Platform, 
-  Currency, 
-  CountryOption, 
-  VisibilityType,
-  StatusType,
-  RetainerCampaign,
-  PayPerViewCampaign,
-  ChallengeCampaign,
-  CONTENT_TYPES,
-  CATEGORIES,
-  PLATFORMS,
-  CURRENCIES,
-  COUNTRY_OPTIONS,
-  VISIBILITY_TYPES,
-  STATUS_OPTIONS
-} from "@/lib/campaign-types";
-import { Json } from "@/integrations/supabase/types";
+import { Campaign, CampaignType, formatCurrency } from "./campaign-types";
 
-// Type guard functions to validate enum values
-export const validateContentType = (value: string): ContentType => {
-  return CONTENT_TYPES.includes(value as ContentType) 
-    ? (value as ContentType) 
-    : "UGC"; // Default fallback
-};
-
-export const validateCategory = (value: string): Category => {
-  return CATEGORIES.includes(value as Category) 
-    ? (value as Category) 
-    : "Tech"; // Default fallback
-};
-
-export const validatePlatforms = (values: string[]): Platform[] => {
-  return values.filter(v => PLATFORMS.includes(v as Platform)) as Platform[];
-};
-
-export const validateCurrency = (value: string): Currency => {
-  return CURRENCIES.includes(value as Currency) 
-    ? (value as Currency) 
-    : "USD"; // Default fallback
-};
-
-export const validateCountryOption = (value: string): CountryOption => {
-  return COUNTRY_OPTIONS.includes(value as CountryOption) 
-    ? (value as CountryOption) 
-    : "worldwide"; // Default fallback
-};
-
-export const validateVisibilityType = (value: string): VisibilityType => {
-  return VISIBILITY_TYPES.includes(value as VisibilityType) 
-    ? (value as VisibilityType) 
-    : "public"; // Default fallback
-};
-
-export const validateStatusType = (value: string): StatusType => {
-  return STATUS_OPTIONS.includes(value as StatusType)
-    ? (value as StatusType)
-    : "active"; // Default fallback
-};
-
-// Helper function to safely parse JSON
-export const safeParseJson = (value: Json | null | string): any => {
-  if (!value) return null;
-  if (typeof value === 'string') {
-    try {
-      return JSON.parse(value);
-    } catch (e) {
-      console.error("Error parsing JSON:", e);
-      return null;
+// Campaign validation utilities
+export const validateCampaignBudget = (campaign: Partial<Campaign>): boolean => {
+  if (!campaign.totalBudget || campaign.totalBudget <= 0) return false;
+  
+  // For challenge campaigns, ensure prize amounts don't exceed budget
+  if (campaign.type === "challenge") {
+    if (campaign.prizeDistributionType === "equal" && campaign.prizeAmount && campaign.winnersCount) {
+      const totalPrizeAmount = campaign.prizeAmount * campaign.winnersCount;
+      return totalPrizeAmount <= campaign.totalBudget;
+    }
+    
+    if (campaign.prizeDistributionType === "custom" && campaign.prizePool) {
+      const totalPrizeAmount = campaign.prizePool.places.reduce((sum, place) => sum + place.prize, 0);
+      return totalPrizeAmount <= campaign.totalBudget;
     }
   }
-  return value; // If it's already an object
+  
+  return true;
 };
 
-// Convert database data to a Campaign object
-export const convertDatabaseCampaign = (data: any): Campaign => {
-  // Base campaign properties shared across all types
-  const baseCampaign = {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    type: data.type as "retainer" | "payPerView" | "challenge",
-    contentType: validateContentType(data.content_type),
-    category: validateCategory(data.category),
-    platforms: validatePlatforms(data.platforms),
-    requirements: data.requirements || [],
-    currency: validateCurrency(data.currency),
-    totalBudget: Number(data.total_budget),
-    endDate: new Date(data.end_date),
-    countryAvailability: validateCountryOption(data.country_availability),
-    visibility: validateVisibilityType(data.visibility),
-    bannerImage: data.banner_image,
-    instructionVideo: data.instruction_video,
-    brandId: data.brand_id,
-    brandName: data.brand_name,
-    trackingLink: data.tracking_link,
-    requestedTrackingLink: data.requested_tracking_link,
-    guidelines: safeParseJson(data.guidelines) || { dos: [], donts: [] },
-    status: data.status ? validateStatusType(data.status) : "active",
-    createdAt: data.created_at,
+export const validateCampaignDates = (campaign: Partial<Campaign>): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  const now = new Date();
+  
+  if (!campaign.endDate) {
+    errors.push("End date is required");
+    return { isValid: false, errors };
+  }
+  
+  const endDate = new Date(campaign.endDate);
+  if (endDate <= now) {
+    errors.push("End date must be in the future");
+  }
+  
+  // Type-specific date validation
+  if (campaign.type === "retainer" && campaign.applicationDeadline) {
+    const appDeadline = new Date(campaign.applicationDeadline);
+    if (appDeadline <= now) {
+      errors.push("Application deadline must be in the future");
+    }
+    if (appDeadline >= endDate) {
+      errors.push("Application deadline must be before campaign end date");
+    }
+  }
+  
+  if (campaign.type === "challenge" && campaign.submissionDeadline) {
+    const subDeadline = new Date(campaign.submissionDeadline);
+    if (subDeadline <= now) {
+      errors.push("Submission deadline must be in the future");
+    }
+    if (subDeadline >= endDate) {
+      errors.push("Submission deadline must be before campaign end date");
+    }
+  }
+  
+  return { isValid: errors.length === 0, errors };
+};
+
+// Campaign formatting utilities
+export const formatCampaignSummary = (campaign: Campaign): string => {
+  const parts = [
+    `${campaign.type} campaign`,
+    `${formatCurrency(campaign.totalBudget)} budget`,
+    `${campaign.platforms.join(", ")} platforms`,
+    `${campaign.category} category`
+  ];
+  
+  return parts.join(" • ");
+};
+
+export const getCampaignTypeConfig = (type: CampaignType) => {
+  const configs = {
+    retainer: {
+      name: "Retainer Campaign",
+      description: "Long-term creator partnerships",
+      icon: "users",
+      color: "blue"
+    },
+    payPerView: {
+      name: "Pay Per View",
+      description: "Performance-based payments",
+      icon: "eye",
+      color: "green"
+    },
+    challenge: {
+      name: "Challenge Campaign",
+      description: "Competition with prizes",
+      icon: "trophy",
+      color: "purple"
+    }
   };
   
-  // Create the appropriate campaign type based on data.type
-  let typedCampaign: Campaign;
-  
-  if (data.type === 'retainer') {
-    const retainerCampaign: RetainerCampaign = {
-      ...baseCampaign,
-      type: 'retainer',
-      applicationDeadline: data.application_deadline ? new Date(data.application_deadline) : new Date(),
-      creatorTiers: safeParseJson(data.creator_tiers) || [],
-      deliverables: safeParseJson(data.deliverables) || { mode: "videosPerDay" }
-    };
-    
-    // Add optional fields
-    if (data.application_questions) {
-      retainerCampaign.applicationQuestions = safeParseJson(data.application_questions);
-    }
-    
-    typedCampaign = retainerCampaign;
-  } 
-  else if (data.type === 'payPerView') {
-    const payPerViewCampaign: PayPerViewCampaign = {
-      ...baseCampaign,
-      type: 'payPerView',
-      ratePerThousand: data.rate_per_thousand ? Number(data.rate_per_thousand) : 0,
-      maxPayoutPerSubmission: data.max_payout_per_submission ? Number(data.max_payout_per_submission) : 0,
-      contentRequirements: data.content_requirements,
-      viewValidationPeriod: data.view_validation_period ? Number(data.view_validation_period) : undefined
-    };
-    
-    typedCampaign = payPerViewCampaign;
-  } 
-  else {
-    // Challenge campaign
-    const challengeCampaign: ChallengeCampaign = {
-      ...baseCampaign,
-      type: 'challenge',
-      submissionDeadline: data.submission_deadline ? new Date(data.submission_deadline) : new Date(),
-      prizePool: safeParseJson(data.prize_pool) || { places: [] },
-      prizeAmount: data.prize_amount ? Number(data.prize_amount) : undefined,
-      winnersCount: data.winners_count ? Number(data.winners_count) : undefined
-    };
-    
-    typedCampaign = challengeCampaign;
-  }
-  
-  // Add common optional fields
-  if (data.example_videos) {
-    typedCampaign.exampleVideos = safeParseJson(data.example_videos);
-  }
-  
-  if (data.restricted_access) {
-    typedCampaign.restrictedAccess = safeParseJson(data.restricted_access);
-  }
-  
-  if (data.tiktok_shop_commission) {
-    typedCampaign.tikTokShopCommission = safeParseJson(data.tiktok_shop_commission);
-  }
-  
-  if (data.brief) {
-    typedCampaign.brief = safeParseJson(data.brief);
-  }
-  
-  return typedCampaign;
+  return configs[type];
 };
 
-// Convert Campaign object to database format
+// Campaign status utilities
+export const calculateCampaignProgress = (campaign: Campaign): {
+  status: "draft" | "active" | "ending_soon" | "ended";
+  daysRemaining: number;
+  progressPercentage: number;
+} => {
+  const now = new Date();
+  const endDate = new Date(campaign.endDate);
+  const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  
+  let status: "draft" | "active" | "ending_soon" | "ended";
+  if (daysRemaining <= 0) {
+    status = "ended";
+  } else if (daysRemaining <= 7) {
+    status = "ending_soon";
+  } else {
+    status = "active";
+  }
+  
+  // Calculate progress based on time elapsed
+  const createdAt = campaign.createdAt ? new Date(campaign.createdAt) : now;
+  const totalDuration = endDate.getTime() - createdAt.getTime();
+  const elapsed = now.getTime() - createdAt.getTime();
+  const progressPercentage = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+  
+  return {
+    status,
+    daysRemaining: Math.max(0, daysRemaining),
+    progressPercentage
+  };
+};
+
+// Data conversion utilities for database operations
 export const convertCampaignToDatabase = (campaign: Campaign) => {
-  // Base properties for all campaign types
-  const databaseCampaign = {
-    title: campaign.title,
-    description: campaign.description,
-    type: campaign.type,
-    content_type: campaign.contentType,
-    category: campaign.category,
-    platforms: campaign.platforms,
+  return {
+    ...campaign,
+    end_date: campaign.endDate,
+    application_deadline: campaign.applicationDeadline,
+    submission_deadline: campaign.submissionDeadline,
     total_budget: campaign.totalBudget,
-    currency: campaign.currency,
-    end_date: new Date(campaign.endDate).toISOString(),
-    banner_image: campaign.bannerImage,
-    tracking_link: campaign.trackingLink,
-    requested_tracking_link: campaign.requestedTrackingLink,
-    guidelines: JSON.stringify(campaign.guidelines),
-    visibility: campaign.visibility,
+    content_type: campaign.contentType,
     country_availability: campaign.countryAvailability,
-    requirements: campaign.requirements || [],
-    brand_id: campaign.brandId,
-    brand_name: campaign.brandName,
+    rate_per_thousand: campaign.ratePerThousand,
+    max_payout_per_submission: campaign.maxPayoutPerSubmission,
+    view_validation_period: campaign.viewValidationPeriod,
+    prize_amount: campaign.prizeAmount,
+    winners_count: campaign.winnersCount,
+    prize_distribution_type: campaign.prizeDistributionType,
+    prize_pool: campaign.prizePool,
+    requested_tracking_link: campaign.requestedTrackingLink,
+    tracking_link: campaign.trackingLink,
+    banner_image: campaign.bannerImage,
     instruction_video: campaign.instructionVideo,
-    status: campaign.status,
-    created_at: campaign.createdAt ? new Date(campaign.createdAt).toISOString() : new Date().toISOString(),
-    
-    // Optional fields common to all campaign types
-    brief: campaign.brief ? JSON.stringify(campaign.brief) : null,
-    example_videos: campaign.exampleVideos ? JSON.stringify(campaign.exampleVideos) : null,
-    tiktok_shop_commission: campaign.tikTokShopCommission 
-      ? JSON.stringify(campaign.tikTokShopCommission) 
-      : null,
-    restricted_access: campaign.restrictedAccess 
-      ? JSON.stringify(campaign.restrictedAccess) 
-      : null,
-    
-    // Campaign-specific fields (all nullable)
-    application_deadline: null,
-    creator_tiers: null,
-    deliverables: null,
-    rate_per_thousand: null,
-    max_payout_per_submission: null,
-    content_requirements: null,
-    view_validation_period: null,
-    submission_deadline: null,
-    prize_pool: null,
-    prize_amount: null,
-    winners_count: null,
-    application_questions: null
+    example_videos: campaign.exampleVideos,
+    application_questions: campaign.applicationQuestions,
+    restricted_access: campaign.restrictedAccess,
+    creator_tiers: campaign.creatorTiers,
+    deliverables: campaign.deliverables
+  };
+};
+
+export const convertDatabaseToCampaign = (dbCampaign: any): Campaign => {
+  return {
+    ...dbCampaign,
+    endDate: dbCampaign.end_date,
+    applicationDeadline: dbCampaign.application_deadline,
+    submissionDeadline: dbCampaign.submission_deadline,
+    totalBudget: dbCampaign.total_budget,
+    contentType: dbCampaign.content_type,
+    countryAvailability: dbCampaign.country_availability,
+    ratePerThousand: dbCampaign.rate_per_thousand,
+    maxPayoutPerSubmission: dbCampaign.max_payout_per_submission,
+    viewValidationPeriod: dbCampaign.view_validation_period,
+    prizeAmount: dbCampaign.prize_amount,
+    winnersCount: dbCampaign.winners_count,
+    prizeDistributionType: dbCampaign.prize_distribution_type,
+    prizePool: dbCampaign.prize_pool,
+    requestedTrackingLink: dbCampaign.requested_tracking_link,
+    trackingLink: dbCampaign.tracking_link,
+    bannerImage: dbCampaign.banner_image,
+    instructionVideo: dbCampaign.instruction_video,
+    exampleVideos: dbCampaign.example_videos,
+    applicationQuestions: dbCampaign.application_questions,
+    restrictedAccess: dbCampaign.restricted_access,
+    creatorTiers: dbCampaign.creator_tiers,
+    deliverables: dbCampaign.deliverables
+  };
+};
+
+// Form state utilities
+export const getRequiredFieldsForStep = (step: number, campaignType: CampaignType): string[] => {
+  const stepFieldMap = {
+    0: ["title", "description", "totalBudget"],
+    1: ["type"],
+    2: ["platforms", "contentType", "category", "countryAvailability", "endDate"],
+    3: [],
+    4: []
   };
   
-  // Add campaign type-specific properties
-  if (campaign.type === 'retainer') {
-    const retainerCampaign = campaign as RetainerCampaign;
-    databaseCampaign.application_deadline = retainerCampaign.applicationDeadline 
-      ? new Date(retainerCampaign.applicationDeadline).toISOString() 
-      : null;
-    databaseCampaign.creator_tiers = retainerCampaign.creatorTiers 
-      ? JSON.stringify(retainerCampaign.creatorTiers) 
-      : null;
-    databaseCampaign.deliverables = retainerCampaign.deliverables 
-      ? JSON.stringify(retainerCampaign.deliverables) 
-      : null;
-    databaseCampaign.application_questions = retainerCampaign.applicationQuestions 
-      ? JSON.stringify(retainerCampaign.applicationQuestions) 
-      : null;
-  } 
-  else if (campaign.type === 'payPerView') {
-    const payPerViewCampaign = campaign as PayPerViewCampaign;
-    databaseCampaign.rate_per_thousand = payPerViewCampaign.ratePerThousand || null;
-    databaseCampaign.max_payout_per_submission = payPerViewCampaign.maxPayoutPerSubmission || null;
-    databaseCampaign.content_requirements = payPerViewCampaign.contentRequirements || null;
-    databaseCampaign.view_validation_period = payPerViewCampaign.viewValidationPeriod || null;
-  } 
-  else if (campaign.type === 'challenge') {
-    const challengeCampaign = campaign as ChallengeCampaign;
-    databaseCampaign.submission_deadline = challengeCampaign.submissionDeadline 
-      ? new Date(challengeCampaign.submissionDeadline).toISOString() 
-      : null;
-    databaseCampaign.prize_pool = challengeCampaign.prizePool 
-      ? JSON.stringify(challengeCampaign.prizePool) 
-      : null;
-    databaseCampaign.prize_amount = challengeCampaign.prizeAmount || null;
-    databaseCampaign.winners_count = challengeCampaign.winnersCount || null;
+  const baseFields = stepFieldMap[step as keyof typeof stepFieldMap] || [];
+  
+  // Add type-specific required fields
+  if (step === 2) {
+    switch (campaignType) {
+      case "retainer":
+        return [...baseFields, "applicationDeadline"];
+      case "payPerView":
+        return [...baseFields, "ratePerThousand", "maxPayoutPerSubmission"];
+      case "challenge":
+        return [...baseFields, "submissionDeadline", "prizeDistributionType"];
+    }
   }
   
-  return databaseCampaign;
+  return baseFields;
 };

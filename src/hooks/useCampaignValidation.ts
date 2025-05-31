@@ -6,6 +6,7 @@ import {
   retainerCampaignSchema, 
   payPerViewCampaignSchema, 
   challengeCampaignSchema,
+  createFieldValidator,
   CampaignFormErrors 
 } from "@/lib/campaign-validation";
 import { Campaign, CampaignType } from "@/lib/campaign-types";
@@ -24,39 +25,43 @@ export const useCampaignValidation = (campaignType: CampaignType) => {
       case "challenge":
         return challengeCampaignSchema;
       default:
-        return campaignSchema;
+        return retainerCampaignSchema;
     }
   }, []);
 
   const validateField = useCallback((fieldName: string, value: any, campaignData: Partial<Campaign>) => {
-    const schema = getSchemaForType(campaignType);
-    
     try {
-      // Create a partial validation for the specific field
-      const fieldSchema = schema.pick({ [fieldName]: true } as any);
-      fieldSchema.parse({ [fieldName]: value });
+      const fieldValidator = createFieldValidator(campaignType);
       
-      // Clear the error for this field
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[fieldName];
-        return newErrors;
-      });
+      // Create a test object with just this field
+      const testData = { [fieldName]: value, type: campaignType };
       
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldError = error.errors.find(err => err.path.includes(fieldName));
+      // Try to parse just this field
+      const result = fieldValidator.safeParse(testData);
+      
+      if (result.success) {
+        // Clear the error for this field
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldName];
+          return newErrors;
+        });
+        return true;
+      } else {
+        const fieldError = result.error.errors.find(err => err.path.includes(fieldName));
         if (fieldError) {
           setErrors(prev => ({
             ...prev,
             [fieldName]: fieldError.message
           }));
         }
+        return false;
       }
+    } catch (error) {
+      console.error("Field validation error:", error);
       return false;
     }
-  }, [campaignType, getSchemaForType]);
+  }, [campaignType]);
 
   const validateForm = useCallback(async (campaignData: Partial<Campaign>) => {
     setIsValidating(true);
@@ -89,41 +94,76 @@ export const useCampaignValidation = (campaignType: CampaignType) => {
   }, [campaignType, getSchemaForType]);
 
   const validateStep = useCallback(async (stepFields: string[], campaignData: Partial<Campaign>) => {
-    const schema = getSchemaForType(campaignType);
     const stepErrors: CampaignFormErrors = {};
     
     try {
-      // Validate only the fields for this step
-      const stepSchema = schema.pick(
-        stepFields.reduce((acc, field) => ({ ...acc, [field]: true }), {}) as any
-      );
-      
-      await stepSchema.parseAsync(campaignData);
-      
-      // Clear errors for step fields
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        stepFields.forEach(field => delete newErrors[field]);
-        return newErrors;
-      });
-      
-      return { success: true };
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        error.errors.forEach((err) => {
-          const fieldName = err.path.join('.');
-          if (stepFields.includes(fieldName)) {
-            stepErrors[fieldName] = err.message;
-          }
-        });
+      // Simple field-by-field validation for steps
+      for (const fieldName of stepFields) {
+        const value = (campaignData as any)[fieldName];
         
-        setErrors(prev => ({ ...prev, ...stepErrors }));
-        return { success: false, errors: stepErrors };
+        // Skip validation for undefined optional fields
+        if (value === undefined || value === null || value === "") {
+          // Check if it's a required field
+          if (fieldName === "title" || fieldName === "description" || fieldName === "totalBudget" || 
+              fieldName === "contentType" || fieldName === "category" || fieldName === "platforms" ||
+              fieldName === "endDate" || fieldName === "countryAvailability") {
+            stepErrors[fieldName] = `${fieldName} is required`;
+          }
+          continue;
+        }
+        
+        // Basic validation rules
+        switch (fieldName) {
+          case "title":
+            if (typeof value === "string" && value.length < 3) {
+              stepErrors[fieldName] = "Title must be at least 3 characters";
+            }
+            break;
+          case "description":
+            if (typeof value === "string" && value.length < 10) {
+              stepErrors[fieldName] = "Description must be at least 10 characters";
+            }
+            break;
+          case "totalBudget":
+            if (typeof value === "number" && value <= 0) {
+              stepErrors[fieldName] = "Budget must be greater than 0";
+            }
+            break;
+          case "platforms":
+            if (Array.isArray(value) && value.length === 0) {
+              stepErrors[fieldName] = "At least one platform is required";
+            }
+            break;
+          case "endDate":
+            if (value instanceof Date && value <= new Date()) {
+              stepErrors[fieldName] = "End date must be in the future";
+            }
+            break;
+        }
       }
       
+      // Update errors
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        // Clear errors for step fields that are now valid
+        stepFields.forEach(field => {
+          if (!stepErrors[field]) {
+            delete newErrors[field];
+          }
+        });
+        // Add new errors
+        return { ...newErrors, ...stepErrors };
+      });
+      
+      return { 
+        success: Object.keys(stepErrors).length === 0, 
+        errors: stepErrors 
+      };
+    } catch (error) {
+      console.error("Step validation error:", error);
       return { success: false, errors: { general: "Step validation failed" } };
     }
-  }, [campaignType, getSchemaForType]);
+  }, []);
 
   const clearErrors = useCallback(() => {
     setErrors({});

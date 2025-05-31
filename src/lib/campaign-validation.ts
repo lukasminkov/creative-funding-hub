@@ -8,16 +8,16 @@ const baseCampaignSchema = z.object({
   description: z.string().min(1, "Campaign description is required").min(10, "Description must be at least 10 characters"),
   totalBudget: z.number().positive("Budget must be positive").min(1, "Budget must be at least $1"),
   currency: z.string().default("USD"),
-  contentType: z.enum(CONTENT_TYPES as [string, ...string[]], {
+  contentType: z.enum(CONTENT_TYPES as any, {
     errorMap: () => ({ message: "Please select a valid content type" })
   }),
-  category: z.enum(CATEGORIES as [string, ...string[]], {
+  category: z.enum(CATEGORIES as any, {
     errorMap: () => ({ message: "Please select a valid category" })
   }),
   countryAvailability: z.enum(["worldwide", "usa", "mexico", "canada", "dach"], {
     errorMap: () => ({ message: "Please select a valid region" })
   }),
-  platforms: z.array(z.enum(PLATFORMS as [string, ...string[]])).min(1, "At least one platform is required"),
+  platforms: z.array(z.enum(PLATFORMS as any)).min(1, "At least one platform is required"),
   endDate: z.date({
     required_error: "End date is required",
     invalid_type_error: "Please select a valid end date"
@@ -42,7 +42,7 @@ const baseCampaignSchema = z.object({
 // Retainer campaign schema
 export const retainerCampaignSchema = baseCampaignSchema.extend({
   type: z.literal("retainer"),
-  platforms: z.array(z.enum(PLATFORMS as [string, ...string[]])).length(1, "Retainer campaigns require exactly one platform"),
+  platforms: z.array(z.enum(PLATFORMS as any)).length(1, "Retainer campaigns require exactly one platform"),
   applicationDeadline: z.date({
     required_error: "Application deadline is required",
     invalid_type_error: "Please select a valid application deadline"
@@ -123,6 +123,33 @@ export const challengeCampaignSchema = baseCampaignSchema.extend({
   message: "Total prize amount cannot exceed campaign budget",
   path: ["totalBudget"]
 });
+
+// Simplified validation for field-level checks
+export const createFieldValidator = (campaignType: "retainer" | "payPerView" | "challenge") => {
+  const baseSchema = baseCampaignSchema;
+  
+  switch (campaignType) {
+    case "retainer":
+      return baseSchema.extend({
+        type: z.literal("retainer"),
+        applicationDeadline: z.date().optional()
+      });
+    case "payPerView":
+      return baseSchema.extend({
+        type: z.literal("payPerView"),
+        ratePerThousand: z.number().optional(),
+        maxPayoutPerSubmission: z.number().optional()
+      });
+    case "challenge":
+      return baseSchema.extend({
+        type: z.literal("challenge"),
+        submissionDeadline: z.date().optional(),
+        prizeDistributionType: z.enum(["equal", "custom"]).optional()
+      });
+    default:
+      return baseSchema;
+  }
+};
 
 // Union type for all campaign schemas
 export const campaignSchema = z.discriminatedUnion("type", [

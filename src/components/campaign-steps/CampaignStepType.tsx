@@ -1,13 +1,14 @@
-
 import { Campaign } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Eye, Trophy, DollarSign, Users, Calendar, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CampaignFormErrors } from "@/lib/campaign-validation";
 
 interface CampaignStepTypeProps {
   campaign: Partial<Campaign>;
   onChange: (updatedCampaign: Partial<Campaign>) => void;
+  errors?: CampaignFormErrors;
 }
 
 const CAMPAIGN_TYPES = [
@@ -57,7 +58,7 @@ const CAMPAIGN_TYPES = [
   }
 ];
 
-export default function CampaignStepType({ campaign, onChange }: CampaignStepTypeProps) {
+export default function CampaignStepType({ campaign, onChange, errors = {} }: CampaignStepTypeProps) {
   const handleTypeSelect = (type: "retainer" | "payPerView" | "challenge") => {
     onChange({ type });
   };
@@ -70,6 +71,10 @@ export default function CampaignStepType({ campaign, onChange }: CampaignStepTyp
           Select the campaign model that best fits your goals and budget
         </p>
       </div>
+
+      {errors.type && (
+        <p className="text-sm font-medium text-destructive text-center">{errors.type}</p>
+      )}
 
       <div className="grid gap-4">
         {CAMPAIGN_TYPES.map((type) => {

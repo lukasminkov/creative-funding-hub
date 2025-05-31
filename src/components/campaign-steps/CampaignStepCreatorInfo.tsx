@@ -1,4 +1,3 @@
-
 import { Campaign } from "@/lib/campaign-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -8,13 +7,15 @@ import GuidelinesList from "@/components/GuidelinesList";
 import BriefUploader from "@/components/BriefUploader";
 import InstructionVideoUploader from "@/components/InstructionVideoUploader";
 import ExampleVideos from "@/components/ExampleVideos";
+import { CampaignFormErrors } from "@/lib/campaign-validation";
 
 interface CampaignStepCreatorInfoProps {
   campaign: Partial<Campaign>;
   onChange: (updatedCampaign: Partial<Campaign>) => void;
+  errors?: CampaignFormErrors;
 }
 
-export default function CampaignStepCreatorInfo({ campaign, onChange }: CampaignStepCreatorInfoProps) {
+export default function CampaignStepCreatorInfo({ campaign, onChange, errors = {} }: CampaignStepCreatorInfoProps) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
