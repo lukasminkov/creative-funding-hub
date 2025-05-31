@@ -24,6 +24,12 @@ export interface PrizePool {
   places: PrizePoolPlace[];
 }
 
+// Brief interface to match original types
+export interface Brief {
+  type: 'link' | 'file';
+  value: string;
+}
+
 // Campaign validation errors with specific field types and index signature
 export interface CampaignValidationErrors {
   [key: string]: string | undefined;
@@ -95,7 +101,7 @@ export interface Campaign {
   bannerImage?: string | null;
   guidelines?: CampaignGuidelines | null;
   requirements?: string[] | null;
-  brief?: File | null;
+  brief?: Brief | null; // Changed to Brief interface to match original
   instructionVideo?: string | null;
   instructionVideoFile?: File | null;
   exampleVideos?: File[] | null;
