@@ -106,23 +106,6 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
           </div>
 
           <div className="space-y-2 col-span-2">
-            <Label htmlFor="contentRequirements">
-              Content Requirements <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="contentRequirements"
-              className="min-h-[100px]"
-              value={campaign.contentRequirements || ""}
-              onChange={(e) => onChange({ contentRequirements: e.target.value })}
-              placeholder="Describe what you want creators to include in their content"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Be specific about what should be included in creator content
-            </p>
-          </div>
-
-          <div className="space-y-2 col-span-2">
             <RequirementsList
               requirements={campaign.requirements || []}
               onChange={(requirements) => onChange({ requirements })}
