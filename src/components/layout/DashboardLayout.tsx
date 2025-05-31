@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -15,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/providers/theme-provider";
 import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
+import CampaignDevTools from "@/components/dev/CampaignDevTools";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -57,6 +59,7 @@ const ModernSidebarToggle = () => {
 function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [showCreateCampaign, setShowCreateCampaign] = useState(false);
+  const [showDevTools, setShowDevTools] = useState(false);
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { state } = useSidebar();
@@ -225,6 +228,12 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
       <CampaignFormDialog
         open={showCreateCampaign}
         onOpenChange={setShowCreateCampaign}
+      />
+
+      {/* Development Tools - Only in development mode */}
+      <CampaignDevTools 
+        isVisible={showDevTools} 
+        onToggle={() => setShowDevTools(!showDevTools)} 
       />
     </div>
   );

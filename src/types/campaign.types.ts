@@ -1,0 +1,118 @@
+
+// Strict TypeScript types for campaign system
+export type CampaignStatus = 'draft' | 'active' | 'paused' | 'completed' | 'cancelled';
+export type CampaignType = 'retainer' | 'payPerView' | 'challenge';
+export type CampaignVisibility = 'public' | 'private';
+export type ContentType = 'video' | 'image' | 'article' | 'livestream' | 'ugc';
+export type Platform = 'tiktok' | 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'linkedin';
+export type Category = 'fashion' | 'beauty' | 'tech' | 'gaming' | 'food' | 'travel' | 'fitness' | 'lifestyle';
+export type Country = 'worldwide' | 'usa' | 'mexico' | 'canada' | 'dach';
+export type PrizeDistributionType = 'equal' | 'custom';
+
+// Base interfaces with strict null safety
+export interface CampaignGuidelines {
+  dos: string[];
+  donts: string[];
+}
+
+export interface PrizePoolPlace {
+  position: number;
+  prize: number;
+}
+
+export interface PrizePool {
+  places: PrizePoolPlace[];
+}
+
+// Campaign validation errors with specific field types
+export interface CampaignValidationErrors {
+  title?: string;
+  description?: string;
+  totalBudget?: string;
+  endDate?: string;
+  platforms?: string;
+  contentType?: string;
+  category?: string;
+  countryAvailability?: string;
+  applicationDeadline?: string;
+  submissionDeadline?: string;
+  ratePerThousand?: string;
+  maxPayoutPerSubmission?: string;
+  prizeDistributionType?: string;
+  prizeAmount?: string;
+  winnersCount?: string;
+  general?: string;
+}
+
+// Form state interface
+export interface CampaignFormState {
+  isLoading: boolean;
+  isSaving: boolean;
+  isSubmitting: boolean;
+  hasUnsavedChanges: boolean;
+  lastSaved: Date | null;
+  errors: CampaignValidationErrors;
+}
+
+// Development tools types
+export interface CampaignTestScenario {
+  id: string;
+  name: string;
+  description: string;
+  campaignData: Partial<Campaign>;
+  expectedValidation: 'valid' | 'invalid';
+  expectedErrors?: string[];
+}
+
+export interface DebugLogEntry {
+  timestamp: Date;
+  level: 'info' | 'warn' | 'error' | 'debug';
+  category: string;
+  message: string;
+  data?: any;
+}
+
+// Re-export existing Campaign type with better typing
+export interface Campaign {
+  id: string;
+  title: string;
+  description: string;
+  type: CampaignType;
+  status: CampaignStatus;
+  visibility: CampaignVisibility;
+  contentType: ContentType;
+  category: Category;
+  platforms: Platform[];
+  countryAvailability: Country;
+  totalBudget: number;
+  currency: string;
+  endDate: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  
+  // Optional fields with strict null checking
+  bannerImage?: string | null;
+  guidelines?: CampaignGuidelines | null;
+  requirements?: string[] | null;
+  brief?: File | null;
+  instructionVideo?: string | null;
+  instructionVideoFile?: File | null;
+  exampleVideos?: File[] | null;
+  requestedTrackingLink: boolean;
+  trackingLink?: string | null;
+  
+  // Brand information
+  brandId?: string | null;
+  brandName?: string | null;
+  
+  // Type-specific fields
+  applicationDeadline?: Date | null; // For retainer campaigns
+  submissionDeadline?: Date | null; // For challenge campaigns
+  ratePerThousand?: number | null; // For pay-per-view campaigns
+  maxPayoutPerSubmission?: number | null; // For pay-per-view campaigns
+  viewValidationPeriod?: number | null; // For pay-per-view campaigns
+  prizeDistributionType?: PrizeDistributionType | null; // For challenge campaigns
+  prizeAmount?: number | null; // For challenge campaigns (equal distribution)
+  winnersCount?: number | null; // For challenge campaigns (equal distribution)
+  prizePool?: PrizePool | null; // For challenge campaigns (custom distribution)
+}
