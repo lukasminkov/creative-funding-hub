@@ -1,29 +1,21 @@
 
 import React from "react";
-import { PayPerViewCampaign, Platform, Brief, CONTENT_TYPES, CATEGORIES } from "@/lib/campaign-types";
+import { PayPerViewCampaign, Platform } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import PlatformSelector from "@/components/PlatformSelector";
 import { FormItem } from "@/components/ui/form";
-import RequirementsList from "@/components/RequirementsList";
 import GuidelinesList from "@/components/GuidelinesList";
-import BannerImageUpload from "@/components/BannerImageUpload";
 import ExampleVideos from "@/components/ExampleVideos";
 import BriefUploader from "@/components/BriefUploader";
 import InstructionVideoUploader from "@/components/InstructionVideoUploader";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from "lucide-react";
-import CountrySelector from "@/components/CountrySelector";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import ContentTypeSelector from "./shared/ContentTypeSelector";
+import CategorySelector from "./shared/CategorySelector";
+import CampaignAvailabilitySelector from "./shared/CampaignAvailabilitySelector";
+import PlatformSection from "./shared/PlatformSection";
+import RequirementsSection from "./shared/RequirementsSection";
+import TrackingLinkSection from "./shared/TrackingLinkSection";
 
 interface PayPerViewFormProps {
   campaign: Partial<PayPerViewCampaign>;
@@ -99,77 +91,31 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="contentType">
-              Content Type <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={campaign.contentType || ""}
-              onValueChange={(value) => onChange({ contentType: value as typeof CONTENT_TYPES[number] })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select content type" />
-              </SelectTrigger>
-              <SelectContent>
-                {CONTENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ContentTypeSelector
+            value={campaign.contentType || ""}
+            onChange={(value) => onChange({ contentType: value as typeof campaign.contentType })}
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="category">
-              Category <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={campaign.category || ""}
-              onValueChange={(value) => onChange({ category: value as typeof CATEGORIES[number] })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <CategorySelector
+            value={campaign.category || ""}
+            onChange={(value) => onChange({ category: value as typeof campaign.category })}
+          />
 
-          <div className="space-y-2 col-span-2">
-            <CountrySelector
-              selectedCountry={campaign.countryAvailability || "worldwide"}
-              onChange={(country) => onChange({ countryAvailability: country })}
-            />
-          </div>
+          <CampaignAvailabilitySelector
+            selectedCountry={campaign.countryAvailability || "worldwide"}
+            onChange={(country) => onChange({ countryAvailability: country })}
+          />
           
-          <div className="space-y-2 col-span-2">
-            <Label>
-              Platforms <span className="text-destructive">*</span>
-            </Label>
-            <PlatformSelector
-              selectedPlatforms={campaign.platforms || []}
-              onChange={handlePlatformChange}
-              showLabel={false}
-              singleSelection={false}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Select platforms where creators will post content
-            </p>
-          </div>
+          <PlatformSection
+            selectedPlatforms={campaign.platforms || []}
+            onChange={handlePlatformChange}
+            singleSelection={false}
+          />
 
-          <div className="space-y-2 col-span-2">
-            <RequirementsList
-              requirements={campaign.requirements || []}
-              onChange={(requirements) => onChange({ requirements })}
-              title="Specific Requirements"
-            />
-          </div>
+          <RequirementsSection
+            requirements={campaign.requirements || []}
+            onChange={(requirements) => onChange({ requirements })}
+          />
         </div>
       )}
       
@@ -205,42 +151,12 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
 
           <Separator className="my-4" />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Tracking Link</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormItem className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="requestedTrackingLink"
-                    checked={campaign.requestedTrackingLink || false}
-                    onCheckedChange={(checked) => 
-                      onChange({ requestedTrackingLink: checked as boolean })
-                    }
-                  />
-                  <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
-                    Request tracking link in submissions
-                  </Label>
-                </div>
-              </FormItem>
-
-              {campaign.requestedTrackingLink && (
-                <FormItem className="space-y-2">
-                  <Label htmlFor="trackingLink">Link URL</Label>
-                  <Input
-                    id="trackingLink"
-                    value={campaign.trackingLink || ""}
-                    onChange={(e) => onChange({ trackingLink: e.target.value })}
-                    placeholder="Enter tracking link"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This link will be provided to creators for tracking purposes
-                  </p>
-                </FormItem>
-              )}
-            </CardContent>
-          </Card>
+          <TrackingLinkSection
+            requestedTrackingLink={campaign.requestedTrackingLink || false}
+            trackingLink={campaign.trackingLink || ""}
+            onRequestedChange={(checked) => onChange({ requestedTrackingLink: checked })}
+            onLinkChange={(link) => onChange({ trackingLink: link })}
+          />
 
           <FormItem className="space-y-2">
             <ExampleVideos
