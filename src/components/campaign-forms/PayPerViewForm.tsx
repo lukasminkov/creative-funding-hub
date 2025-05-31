@@ -14,6 +14,7 @@ import InstructionVideoUploader from "@/components/InstructionVideoUploader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Info } from "lucide-react";
 
 interface PayPerViewFormProps {
   campaign: Partial<PayPerViewCampaign>;
@@ -23,6 +24,13 @@ interface PayPerViewFormProps {
 }
 
 const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBudgetEdit = false }: PayPerViewFormProps) => {
+  // Set the view validation period to 10 days when component initializes
+  React.useEffect(() => {
+    if (!campaign.viewValidationPeriod) {
+      onChange({ viewValidationPeriod: 10 });
+    }
+  }, [campaign.viewValidationPeriod, onChange]);
+
   const handlePlatformChange = (platform: string) => {
     const platformValue = platform as Platform;
     const currentPlatforms = [...(campaign.platforms || [])];
@@ -73,22 +81,13 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="viewValidationPeriod">
-              View Validation Period (days) <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="viewValidationPeriod"
-              type="number"
-              min="1"
-              value={campaign.viewValidationPeriod || ""}
-              onChange={(e) => onChange({ viewValidationPeriod: Number(e.target.value) })}
-              placeholder="Days to count views"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Number of days to count views after content is published
-            </p>
+          <div className="space-y-2 col-span-2">
+            <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                <strong>View Validation Period:</strong> Views will be counted for 10 days after content is published (app standard).
+              </p>
+            </div>
           </div>
           
           <div className="space-y-2 col-span-2">
