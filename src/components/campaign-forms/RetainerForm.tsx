@@ -1,4 +1,3 @@
-
 import React from "react";
 import { RetainerCampaign, Platform, DeliverableMode, DELIVERABLE_MODES, CreatorTier, Brief } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -179,158 +178,174 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
               title="Specific Requirements"
             />
           </div>
+
+          <Separator className="col-span-2" />
+
+          {/* Payout Tiers Section - moved to basic info */}
+          <div className="space-y-4 col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                  Payout Structure
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAddCreatorTier}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Tier
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(campaign.creatorTiers || []).length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No payout tiers defined. Add tiers to set different pricing levels for creators (e.g., Micro, Macro, Celebrity).
+                  </p>
+                )}
+                
+                {(campaign.creatorTiers || []).map((tier, index) => (
+                  <div 
+                    key={index} 
+                    className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-border rounded-md bg-muted/20"
+                  >
+                    <FormItem className="space-y-2">
+                      <Label htmlFor={`tier-${index}-name`}>Tier Name</Label>
+                      <Input
+                        id={`tier-${index}-name`}
+                        value={tier.name}
+                        onChange={(e) => handleUpdateCreatorTier(index, "name", e.target.value)}
+                        placeholder="e.g. Micro, Macro, Celebrity"
+                      />
+                    </FormItem>
+                    
+                    <FormItem className="space-y-2">
+                      <Label htmlFor={`tier-${index}-price`}>Payout Amount ($)</Label>
+                      <Input
+                        id={`tier-${index}-price`}
+                        type="number"
+                        min="0"
+                        value={tier.price}
+                        onChange={(e) => handleUpdateCreatorTier(index, "price", Number(e.target.value))}
+                        placeholder="Payment amount"
+                      />
+                    </FormItem>
+                    
+                    <div className="flex items-end">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => handleRemoveCreatorTier(index)}
+                        className="h-10 w-10"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Separator className="col-span-2" />
+
+          {/* Deliverable Requirements Section - moved to basic info */}
+          <div className="space-y-4 col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Submission Requirements</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormItem className="space-y-2">
+                  <Label>Deliverable Structure <span className="text-destructive">*</span></Label>
+                  <Select
+                    value={campaign.deliverables?.mode || "videosPerDay"}
+                    onValueChange={(value) => handleDeliverableModeChange(value as DeliverableMode)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select deliverable mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DELIVERABLE_MODES.map((mode) => (
+                        <SelectItem key={mode} value={mode}>
+                          {mode === "videosPerDay" ? "Videos Per Day" : "Total Videos"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+
+                {campaign.deliverables?.mode === "videosPerDay" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormItem className="space-y-2">
+                      <Label htmlFor="videosPerDay">
+                        Videos Per Day <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="videosPerDay"
+                        type="number"
+                        min="1"
+                        value={campaign.deliverables?.videosPerDay || ""}
+                        onChange={(e) => onChange({
+                          deliverables: {
+                            ...campaign.deliverables,
+                            videosPerDay: Number(e.target.value),
+                          },
+                        })}
+                        placeholder="Number of videos per day"
+                      />
+                    </FormItem>
+                    
+                    <FormItem className="space-y-2">
+                      <Label htmlFor="durationDays">
+                        Duration (days) <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="durationDays"
+                        type="number"
+                        min="1"
+                        value={campaign.deliverables?.durationDays || ""}
+                        onChange={(e) => onChange({
+                          deliverables: {
+                            ...campaign.deliverables,
+                            durationDays: Number(e.target.value),
+                          },
+                        })}
+                        placeholder="Number of days"
+                      />
+                    </FormItem>
+                  </div>
+                )}
+
+                {campaign.deliverables?.mode === "totalVideos" && (
+                  <FormItem className="space-y-2">
+                    <Label htmlFor="totalVideos">
+                      Total Videos <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="totalVideos"
+                      type="number"
+                      min="1"
+                      value={campaign.deliverables?.totalVideos || ""}
+                      onChange={(e) => onChange({
+                        deliverables: {
+                          ...campaign.deliverables,
+                          totalVideos: Number(e.target.value),
+                        },
+                      })}
+                      placeholder="Total number of videos"
+                    />
+                  </FormItem>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
       
       {showCreatorInfoSection && (
         <div className="space-y-6">
-          <div className="space-y-4">
-            <FormItem className="space-y-2">
-              <Label>Deliverable Structure <span className="text-destructive">*</span></Label>
-              <Select
-                value={campaign.deliverables?.mode || "videosPerDay"}
-                onValueChange={(value) => handleDeliverableModeChange(value as DeliverableMode)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select deliverable mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DELIVERABLE_MODES.map((mode) => (
-                    <SelectItem key={mode} value={mode}>
-                      {mode === "videosPerDay" ? "Videos Per Day" : "Total Videos"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormItem>
-
-            {campaign.deliverables?.mode === "videosPerDay" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormItem className="space-y-2">
-                  <Label htmlFor="videosPerDay">
-                    Videos Per Day <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="videosPerDay"
-                    type="number"
-                    min="1"
-                    value={campaign.deliverables?.videosPerDay || ""}
-                    onChange={(e) => onChange({
-                      deliverables: {
-                        ...campaign.deliverables,
-                        videosPerDay: Number(e.target.value),
-                      },
-                    })}
-                    placeholder="Number of videos per day"
-                  />
-                </FormItem>
-                
-                <FormItem className="space-y-2">
-                  <Label htmlFor="durationDays">
-                    Duration (days) <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="durationDays"
-                    type="number"
-                    min="1"
-                    value={campaign.deliverables?.durationDays || ""}
-                    onChange={(e) => onChange({
-                      deliverables: {
-                        ...campaign.deliverables,
-                        durationDays: Number(e.target.value),
-                      },
-                    })}
-                    placeholder="Number of days"
-                  />
-                </FormItem>
-              </div>
-            )}
-
-            {campaign.deliverables?.mode === "totalVideos" && (
-              <FormItem className="space-y-2">
-                <Label htmlFor="totalVideos">
-                  Total Videos <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="totalVideos"
-                  type="number"
-                  min="1"
-                  value={campaign.deliverables?.totalVideos || ""}
-                  onChange={(e) => onChange({
-                    deliverables: {
-                      ...campaign.deliverables,
-                      totalVideos: Number(e.target.value),
-                    },
-                  })}
-                  placeholder="Total number of videos"
-                />
-              </FormItem>
-            )}
-          </div>
-
-          <Separator className="my-4" />
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Label>Creator Tiers</Label>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAddCreatorTier}
-              >
-                <Plus className="h-4 w-4 mr-1" /> Add Tier
-              </Button>
-            </div>
-            
-            {(campaign.creatorTiers || []).length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No tiers defined. Add tiers to classify creators by different pricing.
-              </p>
-            )}
-            
-            {(campaign.creatorTiers || []).map((tier, index) => (
-              <div 
-                key={index} 
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-border rounded-md"
-              >
-                <FormItem className="space-y-2">
-                  <Label htmlFor={`tier-${index}-name`}>Tier Name</Label>
-                  <Input
-                    id={`tier-${index}-name`}
-                    value={tier.name}
-                    onChange={(e) => handleUpdateCreatorTier(index, "name", e.target.value)}
-                    placeholder="e.g. Premium, Standard"
-                  />
-                </FormItem>
-                
-                <FormItem className="space-y-2">
-                  <Label htmlFor={`tier-${index}-price`}>Price</Label>
-                  <Input
-                    id={`tier-${index}-price`}
-                    type="number"
-                    min="0"
-                    value={tier.price}
-                    onChange={(e) => handleUpdateCreatorTier(index, "price", Number(e.target.value))}
-                    placeholder="Price for this tier"
-                  />
-                </FormItem>
-                
-                <div className="flex items-end">
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => handleRemoveCreatorTier(index)}
-                    className="h-10 w-10"
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
           <FormItem className="space-y-2">
             <Label>Guidelines for Creators</Label>
             <GuidelinesList
