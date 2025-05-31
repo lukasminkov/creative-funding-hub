@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ChallengeCampaign, Platform, Brief } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -44,66 +43,6 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
     <div className="space-y-6">
       {!showCreatorInfoSection && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">
-              Campaign Title <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="title"
-              value={campaign.title || ""}
-              onChange={(e) => onChange({ title: e.target.value })}
-              placeholder="Enter a title for your campaign"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="description">
-              Challenge Description <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="description"
-              className="min-h-[120px]"
-              value={campaign.description || ""}
-              onChange={(e) => onChange({ description: e.target.value })}
-              placeholder="Tell creators about your challenge"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Explain your challenge in detail. What should creators do? What are the rules?
-            </p>
-          </div>
-
-          <div className="space-y-2 md:col-span-2">
-            <Label>Banner Image</Label>
-            <BannerImageUpload
-              value={campaign.bannerImage}
-              onChange={(url) => onChange({ bannerImage: url })}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="totalBudget">
-              Total Budget <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="totalBudget"
-              type="number"
-              min="0"
-              value={campaign.totalBudget || ""}
-              onChange={(e) => onChange({ totalBudget: Number(e.target.value) })}
-              placeholder="Campaign budget"
-              disabled={disableBudgetEdit}
-              className={disableBudgetEdit ? "bg-muted cursor-not-allowed" : ""}
-              required
-            />
-            {disableBudgetEdit && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Budget can only be increased using the "Add Budget" button
-              </p>
-            )}
-          </div>
-          
           <div className="space-y-2">
             <Label htmlFor="prizeAmount">
               Prize Amount <span className="text-destructive">*</span>
