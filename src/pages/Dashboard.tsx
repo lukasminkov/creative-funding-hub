@@ -7,7 +7,6 @@ import CampaignFormDialog from "@/components/dashboard/CampaignFormDialog";
 import DefaultCampaignBanner from "@/components/DefaultCampaignBanner";
 import { Campaign } from "@/lib/campaign-types";
 import { toast } from "sonner";
-import VirtualizedCampaignList from "@/components/dashboard/VirtualizedCampaignList";
 
 const Dashboard = () => {
   const [showCampaignModal, setShowCampaignModal] = useState(false);
@@ -68,11 +67,6 @@ const Dashboard = () => {
     });
   };
 
-  const handleViewDetails = (campaign: Campaign) => {
-    // Navigate to campaign details or open modal
-    console.log("View campaign details:", campaign.id);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
@@ -97,12 +91,56 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="grid gap-8">
           {campaigns.length > 0 ? (
-            <VirtualizedCampaignList
-              campaigns={campaigns}
-              onViewDetails={handleViewDetails}
-              onMessageBrand={handleMessageBrand}
-              containerHeight={800}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {campaigns.map((campaign) => (
+                <div key={campaign.id} className="bg-card border border-border rounded-lg overflow-hidden">
+                  {campaign.bannerImage ? (
+                    <div className="h-40 relative">
+                      <img src={campaign.bannerImage} alt={campaign.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 p-4">
+                        <h3 className="text-lg font-medium text-white">{campaign.title}</h3>
+                        <p className="text-sm text-white/80">
+                          {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
+                          {campaign.brandName && ` • ${campaign.brandName}`}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <DefaultCampaignBanner 
+                      title={campaign.title}
+                      type={campaign.type}
+                    />
+                  )}
+                  
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="text-sm">Budget: <span className="font-medium">{new Intl.NumberFormat('en-US', { 
+                        style: 'currency', 
+                        currency: campaign.currency || 'USD'
+                      }).format(campaign.totalBudget || 0)}</span></div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1">
+                        View Details
+                      </Button>
+                      {campaign.brandId && campaign.brandName && (
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="flex-none"
+                          onClick={() => handleMessageBrand(campaign.brandId!, campaign.brandName!)}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          <span className="sr-only">Message {campaign.brandName}</span>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="bg-card border border-border rounded-lg p-8 text-center">
               <h2 className="text-2xl font-medium mb-4">No campaigns yet</h2>
