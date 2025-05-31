@@ -1,13 +1,9 @@
+
 import { Campaign } from "@/lib/campaign-types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import GuidelinesList from "@/components/GuidelinesList";
-import BriefUploader from "@/components/BriefUploader";
-import InstructionVideoUploader from "@/components/InstructionVideoUploader";
-import ExampleVideos from "@/components/ExampleVideos";
 import { CampaignFormErrors } from "@/lib/campaign-validation";
+import RetainerForm from "@/components/campaign-forms/RetainerForm";
+import PayPerViewForm from "@/components/campaign-forms/PayPerViewForm";
+import ChallengeForm from "@/components/campaign-forms/ChallengeForm";
 
 interface CampaignStepCreatorInfoProps {
   campaign: Partial<Campaign>;
@@ -16,104 +12,62 @@ interface CampaignStepCreatorInfoProps {
 }
 
 export default function CampaignStepCreatorInfo({ campaign, onChange, errors = {} }: CampaignStepCreatorInfoProps) {
+  const renderTypeSpecificForm = () => {
+    switch (campaign.type) {
+      case "retainer":
+        return (
+          <RetainerForm
+            campaign={campaign as any}
+            onChange={onChange}
+            showCreatorInfoSection={true}
+          />
+        );
+      case "payPerView":
+        return (
+          <PayPerViewForm
+            campaign={campaign as any}
+            onChange={onChange}
+            showCreatorInfoSection={true}
+          />
+        );
+      case "challenge":
+        return (
+          <ChallengeForm
+            campaign={campaign as any}
+            onChange={onChange}
+            showCreatorInfoSection={true}
+          />
+        );
+      default:
+        return (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Please select a campaign type first.</p>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h3 className="text-xl font-semibold">Creator Resources</h3>
+        <h3 className="text-xl font-semibold">Creator Information</h3>
         <p className="text-muted-foreground">
-          Provide guidelines and resources to help creators succeed
+          Provide guidelines and resources for content creators
         </p>
       </div>
 
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Guidelines</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <GuidelinesList
-            dos={campaign.guidelines?.dos || []}
-            donts={campaign.guidelines?.donts || []}
-            onChange={(guidelines) => onChange({ guidelines })}
-            showLabel={false}
-          />
-        </CardContent>
-      </Card>
+      {renderTypeSpecificForm()}
 
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Campaign Brief</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BriefUploader
-            brief={campaign.brief}
-            onChange={(brief) => onChange({ brief })}
-            label=""
-          />
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Instruction Video</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <InstructionVideoUploader
-            value={campaign.instructionVideo}
-            onChange={(url) => onChange({ instructionVideo: url })}
-            file={campaign.instructionVideoFile}
-            onFileChange={(file) => onChange({ instructionVideoFile: file })}
-          />
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Tracking Link</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="requestedTrackingLink"
-              checked={campaign.requestedTrackingLink || false}
-              onCheckedChange={(checked) => 
-                onChange({ requestedTrackingLink: checked as boolean })
-              }
-            />
-            <Label htmlFor="requestedTrackingLink" className="cursor-pointer">
-              Request tracking link in submissions
-            </Label>
-          </div>
-
-          {campaign.requestedTrackingLink && (
-            <div className="space-y-2">
-              <Label htmlFor="trackingLink">Link URL</Label>
-              <Input
-                id="trackingLink"
-                value={campaign.trackingLink || ""}
-                onChange={(e) => onChange({ trackingLink: e.target.value })}
-                placeholder="Enter tracking link"
-              />
-              <p className="text-xs text-muted-foreground">
-                This link will be provided to creators for tracking purposes
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Example Videos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ExampleVideos
-            exampleVideos={campaign.exampleVideos || []}
-            selectedPlatforms={campaign.platforms || []}
-            onChange={(exampleVideos) => onChange({ exampleVideos })}
-            showLabel={false}
-          />
-        </CardContent>
-      </Card>
+      {/* Display validation errors */}
+      {Object.keys(errors).length > 0 && (
+        <div className="space-y-2">
+          {Object.entries(errors).map(([field, error]) => (
+            <p key={field} className="text-sm font-medium text-destructive">
+              {error}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
