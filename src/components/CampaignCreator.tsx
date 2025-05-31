@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Campaign, 
@@ -12,10 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   Save, Rocket, ArrowLeft, ArrowRight, Check, 
-  FileText, Settings, Users, Eye 
+  FileText, Settings, Users, Eye, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useCampaignValidation } from "@/hooks/useCampaignValidation";
+import { useCampaignFormState } from "@/hooks/useCampaignFormState";
 import CampaignStepBasics from "./campaign-steps/CampaignStepBasics";
 import CampaignStepType from "./campaign-steps/CampaignStepType";
 import CampaignStepDetails from "./campaign-steps/CampaignStepDetails";
@@ -36,31 +37,36 @@ const STEPS = [
     id: 'basics', 
     title: 'Campaign Basics', 
     description: 'Name, description & budget',
-    icon: FileText
+    icon: FileText,
+    fields: ['title', 'description', 'totalBudget', 'bannerImage']
   },
   { 
     id: 'type', 
     title: 'Campaign Type', 
     description: 'Choose your campaign model',
-    icon: Settings
+    icon: Settings,
+    fields: ['type']
   },
   { 
     id: 'details', 
     title: 'Campaign Details', 
     description: 'Requirements & settings',
-    icon: Users
+    icon: Users,
+    fields: ['platforms', 'contentType', 'category', 'countryAvailability', 'endDate', 'requirements']
   },
   { 
     id: 'creator-info', 
     title: 'Creator Information', 
     description: 'Guidelines & resources',
-    icon: Users
+    icon: Users,
+    fields: ['guidelines', 'brief', 'instructionVideo', 'requestedTrackingLink', 'trackingLink', 'exampleVideos']
   },
   { 
     id: 'review', 
     title: 'Review & Launch', 
     description: 'Final review before launch',
-    icon: Eye
+    icon: Eye,
+    fields: []
   }
 ];
 
@@ -73,7 +79,15 @@ const CampaignCreator = ({
   isModal = false
 }: CampaignCreatorProps) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [campaign, setCampaign] = useState<Partial<Campaign>>(initialCampaign || {
+  const { 
+    campaign, 
+    formState, 
+    updateCampaign, 
+    setLoading, 
+    setSubmitting, 
+    saveDraft, 
+    autoSave 
+  } = useCampaignFormState(initialCampaign || {
     title: "",
     description: "",
     contentType: CONTENT_TYPES[0],
@@ -91,53 +105,46 @@ const CampaignCreator = ({
     visibility: "public",
   });
 
+  const { 
+    errors, 
+    isValidating, 
+    validateStep, 
+    validateForm, 
+    getFieldError 
+  } = useCampaignValidation(campaign.type || "retainer");
+
+  // Auto-save every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(autoSave, 30000);
+    return () => clearInterval(interval);
+  }, [autoSave]);
+
   const handleCampaignChange = (updatedCampaign: Partial<Campaign>) => {
     if (disableBudgetEdit && isEditing && 'totalBudget' in updatedCampaign) {
       const { totalBudget, ...rest } = updatedCampaign;
-      setCampaign({ ...campaign, ...rest });
+      updateCampaign(rest);
     } else {
-      setCampaign({ ...campaign, ...updatedCampaign });
+      updateCampaign(updatedCampaign);
     }
   };
 
-  const validateStep = (stepIndex: number): boolean => {
-    switch (stepIndex) {
-      case 0: // Basics
-        if (!campaign.title?.trim()) {
-          toast.error("Please enter a campaign title");
-          return false;
-        }
-        if (!campaign.description?.trim()) {
-          toast.error("Please enter a campaign description");
-          return false;
-        }
-        if (!campaign.totalBudget || campaign.totalBudget <= 0) {
-          toast.error("Please enter a valid budget");
-          return false;
-        }
-        return true;
-        
-      case 1: // Type
-        if (!campaign.type) {
-          toast.error("Please select a campaign type");
-          return false;
-        }
-        return true;
-        
-      case 2: // Details
-        if (!campaign.platforms || campaign.platforms.length === 0) {
-          toast.error("Please select at least one platform");
-          return false;
-        }
-        return true;
-        
-      default:
-        return true;
+  const validateCurrentStep = async (): Promise<boolean> => {
+    const stepFields = STEPS[currentStep].fields;
+    if (stepFields.length === 0) return true;
+
+    const result = await validateStep(stepFields, campaign);
+    
+    if (!result.success) {
+      const firstError = Object.keys(result.errors || {})[0];
+      toast.error(result.errors?.[firstError] || "Please fix the errors before continuing");
+      return false;
     }
+    
+    return true;
   };
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
+  const handleNext = async () => {
+    if (await validateCurrentStep()) {
       setCurrentStep(Math.min(currentStep + 1, STEPS.length - 1));
     }
   };
@@ -146,28 +153,35 @@ const CampaignCreator = ({
     setCurrentStep(Math.max(currentStep - 1, 0));
   };
 
-  const handleStepClick = (stepIndex: number) => {
-    if (stepIndex < currentStep || validateStep(currentStep)) {
+  const handleStepClick = async (stepIndex: number) => {
+    if (stepIndex < currentStep || await validateCurrentStep()) {
       setCurrentStep(stepIndex);
     }
   };
 
-  const handleSaveAsDraft = () => {
-    if (!campaign.title) {
-      toast.error("Please enter a campaign title before saving");
-      return;
-    }
-    toast.success("Campaign saved as draft");
-    onSubmit(campaign as Campaign);
+  const handleSaveAsDraft = async () => {
+    await saveDraft();
   };
 
-  const handleLaunchCampaign = () => {
-    if (!validateStep(currentStep)) {
-      return;
-    }
+  const handleLaunchCampaign = async () => {
+    setSubmitting(true);
     
-    toast.success(isEditing ? "Campaign updated successfully!" : "Campaign launched successfully!");
-    onSubmit(campaign as Campaign);
+    try {
+      const validationResult = await validateForm(campaign);
+      
+      if (!validationResult.success) {
+        toast.error("Please fix all errors before launching");
+        setSubmitting(false);
+        return;
+      }
+      
+      toast.success(isEditing ? "Campaign updated successfully!" : "Campaign launched successfully!");
+      onSubmit(campaign as Campaign);
+    } catch (error) {
+      toast.error("Failed to launch campaign");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const progressPercentage = ((currentStep + 1) / STEPS.length) * 100;
@@ -180,6 +194,7 @@ const CampaignCreator = ({
             campaign={campaign} 
             onChange={handleCampaignChange}
             disableBudgetEdit={disableBudgetEdit && isEditing}
+            errors={errors}
           />
         );
       case 1:
@@ -187,6 +202,7 @@ const CampaignCreator = ({
           <CampaignStepType 
             campaign={campaign} 
             onChange={handleCampaignChange}
+            errors={errors}
           />
         );
       case 2:
@@ -194,6 +210,7 @@ const CampaignCreator = ({
           <CampaignStepDetails 
             campaign={campaign} 
             onChange={handleCampaignChange}
+            errors={errors}
           />
         );
       case 3:
@@ -201,12 +218,14 @@ const CampaignCreator = ({
           <CampaignStepCreatorInfo 
             campaign={campaign} 
             onChange={handleCampaignChange}
+            errors={errors}
           />
         );
       case 4:
         return (
           <CampaignStepReview 
             campaign={campaign as Campaign}
+            errors={errors}
           />
         );
       default:
@@ -216,6 +235,7 @@ const CampaignCreator = ({
 
   return (
     <div className="w-full space-y-8">
+      {/* Step Header with Auto-save Indicator */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -224,12 +244,25 @@ const CampaignCreator = ({
                 {React.createElement(STEPS[currentStep].icon, { className: "h-5 w-5" })}
               </div>
               {STEPS[currentStep].title}
+              {isValidating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </h2>
             <p className="text-muted-foreground">{STEPS[currentStep].description}</p>
           </div>
-          <Badge variant="outline" className="px-4 py-2 text-sm">
-            Step {currentStep + 1} of {STEPS.length}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="px-4 py-2 text-sm">
+              Step {currentStep + 1} of {STEPS.length}
+            </Badge>
+            {formState.hasUnsavedChanges && (
+              <Badge variant="secondary" className="px-3 py-1 text-xs">
+                Unsaved changes
+              </Badge>
+            )}
+            {formState.lastSaved && (
+              <Badge variant="outline" className="px-3 py-1 text-xs text-green-600">
+                Saved {formState.lastSaved.toLocaleTimeString()}
+              </Badge>
+            )}
+          </div>
         </div>
         
         <div className="space-y-4">
@@ -241,13 +274,15 @@ const CampaignCreator = ({
                 <button
                   key={step.id}
                   onClick={() => handleStepClick(index)}
+                  disabled={isValidating || formState.isSubmitting}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 min-w-fit",
                     index === currentStep
                       ? "bg-gradient-to-r from-primary to-primary/90 text-white shadow-lg scale-[1.02]"
                       : index < currentStep
                       ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:scale-[1.02]"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:scale-[1.02]"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:scale-[1.02]",
+                    (isValidating || formState.isSubmitting) && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   <div className={cn(
@@ -285,39 +320,87 @@ const CampaignCreator = ({
         </CardContent>
       </Card>
 
+      {/* Action Buttons with Loading States */}
       <div className="flex items-center justify-between pt-6 border-t">
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={onCancel} className="h-11 px-6">
+          <Button 
+            variant="outline" 
+            onClick={onCancel} 
+            className="h-11 px-6"
+            disabled={formState.isSubmitting || isValidating}
+          >
             Cancel
           </Button>
           {!isEditing && (
-            <Button variant="outline" onClick={handleSaveAsDraft} className="h-11 px-6">
-              <Save className="h-4 w-4 mr-2" />
-              Save as Draft
+            <Button 
+              variant="outline" 
+              onClick={handleSaveAsDraft} 
+              className="h-11 px-6"
+              disabled={formState.isSaving || formState.isSubmitting || isValidating}
+            >
+              {formState.isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save as Draft
+                </>
+              )}
             </Button>
           )}
         </div>
         
         <div className="flex items-center gap-3">
           {currentStep > 0 && (
-            <Button variant="outline" onClick={handlePrevious} className="h-11 px-6">
+            <Button 
+              variant="outline" 
+              onClick={handlePrevious} 
+              className="h-11 px-6"
+              disabled={formState.isSubmitting || isValidating}
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Previous
             </Button>
           )}
           
           {currentStep < STEPS.length - 1 ? (
-            <Button onClick={handleNext} className="h-11 px-8 bg-gradient-to-r from-primary to-primary/90">
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
+            <Button 
+              onClick={handleNext} 
+              className="h-11 px-8 bg-gradient-to-r from-primary to-primary/90"
+              disabled={isValidating || formState.isSubmitting}
+            >
+              {isValidating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Validating...
+                </>
+              ) : (
+                <>
+                  Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </>
+              )}
             </Button>
           ) : (
             <Button 
               onClick={handleLaunchCampaign} 
               className="h-11 px-8 bg-gradient-to-r from-primary to-primary/90 shadow-lg hover:shadow-xl"
+              disabled={formState.isSubmitting || isValidating}
             >
-              <Rocket className="h-4 w-4 mr-2" />
-              {isEditing ? "Update Campaign" : "Launch Campaign"}
+              {formState.isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {isEditing ? "Updating..." : "Launching..."}
+                </>
+              ) : (
+                <>
+                  <Rocket className="h-4 w-4 mr-2" />
+                  {isEditing ? "Update Campaign" : "Launch Campaign"}
+                </>
+              )}
             </Button>
           )}
         </div>

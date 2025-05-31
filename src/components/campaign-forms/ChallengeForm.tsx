@@ -50,6 +50,10 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
     }
   };
 
+  const handleCountryChange = (country: "worldwide" | "usa" | "mexico" | "canada" | "dach") => {
+    onChange({ countryAvailability: country });
+  };
+
   const handlePrizeDistributionChange = (type: 'equal' | 'custom') => {
     if (type === 'equal') {
       onChange({
@@ -138,8 +142,8 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
             />
 
             <CampaignAvailabilitySelector
-              selectedCountry={campaign.countryAvailability || "worldwide"}
-              onChange={(country) => onChange({ countryAvailability: country })}
+              selectedCountry={(campaign.countryAvailability as "worldwide" | "usa" | "mexico" | "canada" | "dach") || "worldwide"}
+              onChange={handleCountryChange}
             />
 
             <PlatformSection

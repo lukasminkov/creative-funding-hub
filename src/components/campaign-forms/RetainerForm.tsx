@@ -1,4 +1,3 @@
-
 import React from "react";
 import { RetainerCampaign, Platform, DeliverableMode, DELIVERABLE_MODES } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -38,6 +37,10 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
     onChange({
       platforms: [platformValue],
     });
+  };
+
+  const handleCountryChange = (country: "worldwide" | "usa" | "mexico" | "canada" | "dach") => {
+    onChange({ countryAvailability: country });
   };
   
   return (
@@ -80,8 +83,8 @@ const RetainerForm = ({ campaign, onChange, showCreatorInfoSection, disableBudge
             />
 
             <CampaignAvailabilitySelector
-              selectedCountry={campaign.countryAvailability || "worldwide"}
-              onChange={(country) => onChange({ countryAvailability: country })}
+              selectedCountry={(campaign.countryAvailability as "worldwide" | "usa" | "mexico" | "canada" | "dach") || "worldwide"}
+              onChange={handleCountryChange}
             />
             
             <PlatformSection

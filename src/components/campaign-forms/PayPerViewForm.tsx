@@ -1,4 +1,3 @@
-
 import React from "react";
 import { PayPerViewCampaign, Platform } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
@@ -45,6 +44,10 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
         platforms: [...currentPlatforms, platformValue],
       });
     }
+  };
+
+  const handleCountryChange = (country: "worldwide" | "usa" | "mexico" | "canada" | "dach") => {
+    onChange({ countryAvailability: country });
   };
   
   return (
@@ -102,8 +105,8 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
           />
 
           <CampaignAvailabilitySelector
-            selectedCountry={campaign.countryAvailability || "worldwide"}
-            onChange={(country) => onChange({ countryAvailability: country })}
+            selectedCountry={(campaign.countryAvailability as "worldwide" | "usa" | "mexico" | "canada" | "dach") || "worldwide"}
+            onChange={handleCountryChange}
           />
           
           <PlatformSection
