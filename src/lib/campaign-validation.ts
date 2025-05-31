@@ -39,7 +39,7 @@ const baseCampaignSchema = z.object({
   exampleVideos: z.array(z.any()).optional()
 });
 
-// Retainer campaign schema
+// Retainer campaign schema - simplified without discriminatedUnion
 export const retainerCampaignSchema = baseCampaignSchema.extend({
   type: z.literal("retainer"),
   platforms: z.array(z.enum(PLATFORMS as any)).length(1, "Retainer campaigns require exactly one platform"),
@@ -151,11 +151,22 @@ export const createFieldValidator = (campaignType: "retainer" | "payPerView" | "
   }
 };
 
-// Union type for all campaign schemas - fix the discriminatedUnion call
-export const campaignSchema = z.discriminatedUnion("type", [
-  retainerCampaignSchema,
-  payPerViewCampaignSchema,
-  challengeCampaignSchema
-]);
+// Function to validate campaign based on type - replaces discriminated union
+export const validateCampaignByType = (campaignData: any) => {
+  if (!campaignData.type) {
+    throw new Error("Campaign type is required");
+  }
+
+  switch (campaignData.type) {
+    case "retainer":
+      return retainerCampaignSchema.parse(campaignData);
+    case "payPerView":
+      return payPerViewCampaignSchema.parse(campaignData);
+    case "challenge":
+      return challengeCampaignSchema.parse(campaignData);
+    default:
+      throw new Error(`Invalid campaign type: ${campaignData.type}`);
+  }
+};
 
 export type CampaignFormErrors = Record<string, string>;

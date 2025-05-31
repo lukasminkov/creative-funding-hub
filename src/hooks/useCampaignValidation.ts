@@ -1,12 +1,11 @@
-
 import { useState, useCallback } from "react";
 import { z } from "zod";
 import { 
-  campaignSchema, 
   retainerCampaignSchema, 
   payPerViewCampaignSchema, 
   challengeCampaignSchema,
   createFieldValidator,
+  validateCampaignByType,
   CampaignFormErrors 
 } from "@/lib/campaign-validation";
 import { Campaign, CampaignType } from "@/lib/campaign-types";
@@ -67,8 +66,8 @@ export const useCampaignValidation = (campaignType: CampaignType) => {
     setIsValidating(true);
     
     try {
-      const schema = getSchemaForType(campaignType);
-      const result = await schema.parseAsync(campaignData);
+      // Use the new validation function instead of discriminated union
+      const result = validateCampaignByType(campaignData);
       
       setErrors({});
       setIsValid(true);
@@ -87,11 +86,11 @@ export const useCampaignValidation = (campaignType: CampaignType) => {
         return { success: false, errors: formErrors };
       }
       
-      return { success: false, errors: { general: "Validation failed" } };
+      return { success: false, errors: { general: error instanceof Error ? error.message : "Validation failed" } };
     } finally {
       setIsValidating(false);
     }
-  }, [campaignType, getSchemaForType]);
+  }, []);
 
   const validateStep = useCallback(async (stepFields: string[], campaignData: Partial<Campaign>) => {
     const stepErrors: CampaignFormErrors = {};
