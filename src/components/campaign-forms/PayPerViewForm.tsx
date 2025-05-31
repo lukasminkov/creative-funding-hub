@@ -1,5 +1,6 @@
+
 import React from "react";
-import { PayPerViewCampaign, Platform, Brief } from "@/lib/campaign-types";
+import { PayPerViewCampaign, Platform, Brief, CONTENT_TYPES, CATEGORIES } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Info } from "lucide-react";
+import CountrySelector from "@/components/CountrySelector";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PayPerViewFormProps {
   campaign: Partial<PayPerViewCampaign>;
@@ -88,6 +97,55 @@ const PayPerViewForm = ({ campaign, onChange, showCreatorInfoSection, disableBud
                 <strong>View Validation Period:</strong> Views will be counted for 10 days after content is published (app standard).
               </p>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="contentType">
+              Content Type <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={campaign.contentType || ""}
+              onValueChange={(value) => onChange({ contentType: value as typeof CONTENT_TYPES[number] })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select content type" />
+              </SelectTrigger>
+              <SelectContent>
+                {CONTENT_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">
+              Category <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={campaign.category || ""}
+              onValueChange={(value) => onChange({ category: value as typeof CATEGORIES[number] })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2 col-span-2">
+            <CountrySelector
+              selectedCountry={campaign.countryAvailability || "worldwide"}
+              onChange={(country) => onChange({ countryAvailability: country })}
+            />
           </div>
           
           <div className="space-y-2 col-span-2">

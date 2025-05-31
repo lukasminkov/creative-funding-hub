@@ -1,10 +1,11 @@
+
 import React from "react";
-import { ChallengeCampaign, Platform, Brief } from "@/lib/campaign-types";
+import { ChallengeCampaign, Platform, Brief, CONTENT_TYPES, CATEGORIES } from "@/lib/campaign-types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import PlatformSelector from "@/components/PlatformSelector";
 import { DatePicker } from "@/components/ui/date-picker";
+import PlatformSelector from "@/components/PlatformSelector";
 import { FormItem } from "@/components/ui/form";
 import RequirementsList from "@/components/RequirementsList";
 import GuidelinesList from "@/components/GuidelinesList";
@@ -15,10 +16,17 @@ import InstructionVideoUploader from "@/components/InstructionVideoUploader";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Info, Trophy, Calendar } from "lucide-react";
+import CountrySelector from "@/components/CountrySelector";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, AlertCircle, Plus, Trash2, Trophy } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Plus, Trash } from "lucide-react";
 
 interface ChallengeFormProps {
   campaign: Partial<ChallengeCampaign>;
@@ -43,71 +51,156 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
     }
   };
 
-  // Prize distribution type
-  const distributionType = campaign.prizeDistributionType || 'equal';
-  
-  // Calculate total prize allocation
-  let totalPrizeAllocation = 0;
-  if (distributionType === 'equal') {
-    totalPrizeAllocation = (campaign.prizeAmount || 0) * (campaign.winnersCount || 1);
-  } else {
-    totalPrizeAllocation = (campaign.prizePool?.places || []).reduce((sum, place) => sum + place.prize, 0);
-  }
-  
-  const totalBudget = campaign.totalBudget || 0;
-  const allocationPercentage = totalBudget > 0 ? (totalPrizeAllocation / totalBudget) * 100 : 0;
-  const remainingBudget = totalBudget - totalPrizeAllocation;
-
-  const handleDistributionTypeChange = (type: 'equal' | 'custom') => {
+  const handlePrizeDistributionChange = (type: 'equal' | 'custom') => {
     if (type === 'equal') {
-      onChange({ 
+      onChange({
         prizeDistributionType: type,
-        prizePool: undefined 
+        prizePool: undefined,
       });
     } else {
-      const places = [];
-      const count = campaign.winnersCount || 3;
-      for (let i = 1; i <= count; i++) {
-        places.push({ position: i, prize: 0 });
-      }
-      onChange({ 
+      onChange({
         prizeDistributionType: type,
-        prizePool: { places },
-        prizeAmount: undefined 
+        prizeAmount: undefined,
+        winnersCount: undefined,
+        prizePool: {
+          places: [
+            { position: 1, prize: 0 },
+            { position: 2, prize: 0 },
+            { position: 3, prize: 0 },
+          ]
+        }
       });
     }
   };
 
-  const updateCustomPrize = (position: number, prize: number) => {
-    const places = [...(campaign.prizePool?.places || [])];
-    const index = places.findIndex(p => p.position === position);
-    if (index >= 0) {
-      places[index].prize = prize;
-    }
-    onChange({ prizePool: { places } });
+  const handlePrizePoolChange = (index: number, field: 'position' | 'prize', value: number) => {
+    const newPlaces = [...(campaign.prizePool?.places || [])];
+    newPlaces[index] = { ...newPlaces[index], [field]: value };
+    onChange({
+      prizePool: { places: newPlaces }
+    });
   };
 
-  const addCustomPlace = () => {
-    const places = [...(campaign.prizePool?.places || [])];
-    const nextPosition = places.length + 1;
-    places.push({ position: nextPosition, prize: 0 });
-    onChange({ prizePool: { places } });
+  const addPrizePlace = () => {
+    const currentPlaces = campaign.prizePool?.places || [];
+    const newPosition = currentPlaces.length + 1;
+    onChange({
+      prizePool: {
+        places: [...currentPlaces, { position: newPosition, prize: 0 }]
+      }
+    });
   };
 
-  const removeCustomPlace = (position: number) => {
-    const places = (campaign.prizePool?.places || []).filter(p => p.position !== position);
-    // Reorder positions
-    const reorderedPlaces = places.map((place, index) => ({
-      ...place,
-      position: index + 1
-    }));
-    onChange({ prizePool: { places: reorderedPlaces } });
+  const removePrizePlace = (index: number) => {
+    const newPlaces = [...(campaign.prizePool?.places || [])];
+    newPlaces.splice(index, 1);
+    onChange({
+      prizePool: { places: newPlaces }
+    });
   };
   
   return (
     <div className="space-y-6">
       {!showCreatorInfoSection && (
         <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="submissionDeadline">
+                Submission Deadline <span className="text-destructive">*</span>
+              </Label>
+              <DatePicker
+                id="submissionDeadline"
+                date={campaign.submissionDeadline ? new Date(campaign.submissionDeadline) : undefined}
+                onSelect={(date) => onChange({ submissionDeadline: date })}
+                placeholder="Select submission deadline"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="endDate">
+                Campaign End Date <span className="text-destructive">*</span>
+              </Label>
+              <DatePicker
+                id="endDate"
+                date={campaign.endDate ? new Date(campaign.endDate) : undefined}
+                onSelect={(date) => onChange({ endDate: date })}
+                placeholder="Select end date"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contentType">
+                Content Type <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={campaign.contentType || ""}
+                onValueChange={(value) => onChange({ contentType: value as typeof CONTENT_TYPES[number] })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select content type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONTENT_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">
+                Category <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={campaign.category || ""}
+                onValueChange={(value) => onChange({ category: value as typeof CATEGORIES[number] })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 col-span-2">
+              <CountrySelector
+                selectedCountry={campaign.countryAvailability || "worldwide"}
+                onChange={(country) => onChange({ countryAvailability: country })}
+              />
+            </div>
+
+            <div className="space-y-2 col-span-2">
+              <Label>
+                Platforms <span className="text-destructive">*</span>
+              </Label>
+              <PlatformSelector
+                selectedPlatforms={campaign.platforms || []}
+                onChange={handlePlatformChange}
+                showLabel={false}
+                singleSelection={false}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Select platforms where creators will post content
+              </p>
+            </div>
+
+            <div className="space-y-2 col-span-2">
+              <RequirementsList
+                requirements={campaign.requirements || []}
+                onChange={(requirements) => onChange({ requirements })}
+                title="Specific Requirements"
+              />
+            </div>
+          </div>
+
           {/* Prize Distribution Section */}
           <Card>
             <CardHeader>
@@ -116,35 +209,28 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
                 Prize Distribution
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Distribution Type Selection */}
-              <div className="space-y-4">
-                <Label>Distribution Type</Label>
-                <RadioGroup
-                  value={distributionType}
-                  onValueChange={(value) => handleDistributionTypeChange(value as 'equal' | 'custom')}
-                  className="flex flex-col space-y-2"
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Distribution Type <span className="text-destructive">*</span></Label>
+                <Select
+                  value={campaign.prizeDistributionType || "equal"}
+                  onValueChange={(value) => handlePrizeDistributionChange(value as 'equal' | 'custom')}
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="equal" id="equal" />
-                    <Label htmlFor="equal" className="cursor-pointer">
-                      Equal distribution (same amount for all winners)
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="custom" id="custom" />
-                    <Label htmlFor="custom" className="cursor-pointer">
-                      Custom distribution (different amounts for each place)
-                    </Label>
-                  </div>
-                </RadioGroup>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select distribution type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="equal">Equal Distribution</SelectItem>
+                    <SelectItem value="custom">Custom Distribution</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              {distributionType === 'equal' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {campaign.prizeDistributionType === "equal" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="prizeAmount">
-                      Prize Amount per Winner <span className="text-destructive">*</span>
+                      Prize per Winner <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="prizeAmount"
@@ -152,7 +238,7 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
                       min="0"
                       value={campaign.prizeAmount || ""}
                       onChange={(e) => onChange({ prizeAmount: Number(e.target.value) })}
-                      placeholder="Amount each winner receives"
+                      placeholder="Amount per winner"
                       required
                     />
                   </div>
@@ -167,171 +253,61 @@ const ChallengeForm = ({ campaign, onChange, showCreatorInfoSection, disableBudg
                       min="1"
                       value={campaign.winnersCount || ""}
                       onChange={(e) => onChange({ winnersCount: Number(e.target.value) })}
-                      placeholder="Total number of winners"
+                      placeholder="Number of winners"
                       required
                     />
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {campaign.prizeDistributionType === "custom" && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Prize Amounts by Place</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addCustomPlace}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add Place
+                  <div className="flex justify-between items-center">
+                    <Label>Prize Breakdown</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={addPrizePlace}>
+                      <Plus className="h-4 w-4 mr-1" /> Add Place
                     </Button>
                   </div>
                   
-                  <div className="space-y-3">
-                    {(campaign.prizePool?.places || []).map((place) => (
-                      <div key={place.position} className="flex items-center gap-3 p-3 border rounded-lg">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <span className="text-sm font-medium whitespace-nowrap">
-                            {place.position === 1 ? '1st Place' : 
-                             place.position === 2 ? '2nd Place' : 
-                             place.position === 3 ? '3rd Place' : 
-                             `${place.position}th Place`}
-                          </span>
-                          <Input
-                            type="number"
-                            min="0"
-                            value={place.prize || ""}
-                            onChange={(e) => updateCustomPrize(place.position, Number(e.target.value))}
-                            placeholder="Prize amount"
-                            className="flex-1"
-                          />
-                        </div>
-                        {(campaign.prizePool?.places || []).length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeCustomPlace(place.position)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                  {(campaign.prizePool?.places || []).map((place, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-border rounded-md bg-muted/20">
+                      <div className="space-y-2">
+                        <Label>Position</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={place.position}
+                          onChange={(e) => handlePrizePoolChange(index, 'position', Number(e.target.value))}
+                          placeholder="Position"
+                        />
                       </div>
-                    ))}
-                  </div>
-                  
-                  {(campaign.prizePool?.places || []).length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Trophy className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No prize places configured</p>
-                      <p className="text-sm">Click "Add Place" to start setting up your prize distribution</p>
+                      
+                      <div className="space-y-2">
+                        <Label>Prize Amount</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={place.prize}
+                          onChange={(e) => handlePrizePoolChange(index, 'prize', Number(e.target.value))}
+                          placeholder="Prize amount"
+                        />
+                      </div>
+                      
+                      <div className="flex items-end">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => removePrizePlace(index)}
+                          className="h-10 w-10"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
-
-              {/* Budget Allocation Visual */}
-              {totalBudget > 0 && totalPrizeAllocation > 0 && (
-                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      Budget Allocation
-                    </h4>
-                    <span className="text-sm text-muted-foreground">
-                      {allocationPercentage.toFixed(1)}% of total budget
-                    </span>
-                  </div>
-                  
-                  <Progress 
-                    value={Math.min(allocationPercentage, 100)} 
-                    className="h-3"
-                  />
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground">Total Prize Pool</span>
-                      <span className="font-medium">${totalPrizeAllocation.toLocaleString()}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground">Campaign Budget</span>
-                      <span className="font-medium">${totalBudget.toLocaleString()}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground">Remaining Budget</span>
-                      <span className={`font-medium ${remainingBudget < 0 ? 'text-destructive' : 'text-green-600'}`}>
-                        ${remainingBudget.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-
-                  {allocationPercentage > 100 && (
-                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>Prize allocation exceeds campaign budget by ${(totalPrizeAllocation - totalBudget).toLocaleString()}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Campaign Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Campaign Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="submissionDeadline">
-                  Submission Deadline <span className="text-destructive">*</span>
-                </Label>
-                <DatePicker
-                  id="submissionDeadline"
-                  date={campaign.submissionDeadline ? new Date(campaign.submissionDeadline) : undefined}
-                  onSelect={(date) => onChange({ submissionDeadline: date })}
-                  placeholder="Select deadline"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Platform Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Requirements</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>
-                  Platforms <span className="text-destructive">*</span>
-                </Label>
-                <PlatformSelector
-                  selectedPlatforms={campaign.platforms || []}
-                  onChange={handlePlatformChange}
-                  showLabel={false}
-                  singleSelection={false}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Select platforms where creators will post content
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Challenge Requirements */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Challenge Requirements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RequirementsList
-                requirements={campaign.requirements || []}
-                onChange={(requirements) => onChange({ requirements })}
-                title=""
-              />
             </CardContent>
           </Card>
         </div>
