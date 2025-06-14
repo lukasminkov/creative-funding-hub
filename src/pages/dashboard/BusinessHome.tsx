@@ -1,12 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, TrendingDown, Users, Eye, DollarSign, 
-  BarChart3, ArrowUpRight, Plus, Calendar 
-} from "lucide-react";
-
+import { TrendingUp, TrendingDown, Users, Eye, DollarSign, BarChart3, ArrowUpRight, Plus, Calendar } from "lucide-react";
 export default function BusinessHome() {
   const earningsData = {
     total: 12842.60,
@@ -14,33 +9,26 @@ export default function BusinessHome() {
     pending: 200.60,
     change: 17.2
   };
-
-  const campaigns = [
-    {
-      id: 1,
-      title: "Campaign for new sneakers",
-      brand: "Adidas",
-      status: "Pending",
-      logo: "🏃‍♂️"
-    },
-    {
-      id: 2,
-      title: "Campaign for new sneakers",
-      brand: "Nike",
-      status: "Pending", 
-      logo: "👟"
-    },
-    {
-      id: 3,
-      title: "Campaign for new sneakers",
-      brand: "Adidas",
-      status: "Pending",
-      logo: "🏃‍♂️"
-    }
-  ];
-
-  return (
-    <div className="p-6 space-y-6 bg-gray-900 min-h-screen">
+  const campaigns = [{
+    id: 1,
+    title: "Campaign for new sneakers",
+    brand: "Adidas",
+    status: "Pending",
+    logo: "🏃‍♂️"
+  }, {
+    id: 2,
+    title: "Campaign for new sneakers",
+    brand: "Nike",
+    status: "Pending",
+    logo: "👟"
+  }, {
+    id: 3,
+    title: "Campaign for new sneakers",
+    brand: "Adidas",
+    status: "Pending",
+    logo: "🏃‍♂️"
+  }];
+  return <div className="p-6 space-y-6 min-h-screen bg-zinc-900">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -101,13 +89,9 @@ export default function BusinessHome() {
 
               {/* Simple Chart Placeholder */}
               <div className="h-32 bg-gray-700/30 rounded-lg flex items-end justify-between px-4 pb-4 mt-6">
-                {[40, 60, 45, 80, 65, 90, 75].map((height, index) => (
-                  <div 
-                    key={index}
-                    className="w-6 bg-gradient-to-t from-green-500 to-green-400 rounded-t"
-                    style={{ height: `${height}%` }}
-                  />
-                ))}
+                {[40, 60, 45, 80, 65, 90, 75].map((height, index) => <div key={index} className="w-6 bg-gradient-to-t from-green-500 to-green-400 rounded-t" style={{
+                height: `${height}%`
+              }} />)}
               </div>
               
               <div className="flex justify-between text-xs text-gray-400 mt-2">
@@ -122,19 +106,9 @@ export default function BusinessHome() {
 
               {/* Time Period Buttons */}
               <div className="flex gap-2 mt-4">
-                {['7D', '1M', '3M', '1Y', 'ALL'].map((period) => (
-                  <Button
-                    key={period}
-                    variant={period === '7D' ? 'default' : 'ghost'}
-                    size="sm"
-                    className={period === '7D' 
-                      ? 'bg-gray-700 text-white hover:bg-gray-600' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                    }
-                  >
+                {['7D', '1M', '3M', '1Y', 'ALL'].map(period => <Button key={period} variant={period === '7D' ? 'default' : 'ghost'} size="sm" className={period === '7D' ? 'bg-gray-700 text-white hover:bg-gray-600' : 'text-gray-400 hover:text-white hover:bg-gray-700'}>
                     {period}
-                  </Button>
-                ))}
+                  </Button>)}
               </div>
             </div>
           </CardContent>
@@ -191,8 +165,7 @@ export default function BusinessHome() {
         </div>
         
         <div className="space-y-3">
-          {campaigns.map((campaign) => (
-            <Card key={campaign.id} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors">
+          {campaigns.map(campaign => <Card key={campaign.id} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -205,10 +178,7 @@ export default function BusinessHome() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge 
-                      variant="secondary" 
-                      className="bg-orange-500/20 text-orange-300 border-orange-500/30"
-                    >
+                    <Badge variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-500/30">
                       {campaign.status}
                     </Badge>
                     <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
@@ -217,10 +187,8 @@ export default function BusinessHome() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
