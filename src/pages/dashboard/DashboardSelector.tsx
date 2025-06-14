@@ -48,7 +48,7 @@ export default function DashboardSelector() {
                     <Building2 className="h-8 w-8" />
                   </div>
                 </div>
-                <CardTitle className="text-2xl font-bold text-white mb-2">Business</CardTitle>
+                <CardTitle className="font-bold text-white mb-2 text-xl">Business</CardTitle>
                 <p className="text-gray-400 text-sm">
                   Manage campaigns, communities, and grow your business
                 </p>
@@ -98,9 +98,7 @@ export default function DashboardSelector() {
                     <User className="h-8 w-8" />
                   </div>
                 </div>
-                <CardTitle className="text-2xl font-bold text-white mb-2">
-                  Profile Dashboard
-                </CardTitle>
+                <CardTitle className="font-bold text-white mb-2 text-xl">Profile</CardTitle>
                 <p className="text-gray-400 text-sm">
                   Track earnings, join campaigns, and connect with others
                 </p>
