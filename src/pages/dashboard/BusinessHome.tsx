@@ -57,7 +57,7 @@ export default function BusinessHome() {
         </div>
         
         <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-6">
+          <CardContent className="p-6 bg-transparent">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
