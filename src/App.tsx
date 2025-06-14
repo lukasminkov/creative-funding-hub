@@ -6,34 +6,24 @@ import { Toaster } from "@/components/ui/sonner";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import NotFound from "@/pages/NotFound";
+import DashboardSelector from "@/pages/dashboard/DashboardSelector";
 
-// Dashboard pages
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import DashboardHome from "@/pages/dashboard/DashboardHome";
+// Business Dashboard pages
+import BusinessDashboardLayout from "@/components/layout/BusinessDashboardLayout";
+import BusinessHome from "@/pages/dashboard/BusinessHome";
 import CampaignsPage from "@/pages/dashboard/CampaignsPage";
 import CampaignDetailPage from "@/pages/dashboard/CampaignDetailPage";
 import CampaignChatPage from "@/pages/dashboard/CampaignChatPage";
-import CreatorProfilePage from "@/pages/dashboard/CreatorProfilePage";
-import ExplorePage from "@/pages/dashboard/ExplorePage";
 import ToolsPage from "@/pages/dashboard/ToolsPage";
-import AnalyticsPage from "@/pages/dashboard/AnalyticsPage";
-import MessagesPage from "@/pages/dashboard/MessagesPage";
-import PaymentsPage from "@/pages/dashboard/PaymentsPage";
 import FinancesPage from "@/pages/dashboard/FinancesPage";
 import SettingsPage from "@/pages/dashboard/SettingsPage";
 
-// Admin pages
-import AdminLayout from "@/components/layout/AdminLayout";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminIndexPage from "@/pages/admin/IndexPage";
-import AdminCampaignsPage from "@/pages/admin/CampaignsPage";
-import UsersPage from "@/pages/admin/UsersPage";
-import BrandsPage from "@/pages/admin/BrandsPage";
-import AdminAnalyticsPage from "@/pages/admin/AnalyticsPage";
-import AdminMessagesPage from "@/pages/admin/MessagesPage";
-import AdminPaymentsPage from "@/pages/admin/PaymentsPage";
-import AdminNotificationsPage from "@/pages/admin/NotificationsPage";
-import AdminSettingsPage from "@/pages/admin/SettingsPage";
+// Profile Dashboard pages
+import ProfileDashboardLayout from "@/components/layout/ProfileDashboardLayout";
+import ProfileHome from "@/pages/dashboard/ProfileHome";
+import ExplorePage from "@/pages/dashboard/ExplorePage";
+import CreatorProfilePage from "@/pages/dashboard/CreatorProfilePage";
+import MessagesPage from "@/pages/dashboard/MessagesPage";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -55,33 +45,30 @@ function App() {
             <Route path="/dashboard-test" element={<Dashboard />} />
             <Route path="*" element={<NotFound />} />
 
-            {/* Dashboard Routes */}
-            <Route path="/dashboard" element={<DashboardLayout><Outlet /></DashboardLayout>}>
-              <Route index element={<DashboardHome />} />
+            {/* Dashboard Selector */}
+            <Route path="/dashboard" element={<DashboardSelector />} />
+
+            {/* Business Dashboard Routes */}
+            <Route path="/dashboard/business" element={<BusinessDashboardLayout><Outlet /></BusinessDashboardLayout>}>
+              <Route index element={<BusinessHome />} />
               <Route path="campaigns" element={<CampaignsPage />} />
               <Route path="campaigns/:campaignId" element={<CampaignDetailPage />} />
               <Route path="campaigns/:campaignId/chat" element={<CampaignChatPage />} />
-              <Route path="creators/:creatorId" element={<CreatorProfilePage />} />
-              <Route path="explore" element={<ExplorePage />} />
+              <Route path="communities" element={<div className="p-6 text-white">Communities - Coming Soon</div>} />
               <Route path="tools" element={<ToolsPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="messages" element={<MessagesPage />} />
-              <Route path="finances" element={<FinancesPage />} />
+              <Route path="finance" element={<FinancesPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout><Outlet /></AdminLayout>}>
-              <Route index element={<AdminIndexPage />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="campaigns" element={<AdminCampaignsPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="brands" element={<BrandsPage />} />
-              <Route path="analytics" element={<AdminAnalyticsPage />} />
-              <Route path="messages" element={<AdminMessagesPage />} />
-              <Route path="payments" element={<AdminPaymentsPage />} />
-              <Route path="notifications" element={<AdminNotificationsPage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
+            {/* Profile Dashboard Routes */}
+            <Route path="/dashboard/profile" element={<ProfileDashboardLayout><Outlet /></ProfileDashboardLayout>}>
+              <Route index element={<ProfileHome />} />
+              <Route path="workspace" element={<div className="p-6 text-white">Workspace - Coming Soon</div>} />
+              <Route path="explore" element={<ExplorePage />} />
+              <Route path="tools" element={<ToolsPage />} />
+              <Route path="profile" element={<CreatorProfilePage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="messages" element={<MessagesPage />} />
             </Route>
           </Routes>
         </Router>
