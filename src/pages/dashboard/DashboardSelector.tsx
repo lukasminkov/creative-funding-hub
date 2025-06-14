@@ -10,7 +10,7 @@ export default function DashboardSelector() {
     localStorage.setItem('selectedDashboardType', type);
     navigate(`/dashboard/${type}`);
   };
-  return <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+  return <div className="min-h-screen flex items-center justify-center p-4 bg-neutral-900">
       <div className="w-full max-w-5xl space-y-8">
         {/* Header */}
         <div className="text-center space-y-6">
