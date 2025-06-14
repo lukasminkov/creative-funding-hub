@@ -19,12 +19,8 @@ export default function DashboardSelector() {
               <BarChart3 className="h-10 w-10" />
             </div>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">
-            Dashboard
-          </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Choose how you'd like to use Payper today. You can switch between modes anytime.
-          </p>
+          <h1 className="font-bold text-white mb-4 text-xl">Dashboard</h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">Choose how you'd like to use Payper today. You can switch between dashboards anytime.</p>
         </div>
 
         {/* Dashboard Options */}
@@ -41,7 +37,7 @@ export default function DashboardSelector() {
         }} whileHover={{
           scale: 1.02
         }} className="cursor-pointer" onClick={() => handleDashboardSelect('business')}>
-            <Card className="h-full bg-gray-800 border-gray-700 hover:border-green-500/50 transition-all duration-300">
+            <Card className="h-full border-gray-700 hover:border-green-500/50 transition-all duration-300 bg-transparent">
               <CardHeader className="text-center pb-6">
                 <div className="flex justify-center mb-6">
                   <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg">
@@ -91,7 +87,7 @@ export default function DashboardSelector() {
         }} whileHover={{
           scale: 1.02
         }} className="cursor-pointer" onClick={() => handleDashboardSelect('profile')}>
-            <Card className="h-full bg-gray-800 border-gray-700 hover:border-green-500/50 transition-all duration-300">
+            <Card className="h-full border-gray-700 hover:border-green-500/50 transition-all duration-300 bg-transparent">
               <CardHeader className="text-center pb-6">
                 <div className="flex justify-center mb-6">
                   <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white shadow-lg">
