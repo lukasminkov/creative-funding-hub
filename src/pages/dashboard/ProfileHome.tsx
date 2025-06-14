@@ -1,12 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, TrendingDown, Users, Eye, DollarSign, 
-  BarChart3, ArrowUpRight, Plus, Calendar, MessageSquare, Target
-} from "lucide-react";
-
+import { TrendingUp, TrendingDown, Users, Eye, DollarSign, BarChart3, ArrowUpRight, Plus, Calendar, MessageSquare, Target } from "lucide-react";
 export default function ProfileHome() {
   const earningsData = {
     total: 8642.30,
@@ -14,36 +9,29 @@ export default function ProfileHome() {
     pending: 500.00,
     change: 12.4
   };
-
-  const applications = [
-    {
-      id: 1,
-      title: "Campaign for new sneakers",
-      brand: "Adidas",
-      status: "Pending",
-      logo: "🏃‍♂️",
-      earnings: "$150"
-    },
-    {
-      id: 2,
-      title: "Campaign for new sneakers", 
-      brand: "Nike",
-      status: "Approved",
-      logo: "👟",
-      earnings: "$200"
-    },
-    {
-      id: 3,
-      title: "Summer fashion campaign",
-      brand: "H&M",
-      status: "In Progress",
-      logo: "👕",
-      earnings: "$300"
-    }
-  ];
-
-  return (
-    <div className="p-6 space-y-6 bg-gray-900 min-h-screen">
+  const applications = [{
+    id: 1,
+    title: "Campaign for new sneakers",
+    brand: "Adidas",
+    status: "Pending",
+    logo: "🏃‍♂️",
+    earnings: "$150"
+  }, {
+    id: 2,
+    title: "Campaign for new sneakers",
+    brand: "Nike",
+    status: "Approved",
+    logo: "👟",
+    earnings: "$200"
+  }, {
+    id: 3,
+    title: "Summer fashion campaign",
+    brand: "H&M",
+    status: "In Progress",
+    logo: "👕",
+    earnings: "$300"
+  }];
+  return <div className="p-6 space-y-6 min-h-screen bg-zinc-900">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -104,13 +92,9 @@ export default function ProfileHome() {
 
               {/* Simple Chart Placeholder */}
               <div className="h-32 bg-gray-700/30 rounded-lg flex items-end justify-between px-4 pb-4 mt-6">
-                {[30, 45, 35, 60, 50, 75, 65].map((height, index) => (
-                  <div 
-                    key={index}
-                    className="w-6 bg-gradient-to-t from-green-500 to-green-400 rounded-t"
-                    style={{ height: `${height}%` }}
-                  />
-                ))}
+                {[30, 45, 35, 60, 50, 75, 65].map((height, index) => <div key={index} className="w-6 bg-gradient-to-t from-green-500 to-green-400 rounded-t" style={{
+                height: `${height}%`
+              }} />)}
               </div>
               
               <div className="flex justify-between text-xs text-gray-400 mt-2">
@@ -125,19 +109,9 @@ export default function ProfileHome() {
 
               {/* Time Period Buttons */}
               <div className="flex gap-2 mt-4">
-                {['7D', '1M', '3M', '1Y', 'ALL'].map((period) => (
-                  <Button
-                    key={period}
-                    variant={period === '7D' ? 'default' : 'ghost'}
-                    size="sm"
-                    className={period === '7D' 
-                      ? 'bg-gray-700 text-white hover:bg-gray-600' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                    }
-                  >
+                {['7D', '1M', '3M', '1Y', 'ALL'].map(period => <Button key={period} variant={period === '7D' ? 'default' : 'ghost'} size="sm" className={period === '7D' ? 'bg-gray-700 text-white hover:bg-gray-600' : 'text-gray-400 hover:text-white hover:bg-gray-700'}>
                     {period}
-                  </Button>
-                ))}
+                  </Button>)}
               </div>
             </div>
           </CardContent>
@@ -193,8 +167,7 @@ export default function ProfileHome() {
         </div>
         
         <div className="space-y-3">
-          {applications.map((application) => (
-            <Card key={application.id} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors">
+          {applications.map(application => <Card key={application.id} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -208,16 +181,7 @@ export default function ProfileHome() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-white font-medium">{application.earnings}</span>
-                    <Badge 
-                      variant="secondary" 
-                      className={
-                        application.status === 'Approved' 
-                          ? "bg-green-500/20 text-green-300 border-green-500/30"
-                          : application.status === 'Pending'
-                          ? "bg-orange-500/20 text-orange-300 border-orange-500/30"
-                          : "bg-blue-500/20 text-blue-300 border-blue-500/30"
-                      }
-                    >
+                    <Badge variant="secondary" className={application.status === 'Approved' ? "bg-green-500/20 text-green-300 border-green-500/30" : application.status === 'Pending' ? "bg-orange-500/20 text-orange-300 border-orange-500/30" : "bg-blue-500/20 text-blue-300 border-blue-500/30"}>
                       {application.status}
                     </Badge>
                     <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
@@ -226,8 +190,7 @@ export default function ProfileHome() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </div>
 
@@ -246,6 +209,5 @@ export default function ProfileHome() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
