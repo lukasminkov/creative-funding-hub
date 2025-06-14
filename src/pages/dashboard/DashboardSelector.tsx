@@ -1,21 +1,16 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Building2, User, BarChart3, Users, Compass, Wrench, TrendingUp, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
-
 export default function DashboardSelector() {
   const navigate = useNavigate();
-
   const handleDashboardSelect = (type: 'business' | 'profile') => {
     localStorage.setItem('selectedDashboardType', type);
     navigate(`/dashboard/${type}`);
   };
-
-  return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+  return <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-5xl space-y-8">
         {/* Header */}
         <div className="text-center space-y-6">
@@ -35,14 +30,17 @@ export default function DashboardSelector() {
         {/* Dashboard Options */}
         <div className="grid md:grid-cols-2 gap-8 mt-12">
           {/* Business Dashboard */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            className="cursor-pointer"
-            onClick={() => handleDashboardSelect('business')}
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          delay: 0.1
+        }} whileHover={{
+          scale: 1.02
+        }} className="cursor-pointer" onClick={() => handleDashboardSelect('business')}>
             <Card className="h-full bg-gray-800 border-gray-700 hover:border-green-500/50 transition-all duration-300">
               <CardHeader className="text-center pb-6">
                 <div className="flex justify-center mb-6">
@@ -50,9 +48,7 @@ export default function DashboardSelector() {
                     <Building2 className="h-8 w-8" />
                   </div>
                 </div>
-                <CardTitle className="text-2xl font-bold text-white mb-2">
-                  Business Dashboard
-                </CardTitle>
+                <CardTitle className="text-2xl font-bold text-white mb-2">Business</CardTitle>
                 <p className="text-gray-400 text-sm">
                   Manage campaigns, communities, and grow your business
                 </p>
@@ -84,14 +80,17 @@ export default function DashboardSelector() {
           </motion.div>
 
           {/* Profile Dashboard */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            whileHover={{ scale: 1.02 }}
-            className="cursor-pointer"
-            onClick={() => handleDashboardSelect('profile')}
-          >
+          <motion.div initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          delay: 0.2
+        }} whileHover={{
+          scale: 1.02
+        }} className="cursor-pointer" onClick={() => handleDashboardSelect('profile')}>
             <Card className="h-full bg-gray-800 border-gray-700 hover:border-green-500/50 transition-all duration-300">
               <CardHeader className="text-center pb-6">
                 <div className="flex justify-center mb-6">
@@ -133,6 +132,5 @@ export default function DashboardSelector() {
           </motion.div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
