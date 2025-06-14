@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -43,10 +42,10 @@ const DashboardToggle = () => {
       variant="ghost" 
       size="sm"
       onClick={switchToProfile}
-      className="h-8 px-3 bg-gray-700/50 hover:bg-gray-600 text-white text-xs font-medium border border-gray-600"
+      className="h-7 px-2 text-xs font-medium text-gray-300 hover:text-white hover:bg-gray-700/70 border border-gray-600/50 rounded-md transition-all duration-200"
     >
-      <User className="h-3 w-3 mr-2" />
-      Switch to Profile
+      <User className="h-3 w-3 mr-1.5" />
+      Profile
     </Button>
   );
 };
@@ -108,7 +107,11 @@ function BusinessDashboardLayoutContent({ children }: BusinessDashboardLayoutPro
                 </span>
               )}
             </div>
-            {state === "expanded" && <DashboardToggle />}
+            {state === "expanded" && (
+              <div className="flex items-center">
+                <DashboardToggle />
+              </div>
+            )}
           </div>
         </SidebarHeader>
 
