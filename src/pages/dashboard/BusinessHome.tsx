@@ -57,7 +57,7 @@ export default function BusinessHome() {
         </div>
         
         <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-6 bg-transparent">
+          <CardContent className="p-6 bg-zinc-900">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -118,7 +118,7 @@ export default function BusinessHome() {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-4">
+          <CardContent className="p-4 bg-zinc-900">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Active Campaigns</p>
@@ -130,7 +130,7 @@ export default function BusinessHome() {
         </Card>
         
         <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-4">
+          <CardContent className="p-4 bg-zinc-900">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Applications</p>
@@ -142,7 +142,7 @@ export default function BusinessHome() {
         </Card>
         
         <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-4">
+          <CardContent className="p-4 bg-zinc-900">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Avg. Engagement</p>
@@ -166,7 +166,7 @@ export default function BusinessHome() {
         
         <div className="space-y-3">
           {campaigns.map(campaign => <Card key={campaign.id} className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors">
-              <CardContent className="p-4">
+              <CardContent className="p-4 bg-zinc-900">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-gray-700 flex items-center justify-center text-xl">
