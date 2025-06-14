@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Campaign } from "@/lib/campaign-types";
@@ -8,32 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Share2, Trash2, ArrowUpRight } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import DefaultCampaignBanner from "../DefaultCampaignBanner";
-
 interface CampaignSummaryCardProps {
   campaign: Campaign;
   showActions?: boolean;
   onDelete?: (id: string) => void;
 }
-
-export default function CampaignSummaryCard({ campaign, showActions = true, onDelete }: CampaignSummaryCardProps) {
+export default function CampaignSummaryCard({
+  campaign,
+  showActions = true,
+  onDelete
+}: CampaignSummaryCardProps) {
   const now = new Date();
   const endDate = new Date(campaign.endDate);
-  
   let status = "Active";
   let statusColor = "bg-green-100 text-green-800";
   let progress = 0;
   let progressText = "";
-  
   if (endDate < now) {
     status = "Ended";
     statusColor = "bg-gray-100 text-gray-800";
@@ -62,30 +54,25 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
       const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
       const total = submitDeadline.getTime() - startDate.getTime();
       const elapsed = now.getTime() - startDate.getTime();
-      progress = Math.min(100, Math.floor((elapsed / total) * 100));
+      progress = Math.min(100, Math.floor(elapsed / total * 100));
     }
     progressText = `${Math.round(progress)}% complete`;
   }
-  
+
   // Generate sample metrics
   const views = Math.floor(Math.random() * 50000) + 10000;
-  const cpm = Number(((campaign.totalBudget * 0.3) / (views / 1000)).toFixed(2));
-  
+  const cpm = Number((campaign.totalBudget * 0.3 / (views / 1000)).toFixed(2));
   const handleShare = () => {
     navigator.clipboard.writeText(`${window.location.origin}/dashboard/campaigns/${campaign.id}`);
     toast.success("Campaign link copied to clipboard");
   };
-  
   const handleDelete = () => {
     if (onDelete && campaign.id) {
       onDelete(campaign.id);
     }
   };
-
-  return (
-    <Card glass className="overflow-hidden h-full transition-all hover:shadow-md flex flex-col">
-      {campaign.bannerImage ? (
-        <div className="h-40 relative">
+  return <Card glass className="overflow-hidden h-full transition-all hover:shadow-md flex flex-col">
+      {campaign.bannerImage ? <div className="h-40 relative">
           <img src={campaign.bannerImage} alt={campaign.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-0 left-0 p-4">
@@ -94,8 +81,7 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
               {campaign.type.charAt(0).toUpperCase() + campaign.type.slice(1)} Campaign
             </p>
           </div>
-          {showActions && (
-            <div className="absolute top-2 right-2">
+          {showActions && <div className="absolute top-2 right-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/40 text-white">
@@ -109,27 +95,16 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
                     <Share2 className="h-4 w-4 mr-2" />
                     Share Link
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={handleDelete}
-                  >
+                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Campaign
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="relative">
-          <DefaultCampaignBanner 
-            title={campaign.title}
-            type={campaign.type}
-            className="h-40"
-          />
-          {showActions && (
-            <div className="absolute top-2 right-2">
+            </div>}
+        </div> : <div className="relative">
+          <DefaultCampaignBanner title={campaign.title} type={campaign.type} className="h-40" />
+          {showActions && <div className="absolute top-2 right-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/40 text-white">
@@ -143,21 +118,16 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
                     <Share2 className="h-4 w-4 mr-2" />
                     Share Link
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={handleDelete}
-                  >
+                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={handleDelete}>
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Campaign
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
-          )}
-        </div>
-      )}
+            </div>}
+        </div>}
       
-      <div className="p-4 flex-grow flex flex-col backdrop-blur-sm">
+      <div className="p-4 flex-grow flex flex-col backdrop-blur-sm bg-zinc-900">
         <div className="mb-4">
           <div className="flex justify-between text-sm mb-1">
             <span className="text-muted-foreground">{progressText}</span>
@@ -169,16 +139,12 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
         </div>
         
         <div className="flex flex-wrap gap-1 mb-3">
-          {campaign.platforms && campaign.platforms.slice(0, 3).map(platform => (
-            <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded">
+          {campaign.platforms && campaign.platforms.slice(0, 3).map(platform => <span key={platform} className="bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded">
               {platform.split(' ')[0]}
-            </span>
-          ))}
-          {campaign.platforms && campaign.platforms.length > 3 && (
-            <span className="bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded">
+            </span>)}
+          {campaign.platforms && campaign.platforms.length > 3 && <span className="bg-secondary text-secondary-foreground text-xs px-2 py-0.5 rounded">
               +{campaign.platforms.length - 3}
-            </span>
-          )}
+            </span>}
         </div>
         
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -209,6 +175,5 @@ export default function CampaignSummaryCard({ campaign, showActions = true, onDe
           </Link>
         </div>
       </div>
-    </Card>
-  );
+    </Card>;
 }
